@@ -1,0 +1,4 @@
+## Testing
+```
+npm run test
+```

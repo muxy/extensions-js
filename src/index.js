@@ -4,13 +4,15 @@ import Client from './state-client';
 
 export default class MuxyExtensionsSDK {
     constructor(extensionID) {
+        console.log("🦊 Muxy Extensions SDK");
+
         this.extensionID = extensionID;
 
         if (util.inIframe()) {
-            console.log('running in iframe');
+            console.log('Running in an iframe');
         }
         else {
-            console.log('running as top level');
+            console.log('Running as top level');
         }
 
         if (document.referrer.includes('twitch.tv')) { // https://www.twitch.tv/bux0
@@ -24,25 +26,19 @@ export default class MuxyExtensionsSDK {
 
         }
 
-        Ext.onAuthorized(this.onAuthorized);
-        Ext.onContext(this.onContext);
-    }
+        Ext.onAuthorized(() => {
+            if (!auth) {
+                return;
+            }
 
-    onAuthorized(auth) {
-        if (!auth) {
-            return;
-        }
-
-        if (this.client) {
-            this.client.updateAuth(auth.token);
-        }
-        else {
-            this.client = new Client(this.extensionID, auth.token.auth.channelId);
-        }
-    }
-
-    onContext(context) {
-
+            if (this.client) {
+                this.client.updateAuth(auth.token);
+            }
+            else {
+                this.client = new Client(this.extensionID, auth.token.auth.channelId);
+            }
+        });
+        // Ext.onContext(this.onContext);
     }
 
     /**
@@ -53,5 +49,31 @@ export default class MuxyExtensionsSDK {
 
     }
 
+    /**
+     * Fetch the current vote data
+     */
+    getVoteData() {
 
+    }
+
+    /**
+     * Submit a user's vote
+     */
+    vote() {
+
+    }
+
+    /**
+     * Fetch the current ranking data
+     */
+    getRankingData() {
+
+    }
+
+    /**
+     * Submit data to be ranked
+     */
+    rank() {
+
+    }
 }

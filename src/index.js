@@ -53,14 +53,14 @@ export default class MuxyExtensionsSDK {
    * Fetch accumulated data
    */
   getAccumulation(accumulationID, start) {
-    return this.client.getAccumulation();
+    return this.client.getAccumulation(accumulationID, start);
   }
 
   /**
    * Send data to be accumulated
    */
-  accumulate() {
-    return this.client.accumulate();
+  accumulate(accumulationID, data) {
+    return this.client.accumulate(accumulationID, data);
   }
 
   /**
@@ -74,7 +74,9 @@ export default class MuxyExtensionsSDK {
    * Submit a user's vote
    */
   vote(voteID, value) {
-    return this.client.vote();
+    return this.client.vote(voteID, {
+      value: value
+    });
   }
 
   /**
@@ -88,6 +90,8 @@ export default class MuxyExtensionsSDK {
    * Submit data to be ranked
    */
   rank(rankID, value) {
-    return this.client.rank();
+    return this.client.rank({
+      key: value
+    });
   }
 }

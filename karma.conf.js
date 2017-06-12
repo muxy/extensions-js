@@ -5,7 +5,13 @@ module.exports = (config) => {
 
   config.set({
     frameworks: ['mocha', 'chai-as-promised', 'chai', 'sinon'],
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromeHeadless_NoSandbox'],
+    customLaunchers: {
+      ChromeHeadless_NoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox']
+      }
+    },
     files: ['./spec/*.spec.js'],
 
     // Preprocess through webpack

@@ -4,6 +4,17 @@ import { errorPromise, parseJSONObject } from './util';
 
 const API_URL = 'https://api.muxy.io';
 
+// ServerState enum maps the subsets of state persisted to the server to
+// their respective endpoints.
+const ServerState = {
+  AUTHENTICATION: 'authentication',
+  USER: 'user_info',
+  VIEWER: 'viewer_state',
+  CHANNEL: 'channel_state',
+  EXTENSION: 'extension_state',
+  ALL: 'all_state'
+};
+
 // Client wraps all state requests (GET/POST) to the extension backend service.
 class Client {
   constructor(extID, token, twitchID) {
@@ -98,6 +109,20 @@ class Client {
       return false;
     }
   }
+
+  // getState requests a subset of state stored on the server and sets the
+  // local cached version of the state to the response.
+  getState = substate => this.signedRequest('GET', substate || ServerState.ALL)
+
+  // postState sends data to the corrent EBS substate endpoint for persistence.
+  postState = (substate, data) => this.signedRequest('POST', substate || ServerState.ALL, data)
+
+  getViewerState = () => this.getState(ServerState.VIEWER)
+  getChannelState = () => this.getState(ServerState.CHANNEL)
+  getExtensionState = () => this.getState(ServerState.EXTENSION)
+
+  setViewerState = state => this.postState(ServerState.VIEWER, JSON.stringify(state))
+  setChannelState = state => this.postState(ServerState.CHANNEL, JSON.stringify(state))
 
   getAccumulation = (id, start) => this.signedRequest('GET', `accumulate?id=${id}&start=${start}`);
   accumulate = (id, data) => this.signedRequest('POST', `accumulate?id=${id}`, JSON.stringify(data));

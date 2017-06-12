@@ -1,34 +1,31 @@
-const path = require('path');
-
+const webpackConfig = require('./webpack.config.js');
 
 module.exports = (config) => {
-    process.env.BABEL_ENV = 'karma';
+  process.env.BABEL_ENV = 'karma';
 
-    config.set({
-        frameworks: ['mocha', 'chai', 'sinon'],
-        browsers: ['PhantomJS'],
-        files: [
-            './spec/*.spec.js'
-        ],
+  config.set({
+    frameworks: ['mocha', 'chai-as-promised', 'chai', 'sinon'],
+    browsers: ['ChromeHeadless'],
+    files: ['./spec/*.spec.js'],
 
-        // Preprocess through webpack
-        preprocessors: {
-            "./spec/*.spec.js": ["webpack"]
-        },
-        webpack: require("./webpack.config.js"),
-        webpackMiddleware: {
-            stats: "errors-only"
-        },
-        singleRun: true,
+    // Preprocess through webpack
+    preprocessors: {
+      './spec/*.spec.js': ['webpack']
+    },
+    webpack: webpackConfig,
+    webpackMiddleware: {
+      stats: 'errors-only'
+    },
+    singleRun: true,
 
-        reporters: ['progress', 'coverage'],
+    reporters: ['progress', 'coverage'],
 
-        coverageReporter: {
-            dir: 'reports/coverage',
-            reporters: [
-                { type: 'html' },
-                { type: 'lcov' },
-            ],
-        }
-    });
+    coverageReporter: {
+      dir: 'reports/coverage',
+      reporters: [
+        { type: 'html' },
+        { type: 'lcov' }
+      ]
+    }
+  });
 };

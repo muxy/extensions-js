@@ -15,7 +15,7 @@ module.exports = {
   },
 
   externals: {
-    lodash: {
+    /*lodash: {
       commonjs: 'lodash',
       commonjs2: 'lodash',
       amd: 'lodash',
@@ -25,7 +25,7 @@ module.exports = {
       commonjs: 'xhr-promise',
       commonjs2: 'xhr-promise',
       amd: 'xhr-promise'
-    }
+    }*/
   },
 
   output: {

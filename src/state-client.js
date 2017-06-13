@@ -3,6 +3,10 @@ import XMLHttpRequestPromise from 'xhr-promise';
 import { errorPromise, parseJSONObject } from './util';
 
 const API_URL = 'https://api.muxy.io';
+//const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
+const TESTING_URL = 'https://oo8kadh853.execute-api.us-west-2.amazonaws.com/staging';
+
+let SERVER_URL = API_URL;
 
 // ServerState enum maps the subsets of state persisted to the server to
 // their respective endpoints.
@@ -23,6 +27,37 @@ class Client {
     this.twitchID = twitchID;
   }
 
+  static fetchTestAuth(testAppID, channelID) {
+    return new Promise((resolve, reject) => {
+      const xhrPromise = new XMLHttpRequestPromise();
+      xhrPromise
+        .send({
+          method: 'POST',
+          url: `${TESTING_URL}/authtoken`,
+          processData: false,
+          data: JSON.stringify({
+            app_id: testAppID,
+            channel_id: channelID
+          })
+        })
+        .catch(() => {
+          reject();
+        })
+        .then((resp) => {
+          if (resp.status < 400) {
+            // Update the API Server variable to point to test
+            SERVER_URL = TESTING_URL;
+            const auth = parseJSONObject(resp.responseText);
+            auth.channelID = channelID;
+            resolve(auth);
+          }
+          else {
+            reject();
+          }
+        });
+    });
+  }
+
   updateAuth(token) {
     this.token = token;
   }
@@ -39,7 +74,7 @@ class Client {
       xhrPromise
         .send({
           method,
-          url: `${API_URL}/${endpoint}`,
+          url: `${SERVER_URL}/${endpoint}`,
           headers: {
             'X-Muxy-GDI-AWS': `${this.extensionID} ${this.token}`
           },
@@ -53,8 +88,9 @@ class Client {
           if (resp.status < 400) {
             resolve(parseJSONObject(resp.responseText));
           }
-
-          reject(resp.responseText);
+          else {
+            reject(resp.responseText);
+          }
         });
     });
   }

@@ -29,8 +29,9 @@ module.exports = {
   },
 
   output: {
-    library: 'muxyExtensionsSDK',
+    library: 'MuxyExtensionsSDK',
     libraryTarget: 'umd',
+    umdNamedDefine: true,
     path: path.resolve(__dirname, 'dist'),
     filename: 'muxy-extensions-sdk.js'
   }

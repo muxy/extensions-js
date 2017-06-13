@@ -2,7 +2,7 @@ import util from 'util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 
-export default class MuxyExtensionsSDK {
+class MuxyExtensionsSDK {
   constructor(extensionID) {
     console.log("🦊 Muxy Extensions SDK");
 
@@ -95,3 +95,5 @@ export default class MuxyExtensionsSDK {
     });
   }
 }
+
+module.exports = MuxyExtensionsSDK;

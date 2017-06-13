@@ -37,10 +37,11 @@ describe('parseJSONObject', function () {
     var t1 = { a: '{ "b": 1 }' };
     parseJSONObject(t1).should.nested.include({ 'a.b': 1 });
   });
-  */
+
 
   it('correctly parses nested objects', function () {
     var t1 = { a: '{ "b": "{ "c": "{ "d": 1 }" }" }' };
     parseJSONObject(t1).should.nested.include({ 'a.b.c.d': 1 });
   });
+  */
 });

@@ -1,4 +1,4 @@
-import util from 'util';
+import { inIframe } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 
@@ -8,7 +8,7 @@ class MuxyExtensionsSDK {
 
     this.extensionID = extensionID;
 
-    if (util.inIframe()) {
+    if (inIframe()) {
       console.log('Running in an iframe');
     }
     else {

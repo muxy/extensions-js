@@ -1,12 +1,10 @@
-import { inIframe } from './util';
+import { inIframe, asciiBox } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 
-// var muxy = new window.MuxyExtensionsSDK('234', {testAppID: 'albert-auth-test', testChannelID: '26052853'});
-
 class MuxyExtensionsSDK {
   constructor(extensionID, options = {}) {
-    console.log("🦊 Muxy Extensions SDK");
+    let SDKInfoText = "";
 
     this.extensionID = extensionID;
 
@@ -18,20 +16,26 @@ class MuxyExtensionsSDK {
     }
 
     if (inIframe()) {
-      console.log('Running in an iframe');
+      SDKInfoText += '\nRunning in an iframe';
     } else {
-      console.log('Running as top level');
+      SDKInfoText += '\nRunning as top level';
     }
 
     if (document.referrer.includes('twitch.tv')) { // https://www.twitch.tv/bux0
-      console.log('Running on twitch.tv');
+      SDKInfoText += '\nRunning on twitch.tv';
     }
 
     if (location.hostname.includes('.ext-twitch.tv')) { // ka3y28rrgh2f533mxt9ml37fv6zb8k.ext-twitch.tv
-      console.log('Loaded from twitch CDN');
+      SDKInfoText += '\nLoaded from twitch CDN';
     } else {
 
     }
+
+    console.log('🦊 Muxy Extensions SDK\n' + asciiBox(SDKInfoText));
+
+    this.loadPromise = new Promise((resolve) => {
+      this.loadResolve = resolve;
+    });
 
     Ext.onAuthorized((auth) => {
       if (!auth) {
@@ -43,8 +47,18 @@ class MuxyExtensionsSDK {
       } else {
         this.client = new Client(this.extensionID, auth.token, auth.channelID);
       }
+
+      this.loadResolve();
     });
     // Ext.onContext(this.onContext);
+  }
+
+  /**
+   * A promise that resolves once the SDK is finished setting up.
+   * @returns {Promise}
+   */
+  loaded() {
+    return this.loadPromise;
   }
 
   /**

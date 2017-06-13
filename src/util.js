@@ -18,9 +18,7 @@ export function errorPromise(err) {
 export function parseJSONObject(obj) {
   return _.mapValues(obj, (v, k) => {
     try {
-      console.log(v);
       let o = JSON.parse(v);
-      console.log(o);
       if (_.isObject(o)) {
         o = parseJSONObject(o);
       }
@@ -29,4 +27,23 @@ export function parseJSONObject(obj) {
       return v;
     }
   });
+}
+
+export function asciiBox(text) {
+  let lines = text.split('\n');
+  const contentWidth = widestLine(text);
+  const top = `┌${'─'.repeat(contentWidth)}┐`;
+  const middle = lines.map(line => {
+    const paddingRight = ' '.repeat(contentWidth - line.length);
+    return `│${line}${paddingRight}│`
+  });
+  const bottom = `└${'─'.repeat(contentWidth)}┘`;
+
+  return `${top}\n${middle.join('\n')}\n${bottom}`;
+}
+
+function widestLine(str) {
+  return Math.max.apply(null, str.split('\n').map(function (x) {
+    return x.length;
+  }));
 }

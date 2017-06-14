@@ -2,16 +2,24 @@ import { inIframe } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 
+// var muxy = new window.MuxyExtensionsSDK('234', {testAppID: 'albert-auth-test', testChannelID: '26052853'});
+
 class MuxyExtensionsSDK {
-  constructor(extensionID) {
+  constructor(extensionID, options = {}) {
     console.log("🦊 Muxy Extensions SDK");
 
     this.extensionID = extensionID;
 
+    if (options.testAppID) {
+      Ext.testAppID = options.testAppID
+    }
+    if (options.testChannelID) {
+      Ext.testChannelID = options.testChannelID;
+    }
+
     if (inIframe()) {
       console.log('Running in an iframe');
-    }
-    else {
+    } else {
       console.log('Running as top level');
     }
 
@@ -21,21 +29,19 @@ class MuxyExtensionsSDK {
 
     if (location.hostname.includes('.ext-twitch.tv')) { // ka3y28rrgh2f533mxt9ml37fv6zb8k.ext-twitch.tv
       console.log('Loaded from twitch CDN');
-    }
-    else {
+    } else {
 
     }
 
-    Ext.onAuthorized(() => {
+    Ext.onAuthorized((auth) => {
       if (!auth) {
         return;
       }
 
       if (this.client) {
         this.client.updateAuth(auth.token);
-      }
-      else {
-        this.client = new Client(this.extensionID, auth.token.auth.channelId);
+      } else {
+        this.client = new Client(this.extensionID, auth.token, auth.channelID);
       }
     });
     // Ext.onContext(this.onContext);

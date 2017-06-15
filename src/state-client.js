@@ -3,8 +3,7 @@ import XMLHttpRequestPromise from 'xhr-promise';
 import { errorPromise, parseJSONObject } from './util';
 
 const API_URL = 'https://api.muxy.io';
-//const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
-const TESTING_URL = 'https://oo8kadh853.execute-api.us-west-2.amazonaws.com/staging';
+const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
 
 let SERVER_URL = API_URL;
 
@@ -33,7 +32,7 @@ class Client {
       xhrPromise
         .send({
           method: 'POST',
-          url: `${TESTING_URL}/authtoken`,
+          url: `${TESTING_URL}/v1/e/authtoken`,
           processData: false,
           data: JSON.stringify({
             app_id: testAppID,
@@ -47,11 +46,13 @@ class Client {
           if (resp.status < 400) {
             // Update the API Server variable to point to test
             SERVER_URL = TESTING_URL;
+
             const auth = parseJSONObject(resp.responseText);
-            auth.channelID = channelID;
+            // twitch uses lowercase d
+            auth.channelId = channelID;
+            auth.userId = 'T12345678';
             resolve(auth);
-          }
-          else {
+          } else {
             reject();
           }
         });
@@ -74,7 +75,7 @@ class Client {
       xhrPromise
         .send({
           method,
-          url: `${SERVER_URL}/${endpoint}`,
+          url: `${SERVER_URL}/v1/e/${endpoint}`,
           headers: {
             'X-Muxy-GDI-AWS': `${this.extensionID} ${this.token}`
           },
@@ -87,8 +88,7 @@ class Client {
         .then((resp) => {
           if (resp.status < 400) {
             resolve(parseJSONObject(resp.responseText));
-          }
-          else {
+          } else {
             reject(resp.responseText);
           }
         });
@@ -153,6 +153,7 @@ class Client {
   // postState sends data to the corrent EBS substate endpoint for persistence.
   postState = (substate, data) => this.signedRequest('POST', substate || ServerState.ALL, data)
 
+  getUserInfo = () => this.getState(ServerState.USER)
   getViewerState = () => this.getState(ServerState.VIEWER)
   getChannelState = () => this.getState(ServerState.CHANNEL)
   getExtensionState = () => this.getState(ServerState.EXTENSION)

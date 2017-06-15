@@ -1,37 +1,41 @@
-import { inIframe } from './util';
+import { inIframe, asciiBox } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
-
-// var muxy = new window.MuxyExtensionsSDK('234', {testAppID: 'albert-auth-test', testChannelID: '26052853'});
+import Analytics from './analytics';
+import User from './user';
 
 class MuxyExtensionsSDK {
   constructor(extensionID, options = {}) {
-    console.log("🦊 Muxy Extensions SDK");
+    let SDKInfoText = '';
 
     this.extensionID = extensionID;
 
     if (options.testAppID) {
-      Ext.testAppID = options.testAppID
+      Ext.testAppID = options.testAppID;
     }
     if (options.testChannelID) {
       Ext.testChannelID = options.testChannelID;
     }
 
     if (inIframe()) {
-      console.log('Running in an iframe');
+      SDKInfoText += '\nRunning in an iframe';
     } else {
-      console.log('Running as top level');
+      SDKInfoText += '\nRunning as top level';
     }
 
     if (document.referrer.includes('twitch.tv')) { // https://www.twitch.tv/bux0
-      console.log('Running on twitch.tv');
+      SDKInfoText += '\nRunning on twitch.tv';
     }
 
     if (location.hostname.includes('.ext-twitch.tv')) { // ka3y28rrgh2f533mxt9ml37fv6zb8k.ext-twitch.tv
-      console.log('Loaded from twitch CDN');
-    } else {
-
+      SDKInfoText += '\nLoaded from twitch CDN';
     }
+
+    console.log(`🦊 Muxy Extensions SDK\n${asciiBox(SDKInfoText)}`); // eslint-disable-line no-console
+
+    this.loadPromise = new Promise((resolve) => {
+      this.loadResolve = resolve;
+    });
 
     Ext.onAuthorized((auth) => {
       if (!auth) {
@@ -41,18 +45,23 @@ class MuxyExtensionsSDK {
       if (this.client) {
         this.client.updateAuth(auth.token);
       } else {
-        this.client = new Client(this.extensionID, auth.token, auth.channelID);
+        this.client = new Client(this.extensionID, auth.token, auth.channelId);
+        this.analytics = new Analytics(auth.userId);
+        this.user = new User(this.client, auth);
       }
+
+      this.loadResolve();
     });
+
     // Ext.onContext(this.onContext);
   }
 
   /**
-   * Listen for events from MuxyStore
-   * @param type Event type to listen for. (Accumulate, Vote, Rank, Store)
+   * A promise that resolves once the SDK is finished setting up.
+   * @returns {Promise}
    */
-  listen(type) {
-
+  loaded() {
+    return this.loadPromise;
   }
 
   /**
@@ -81,7 +90,7 @@ class MuxyExtensionsSDK {
    */
   vote(voteID, value) {
     return this.client.vote(voteID, {
-      value: value
+      value
     });
   }
 
@@ -89,7 +98,7 @@ class MuxyExtensionsSDK {
    * Fetch the current ranking data
    */
   getRankingData(rankID) {
-    return this.client.getRank();
+    return this.client.getRank(rankID);
   }
 
   /**

@@ -1,6 +1,8 @@
 import { inIframe, asciiBox } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
+import Analytics from './analytics';
+import User from './user';
 
 class MuxyExtensionsSDK {
   constructor(extensionID, options = {}) {
@@ -45,11 +47,14 @@ class MuxyExtensionsSDK {
       if (this.client) {
         this.client.updateAuth(auth.token);
       } else {
-        this.client = new Client(this.extensionID, auth.token, auth.channelID);
+        this.client = new Client(this.extensionID, auth.token, auth.channelId);
+        this.analytics = new Analytics(auth.userId);
+        this.user = new User(this.client, auth);
       }
 
       this.loadResolve();
     });
+
     // Ext.onContext(this.onContext);
   }
 

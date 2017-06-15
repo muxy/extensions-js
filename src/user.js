@@ -46,19 +46,15 @@ export default class User {
 
     // Fetch and store inital user info.
     client.getUserInfo()
-      .catch((err) => {
+      .catch(() => {
 
       }).then((resp) => {
         if (resp) {
-          if (resp.mapped_user_id) {
-
-          }
-
           if (resp.ip_address) {
             this.ip = resp.ip_address;
           }
 
-          //store.state.analytics.sendPageView();
+          // store.state.analytics.sendPageView();
         }
       });
   }

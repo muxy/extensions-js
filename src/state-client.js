@@ -52,8 +52,7 @@ class Client {
             auth.channelId = channelID;
             auth.userId = 'T12345678';
             resolve(auth);
-          }
-          else {
+          } else {
             reject();
           }
         });
@@ -89,8 +88,7 @@ class Client {
         .then((resp) => {
           if (resp.status < 400) {
             resolve(parseJSONObject(resp.responseText));
-          }
-          else {
+          } else {
             reject(resp.responseText);
           }
         });

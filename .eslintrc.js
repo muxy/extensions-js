@@ -27,7 +27,6 @@ module.exports = {
     'no-console': 2,
     'no-debugger': 2,
     'comma-dangle': ['error', 'never'],
-    'space-before-function-paren': ['error', 'always']
     'no-param-reassign': [2, {
       'props': false
     }]

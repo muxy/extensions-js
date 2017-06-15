@@ -6,12 +6,12 @@ import User from './user';
 
 class MuxyExtensionsSDK {
   constructor(extensionID, options = {}) {
-    let SDKInfoText = "";
+    let SDKInfoText = '';
 
     this.extensionID = extensionID;
 
     if (options.testAppID) {
-      Ext.testAppID = options.testAppID
+      Ext.testAppID = options.testAppID;
     }
     if (options.testChannelID) {
       Ext.testChannelID = options.testChannelID;
@@ -29,11 +29,9 @@ class MuxyExtensionsSDK {
 
     if (location.hostname.includes('.ext-twitch.tv')) { // ka3y28rrgh2f533mxt9ml37fv6zb8k.ext-twitch.tv
       SDKInfoText += '\nLoaded from twitch CDN';
-    } else {
-
     }
 
-    console.log('🦊 Muxy Extensions SDK\n' + asciiBox(SDKInfoText));
+    console.log(`🦊 Muxy Extensions SDK\n${asciiBox(SDKInfoText)}`); // eslint-disable-line no-console
 
     this.loadPromise = new Promise((resolve) => {
       this.loadResolve = resolve;
@@ -67,14 +65,6 @@ class MuxyExtensionsSDK {
   }
 
   /**
-   * Listen for events from MuxyStore
-   * @param type Event type to listen for. (Accumulate, Vote, Rank, Store)
-   */
-  listen(type) {
-
-  }
-
-  /**
    * Fetch accumulated data
    */
   getAccumulation(accumulationID, start) {
@@ -100,7 +90,7 @@ class MuxyExtensionsSDK {
    */
   vote(voteID, value) {
     return this.client.vote(voteID, {
-      value: value
+      value
     });
   }
 
@@ -108,7 +98,7 @@ class MuxyExtensionsSDK {
    * Fetch the current ranking data
    */
   getRankingData(rankID) {
-    return this.client.getRank();
+    return this.client.getRank(rankID);
   }
 
   /**

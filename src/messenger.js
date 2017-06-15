@@ -10,7 +10,7 @@ class Messenger {
         event, data
       });
     } else {
-        //TODO: send data to muxy test pub/sub
+        // TODO: send data to muxy test pub/sub
     }
   }
 
@@ -43,8 +43,8 @@ class Messenger {
 
     if (window.Twitch) {
       Twitch.ext.listen(l, cb);
-    } else{
-      //TODO: listen to muxy test pub/sub
+    } else {
+      // TODO: listen to muxy test pub/sub
     }
     return {
       target: l,
@@ -57,7 +57,7 @@ class Messenger {
     if (window.Twitch) {
       Twitch.ext.unlisten(h.target, h.cb);
     } else {
-      //TODO: unsub from muxy test pub/sub
+      // TODO: unsub from muxy test pub/sub
     }
   }
 }

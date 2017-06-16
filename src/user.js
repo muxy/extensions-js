@@ -1,7 +1,7 @@
 // User stores fields related to the current extension user
 // in vuex, and manages updating/accessing those fields.
 export default class User {
-  constructor(client, auth) {
+  constructor(auth) {
     // channelID holds the numeric id of the channel the user is currently watching.
     this.channelID = auth.channelId;
 
@@ -43,20 +43,6 @@ export default class User {
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.
     this.extractJWTInfo(auth.token);
-
-    // Fetch and store inital user info.
-    client.getUserInfo()
-      .catch(() => {
-
-      }).then((resp) => {
-        if (resp) {
-          if (resp.ip_address) {
-            this.ip = resp.ip_address;
-          }
-
-          // store.state.analytics.sendPageView();
-        }
-      });
   }
 
   // extractJWTInfo attempts to parse the provided JWT and persist any found

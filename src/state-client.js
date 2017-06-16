@@ -1,6 +1,7 @@
+import base64 from 'base-64';
 import XMLHttpRequestPromise from 'xhr-promise';
 
-import { errorPromise, parseJSONObject } from './util';
+import { errorPromise } from './util';
 
 const API_URL = 'https://api.muxy.io';
 const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
@@ -33,7 +34,6 @@ class Client {
         .send({
           method: 'POST',
           url: `${TESTING_URL}/v1/e/authtoken`,
-          processData: false,
           data: JSON.stringify({
             app_id: testAppID,
             channel_id: channelID
@@ -47,7 +47,7 @@ class Client {
             // Update the API Server variable to point to test
             SERVER_URL = TESTING_URL;
 
-            const auth = parseJSONObject(resp.responseText);
+            const auth = resp.responseText;
             // twitch uses lowercase d
             auth.channelId = channelID;
             auth.userId = 'T12345678';
@@ -79,7 +79,6 @@ class Client {
           headers: {
             'X-Muxy-GDI-AWS': `${this.extensionID} ${this.token}`
           },
-          processData: false,
           data
         })
         .catch(() => {
@@ -87,9 +86,11 @@ class Client {
         })
         .then((resp) => {
           if (resp.status < 400) {
-            resolve(parseJSONObject(resp.responseText));
-          } else {
+            resolve(resp.responseText);
+          } else if (resp.responseText) {
             reject(resp.responseText);
+          } else {
+            reject(`Server returned status ${resp.status}`);
           }
         });
     });
@@ -114,7 +115,7 @@ class Client {
         })
         .then((resp) => {
           if (resp.status < 400) {
-            resolve(parseJSONObject(resp.responseText));
+            resolve(resp.responseText);
           }
 
           reject(resp.responseText);
@@ -130,7 +131,7 @@ class Client {
         return false;
       }
 
-      const tk = JSON.parse(window.atob(splitToken[1]));
+      const tk = JSON.parse(base64.decode(splitToken[1]));
       if (!tk.exp) {
         return false;
       }

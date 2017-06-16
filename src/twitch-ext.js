@@ -9,6 +9,9 @@ class Ext {
       Client.fetchTestAuth(this.testAppID, this.testChannelID)
         .then((auth) => {
           cb(auth);
+        })
+        .catch(() => {
+          cb();
         });
     }
   }

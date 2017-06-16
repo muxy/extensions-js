@@ -33,12 +33,14 @@ class MuxyExtensionsSDK {
 
     console.log(`🦊 Muxy Extensions SDK\n${asciiBox(SDKInfoText)}`); // eslint-disable-line no-console
 
-    this.loadPromise = new Promise((resolve) => {
+    this.loadPromise = new Promise((resolve, reject) => {
       this.loadResolve = resolve;
+      this.loadReject = reject;
     });
 
     Ext.onAuthorized((auth) => {
       if (!auth) {
+        this.loadReject();
         return;
       }
 

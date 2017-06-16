@@ -1335,48 +1335,50 @@ function gumshoeFactory() {
     // session ID for each event sent.
     session(gumshoe.options.sessionFn);
 
-    for(var i = 0; i < gumshoe.options.transport.length; i++) {
-      var transportName = gumshoe.options.transport[i],
-        transport,
-        data;
+    if (gumshoe.options.transport) {
+      for (var i = 0; i < gumshoe.options.transport.length; i++) {
+        var transportName = gumshoe.options.transport[i],
+          transport,
+          data;
 
-      if (transportName && transports[transportName]) {
-        transportFound = true;
-        transport = transports[transportName];
+        if (transportName && transports[transportName]) {
+          transportFound = true;
+          transport = transports[transportName];
 
-        // allow each transport to extend the data with more information
-        // or transform it how they'd like. transports cannot however,
-        // modify eventData sent from the client.
-        data = transport.map ? transport.map(baseData) : baseData;
+          // allow each transport to extend the data with more information
+          // or transform it how they'd like. transports cannot however,
+          // modify eventData sent from the client.
+          data = transport.map ? transport.map(baseData) : baseData;
 
-        // extend our data with whatever came back from the transport
-        data = extend(baseData, data);
+          // extend our data with whatever came back from the transport
+          data = extend(baseData, data);
 
-        // TODO: remove this. gumshoe shouldn't care what format this is in
-        if (!isString(data.eventData)) {
-          data.eventData = JSON.stringify(data.eventData);
+          // TODO: remove this. gumshoe shouldn't care what format this is in
+          if (!isString(data.eventData)) {
+            data.eventData = JSON.stringify(data.eventData);
+          }
+
+          // TODO: remove this. gumshoe shouldn't care what format this is in
+          if (!isString(data.pageData.plugins)) {
+            data.pageData.plugins = JSON.stringify(data.pageData.plugins);
+          }
+
+          // TODO: remove this. temporary bugfix for apps
+          if (!data.pageData.ipAddress) {
+            data.pageData.ipAddress = '<unknown>';
+          }
+
+          pushEvent(eventName, transportName, data);
         }
-
-        // TODO: remove this. gumshoe shouldn't care what format this is in
-        if (!isString(data.pageData.plugins)) {
-          data.pageData.plugins = JSON.stringify(data.pageData.plugins);
+        else {
+          throw 'Gumshoe: The transport name: ' + transportName + ', doesn\'t map to a valid transport.';
         }
-
-        // TODO: remove this. temporary bugfix for apps
-        if (!data.pageData.ipAddress) {
-          data.pageData.ipAddress = '<unknown>';
-        }
-
-        pushEvent(eventName, transportName, data);
-      }
-      else {
-        throw 'Gumshoe: The transport name: ' + transportName + ', doesn\'t map to a valid transport.';
       }
     }
 
-    if (!transportFound) {
+    /*if (!transportFound) {
       throw 'Gumshoe: No valid transports were found.';
-    }
+    }*/
   }
 
   function nextEvent () {

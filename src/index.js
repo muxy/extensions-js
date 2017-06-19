@@ -82,13 +82,16 @@ class MuxyExtensionsSDK {
 
   /**
    * Fetch the current vote data
+   * @returns an object with the structure {stddev, mean, sum, specific, count}
    */
   getVoteData(voteID) {
     return this.client.getVotes(voteID);
   }
 
   /**
-   * Submit a user's vote
+   * Submit a vote
+   * @param voteID the poll that this vote is for
+   * @param value the integer value to vote
    */
   vote(voteID, value) {
     return this.client.vote(voteID, {
@@ -98,9 +101,18 @@ class MuxyExtensionsSDK {
 
   /**
    * Fetch the current ranking data
+   * @returns an array of rank data objects in the form {key: "testkey", score: 23}
    */
   getRankingData(rankID) {
-    return this.client.getRank(rankID);
+    return new Promise((accept, reject) => {
+      this.client.getRank(rankID)
+        .then((data) => {
+          accept(data.data);
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
   }
 
   /**
@@ -113,4 +125,6 @@ class MuxyExtensionsSDK {
   }
 }
 
+// Do this so that the entrypoint as a global library is correct.
+// Babel / webpack have some weirdness
 module.exports = MuxyExtensionsSDK;

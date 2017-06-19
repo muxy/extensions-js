@@ -1,0 +1,7 @@
+{
+  "source": "./src",
+  "includes": ["index.js"],
+  "destination": "./doc",
+  "plugins": [{"name": "esdoc-node"}],
+  "includeSource": false
+}

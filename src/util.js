@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 function widestLine(str) {
   return Math.max.apply(null, str.split('\n').map(x => x.length));
 }
@@ -16,21 +14,6 @@ export function inIframe() {
 // errorPromise wraps a string error response in an (immediately rejected) promise.
 export function errorPromise(err) {
   return Promise.reject(err);
-}
-
-// parseJSONObject attempts to parse all keys in obj, recursively.
-export function parseJSONObject(obj) {
-  return _.mapValues(obj, (v) => {
-    try {
-      let o = JSON.parse(v);
-      if (_.isObject(o)) {
-        o = parseJSONObject(o);
-      }
-      return o;
-    } catch (err) {
-      return v;
-    }
-  });
 }
 
 export function asciiBox(text) {

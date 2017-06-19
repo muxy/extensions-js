@@ -1,24 +1,20 @@
-import chai from 'chai'
-import chaiAsPromised from 'chai-as-promised'
+import chai from 'chai';
 import User from '../src/user';
 
 chai.should();
-chai.use(chaiAsPromised);
-
-const assert = chai.assert;
 
 const anonymousUserAuth = {
   twitchOpaqueID: 'U1234567'
 };
 
-describe('User type', function() {
-  it('is an anonymous user', function() {
+describe('user', function () {
+  it('should be anonymous', function () {
     const user = new User(anonymousUserAuth);
-    assert.equal(user.anonymous(), true);
+    user.anonymous().should.equal(true);
   });
 
   it('should not have a twitch id', function () {
     const user = new User(anonymousUserAuth);
-    assert.equal(user.twitchID, null);
+    should.equal(user.twitchID, null);
   });
 });

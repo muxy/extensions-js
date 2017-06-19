@@ -125,4 +125,6 @@ class MuxyExtensionsSDK {
   }
 }
 
+// Do this so that the entrypoint as a global library is correct.
+// Babel / webpack have some weirdness
 module.exports = MuxyExtensionsSDK;

@@ -34,7 +34,7 @@ describe('State Client', function () {
 
   it('should make a request', function () {
     server.respondWith("GET", "https://api.muxy.io/v1/e/rank", [200, { "Content-Type": "application/json" },
-      '{ "values": [] }']);
+      '{ "data": [] }']);
 
     const client = new StateClient('', someJWT, '');
     const resp = client.getRank();
@@ -42,7 +42,7 @@ describe('State Client', function () {
 
     return resp
       .then(data => {
-        data.should.have.property('values').with.lengthOf(0);
+        data.should.have.property('data').with.lengthOf(0);
       })
       .catch(data => {
         throw new Error("request was unsuccessful");

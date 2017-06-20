@@ -8,6 +8,7 @@
   "module": "src/index.js",
   "repository": "https://bitbucket.org/muxy/muxyextensionssdk",
   "scripts": {
+    "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
     "build": "webpack -p",
     "test": "karma start --single-run",
     "doc": "esdoc"
@@ -44,7 +45,8 @@
     "karma-webpack": "^2.0.3",
     "mocha": "^3.4.2",
     "sinon": "^2.3.4",
-    "webpack": "^2.6.1"
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
     "base-64": "^0.1.0",

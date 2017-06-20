@@ -1,12 +1,19 @@
-import { inIframe, asciiBox } from './util';
+import { ENVIRONMENTS, consolePrint, currentEnvironment } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 import Analytics from './analytics';
 import User from './user';
 
+import * as PackageConfig from '../package.json';
+
 class MuxyExtensionsSDK {
   constructor(extensionID, options = {}) {
-    let SDKInfoText = '';
+    const SDKInfoText = [
+      'Muxy Extensions SDK',
+      `v${PackageConfig.version} © ${(new Date()).getFullYear()} ${PackageConfig.author}`,
+      PackageConfig.repository,
+      ''
+    ];
 
     this.extensionID = extensionID;
 
@@ -17,21 +24,21 @@ class MuxyExtensionsSDK {
       Ext.testChannelID = options.testChannelID;
     }
 
-    if (inIframe()) {
-      SDKInfoText += '\nRunning in an iframe';
-    } else {
-      SDKInfoText += '\nRunning as top level';
+    switch (currentEnvironment(window)) {
+      case ENVIRONMENTS.DEV:
+        SDKInfoText.push('Running in development mode');
+        break;
+      case ENVIRONMENTS.STAGING:
+        SDKInfoText.push('Running in staging environment');
+        break;
+      case ENVIRONMENTS.PRODUCTION:
+        SDKInfoText.push('Running on production');
+        break;
+      default:
+        SDKInfoText.push('Could not determine execution environment.');
     }
 
-    if (document.referrer.includes('twitch.tv')) { // https://www.twitch.tv/bux0
-      SDKInfoText += '\nRunning on twitch.tv';
-    }
-
-    if (location.hostname.includes('.ext-twitch.tv')) { // ka3y28rrgh2f533mxt9ml37fv6zb8k.ext-twitch.tv
-      SDKInfoText += '\nLoaded from twitch CDN';
-    }
-
-    console.log(`🦊 Muxy Extensions SDK\n${asciiBox(SDKInfoText)}`); // eslint-disable-line no-console
+    consolePrint(SDKInfoText, { boxed: true });
 
     this.loadPromise = new Promise((resolve, reject) => {
       this.loadResolve = resolve;

@@ -24,8 +24,8 @@ module.exports = {
   },
 
   rules: {
-    'no-console': 2,
-    'no-debugger': 2,
+    'no-console': process.env.NODE_ENV === 'production' ? 2 : 1,
+    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 1,
     'comma-dangle': ['error', 'never'],
     'no-param-reassign': [2, {
       'props': false

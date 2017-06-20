@@ -36,7 +36,8 @@ describe('State Client', function () {
     server.respondWith("GET", "https://api.muxy.io/v1/e/rank", [200, { "Content-Type": "application/json" },
       '{ "data": [] }']);
 
-    const client = new StateClient('', someJWT, '');
+    const client = new StateClient();
+    client.updateAuth(someJWT);
     const resp = client.getRank();
     server.respond();
 
@@ -53,7 +54,8 @@ describe('State Client', function () {
     server.respondWith("GET", "https://api.muxy.io/v1/e/rank", [200, { "Content-Type": "application/json" },
       '{ asfsafasdfaf }']);
 
-    const client = new StateClient('', someJWT, '');
+    const client = new StateClient();
+    client.updateAuth(someJWT);
     const resp = client.getRank();
     server.respond();
 

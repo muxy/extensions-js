@@ -34,9 +34,7 @@ class Client {
             role
           })
         })
-        .catch(() => {
-          reject();
-        })
+        .catch(reject)
         .then((resp) => {
           if (resp.status < 400) {
             // Update the API Server variable to point to test
@@ -77,16 +75,18 @@ class Client {
           },
           data
         })
-        .catch(() => {
-          reject();
-        })
+        .catch(reject)
         .then((resp) => {
-          if (resp.status < 400) {
-            resolve(resp.responseText);
-          } else if (resp.responseText) {
-            reject(resp.responseText);
-          } else {
-            reject(`Server returned status ${resp.status}`);
+          try {
+            if (resp.status < 400) {
+              resolve(resp.responseText);
+            } else if (resp.responseText) {
+              reject(resp.responseText);
+            } else {
+              reject(`Server returned status ${resp.status}`);
+            }
+          } catch (err) {
+            reject(err);
           }
         });
     });
@@ -106,9 +106,7 @@ class Client {
           },
           data
         })
-        .catch(() => {
-          reject();
-        })
+        .catch(reject)
         .then((resp) => {
           if (resp.status < 400) {
             resolve(resp.responseText);

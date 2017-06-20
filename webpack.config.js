@@ -1,6 +1,7 @@
 const path = require('path');
 
 module.exports = {
+  devtool: 'inline-source-map',
   entry: './src/index.js',
   module: {
     rules: [
@@ -24,7 +25,7 @@ module.exports = {
   },
 
   externals: {
-    /*lodash: {
+    /* lodash: {
       commonjs: 'lodash',
       commonjs2: 'lodash',
       amd: 'lodash',

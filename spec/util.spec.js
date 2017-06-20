@@ -1,7 +1,9 @@
 import chai from 'chai';
 var assert = chai.assert;
 
-import { errorPromise, inIframe, parseJSONObject } from '../src/util';
+import {
+  ENVIRONMENTS, errorPromise, currentEnvironment
+} from '../src/util';
 
 chai.should();
 
@@ -23,9 +25,37 @@ describe('error promise', function () {
   });
 });
 
-describe('inIframe', function () {
-  it('correctly detects an embedded iframe', function () {
-    // NOTE: The karma tests run inside an iframe inside the headless browser.
-    inIframe().should.equal(true);
+describe('current environment', function () {
+  it('correctly detects a dev environment', function () {
+    const devWindow = {
+      location: {
+        origin: 'http://localhost:4000'
+      }
+    };
+    currentEnvironment(devWindow).should.equal(ENVIRONMENTS.DEV);
+  });
+
+  it('correctly detects a staging environment', function () {
+    const stagingWindow = {
+      location: {
+        origin: 'http://<extension id>.ext-twitch.tv'
+      },
+      document: {
+        referrer: 'http://localhost:4000'
+      }
+    };
+    currentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
+  });
+
+  it('correctly detects a production environment', function () {
+    const productionWindow = {
+      location: {
+        origin: 'http://<extension id>.ext-twitch.tv'
+      },
+      document: {
+        referrer: 'https://twitch.tv'
+      }
+    };
+    currentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);
   });
 });

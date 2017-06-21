@@ -3,7 +3,7 @@ import Client from './state-client';
 // Wrapper around global Twitch extension object.
 class Ext {
   static fetchTestAuth(cb) {
-    Client.fetchTestAuth(this.appID, this.testChannelID)
+    Client.fetchTestAuth(this.appID, this.testChannelID, this.testJWTRole)
       .then((auth) => {
         cb(auth);
       })

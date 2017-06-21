@@ -1,4 +1,5 @@
 /* globals Twitch */
+import Pusher from 'pusher-js';
 
 // Messenger is a convenience wrapper for dispatching and listening for events.
 class Messenger {
@@ -10,7 +11,7 @@ class Messenger {
         event, data
       });
     } else {
-        // TODO: send data to muxy test pub/sub
+      // TODO: send data to muxy test pub/sub
     }
   }
 
@@ -60,6 +61,92 @@ class Messenger {
       // TODO: unsub from muxy test pub/sub
     }
   }
+}
+
+class TwitchMessenger {
+  constructor() {
+    this.channelID = '';
+  }
+
+  static broadcast(id, event, send) {
+    const data = send || {};
+    Twitch.ext.send('broadcast', 'application/json', {
+      event, data
+    });
+  }
+
+  static listen(id, topic, callback) {
+    const cb = (t, datatype, message) => {
+      try {
+        const parsed = JSON.parse(message);
+        callback(parsed);
+      } catch (err) {
+        // TODO: Silent failure?
+      }
+    };
+
+    Twitch.ext.listen(topic, cb);
+
+    return {
+      target: topic,
+      cb
+    };
+  }
+
+  static unlisten(id, h) {
+    Twitch.ext.unlisten(h.target, h.cb);
+  }
+}
+
+class PusherMessenger {
+  constructor(ch, muxy) {
+    this.client = new Pusher('18c26c0d1c7fafb78ba2', {
+      cluster: 'us2',
+      encrypted: true
+    });
+
+    this.muxy = muxy;
+    this.channelID = '';
+  }
+
+  broadcast(id, event, send, client) {
+    client.pusherBroadcast(id, event, this.channelID, send);
+  }
+
+  listen(id, topic, callback) {
+    if (!this.channel) {
+      const channelName = `twitch.pubsub.ka3y28rrgh2f533mxt9ml37fv6zb8k.${this.channelID}`;
+      this.channel = this.client.subscribe(channelName);
+    }
+
+    const cb = (message) => {
+      try {
+        const parsed = JSON.parse(message.message);
+        callback(parsed);
+      } catch (err) {
+        // TODO: Silent failure?
+      }
+    };
+
+    this.channel.bind(topic, cb);
+
+    return {
+      target: topic,
+      cb
+    };
+  }
+
+  unlisten(id, h) {
+    this.channel.unbind(h.target, h.cb);
+  }
+}
+
+export function createMessenger() {
+  if (window.Twitch) {
+    return new TwitchMessenger();
+  }
+
+  return new PusherMessenger();
 }
 
 export default Messenger;

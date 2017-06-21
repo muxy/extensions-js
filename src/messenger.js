@@ -115,7 +115,7 @@ class PusherMessenger {
 
   listen(id, topic, callback) {
     if (!this.channel) {
-      const channelName = `twitch.pubsub.ka3y28rrgh2f533mxt9ml37fv6zb8k.${this.channelID}`;
+      const channelName = `twitch.pubsub.${this.extensionID}.${this.channelID}`;
       this.channel = this.client.subscribe(channelName);
     }
 

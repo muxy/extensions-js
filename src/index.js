@@ -60,6 +60,7 @@ class Muxy {
         this.loadReject();
       }
 
+      this.messenger.extensionID = auth.clientId;
       this.messenger.channelID = auth.channelId;
       this.client.updateAuth(auth.token);
       this.loadResolve();

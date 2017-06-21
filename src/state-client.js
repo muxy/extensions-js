@@ -44,6 +44,7 @@ class Client {
 
             const auth = resp.responseText;
             // twitch uses lowercase d
+            auth.clientId = 'ka3y28rrgh2f533mxt9ml37fv6zb8k';
             auth.channelId = channelID;
             auth.userId = 'T12345678';
             resolve(auth);

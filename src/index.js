@@ -2,6 +2,7 @@ import { ENVIRONMENTS, consolePrint, currentEnvironment } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 import SDK from './sdk';
+import { createMessenger } from './messenger';
 
 import * as PackageConfig from '../package.json';
 
@@ -11,9 +12,14 @@ class Muxy {
     // user can change this with Muxy.testChannelID before Muxy.SDK
     this.testChannelID = '23161357';
 
+    // Role to create an auth token with in testing env
+    // user can change this with Muxy.testJWTRole before Muxy.SDK
+    this.testJWTRole = 'viewer';
+
     this.SDKClients = {};
 
     this.client = new Client();
+    this.messenger = createMessenger();
 
     this.loadPromise = new Promise((resolve, reject) => {
       this.loadResolve = resolve;
@@ -47,12 +53,15 @@ class Muxy {
   watchAuth(extensionID) {
     Ext.appID = extensionID;
     Ext.testChannelID = this.testChannelID;
+    Ext.testJWTRole = this.testJWTRole;
 
     Ext.onAuthorized((auth) => {
       if (!auth) {
         this.loadReject();
       }
 
+      this.messenger.extensionID = auth.clientId;
+      this.messenger.channelID = auth.channelId;
       this.client.updateAuth(auth.token);
       this.loadResolve();
     });
@@ -65,7 +74,8 @@ class Muxy {
    */
   SDK(extensionID) {
     if (!this.SDKClients[extensionID]) {
-      this.SDKClients[extensionID] = new SDK(extensionID, this.client, this.loadPromise);
+      this.SDKClients[extensionID] = new SDK(extensionID, this.client,
+        this.messenger, this.loadPromise);
     }
 
     if (!this.watchingAuth) {

@@ -21,7 +21,7 @@ const ServerState = {
 
 // Client wraps all state requests (GET/POST) to the extension backend service.
 class Client {
-  static fetchTestAuth(testAppID, channelID) {
+  static fetchTestAuth(testAppID, channelID, role) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       xhrPromise
@@ -30,7 +30,8 @@ class Client {
           url: `${TESTING_URL}/v1/e/authtoken`,
           data: JSON.stringify({
             app_id: testAppID,
-            channel_id: channelID
+            channel_id: channelID,
+            role
           })
         })
         .catch(() => {
@@ -43,6 +44,7 @@ class Client {
 
             const auth = resp.responseText;
             // twitch uses lowercase d
+            auth.clientId = 'ka3y28rrgh2f533mxt9ml37fv6zb8k';
             auth.channelId = channelID;
             auth.userId = 'T12345678';
             resolve(auth);
@@ -167,6 +169,13 @@ class Client {
   rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data));
   getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank');
   deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank');
+
+  pusherBroadcast = (extensionID, event, userid, send) => this.signedRequest(extensionID, 'POST', 'pusher_broadcast', JSON.stringify({
+    target: 'broadcast',
+    event,
+    user_id: userid,
+    data: send
+  }));
 }
 
 export default Client;

@@ -1,9 +1,10 @@
 
 export default class SDK {
-  constructor(extensionID, client, loadPromise) {
+  constructor(extensionID, client, messenger, loadPromise) {
     this.extensionID = extensionID;
     this.client = client;
     this.loadPromise = loadPromise;
+    this.messenger = messenger;
   }
 
   loaded() {
@@ -91,5 +92,39 @@ export default class SDK {
     return this.client.rank(this.extensionID, {
       key: value
     });
+  }
+
+  /**
+   * Send message to all listening clients.
+   */
+  broadcast(event, data) {
+    this.messenger.broadcast(this.extensionID, event, data, this.client);
+  }
+
+  listen(inEvent, inUserID, inCallback) {
+    const realEvent = `${this.extensionID}:${inEvent}`;
+    let l = 'broadcast';
+    let callback = inCallback;
+    if (callback) {
+      l = `whisper-${inUserID}`;
+    } else {
+      callback = inUserID;
+    }
+
+    const cb = (msg) => {
+      try {
+        if (msg.event === realEvent) {
+          callback(msg.data);
+        }
+      } catch (err) {
+        // TODO: Should this fail silently?
+      }
+    };
+
+    return this.messenger.listen(this.extensionID, l, cb);
+  }
+
+  unlisten(h) {
+    return this.messenger.unlisten(this.extensionID, h);
   }
 }

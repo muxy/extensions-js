@@ -63,18 +63,38 @@ class Messenger {
   }
 }
 
+// TwitchMessenger implements the basic 'messenger' interface, which should be implemented
+// for all pubsub implementations. This is used by SDK to provide low-level access
+// to a pubsub implementation.
 class TwitchMessenger {
   constructor() {
     this.channelID = '';
   }
 
-  static broadcast(id, event, send) {
-    const data = send || {};
-    Twitch.ext.send('broadcast', 'application/json', {
-      event, data
+  /**
+   * send will send a message to all clients.
+   * @param id the extension id or app id of the app thats sending the message.
+   * @param event an event name. Event names should be in the form [a-z0-9_]+
+   * @param either 'broadcast' or 'whisper-<opaque-user-id>'
+   * @param body a json object to send
+   * @param client a state-client instance. Used to make external calls.
+   * The twitch messenger does not need the client, so its not shown in the signature
+   * below.
+   */
+  static send(id, event, target, body) {
+    const data = body || {};
+    Twitch.ext.send(target, 'application/json', {
+      event: `${id}:${event}`, data
     });
   }
 
+  /**
+   * listen is the low level listening interface.
+   * @param id the extension id or app id of the app thats sending the message.
+   * @param topic either `broadcast` or `whisper-<opaque-user-id>`.
+   * @param callback a function(body)
+   * @return a handle that can be passed into unlisten to unbind the callback.
+   */
   static listen(id, topic, callback) {
     const cb = (t, datatype, message) => {
       try {
@@ -93,6 +113,11 @@ class TwitchMessenger {
     };
   }
 
+  /**
+   * unlisten will unregister a listening callback.
+   * @param id the extension id or app id of the app thats sending the message.
+   * @param h the handle returned from listen
+   */
   static unlisten(id, h) {
     Twitch.ext.unlisten(h.target, h.cb);
   }
@@ -109,8 +134,8 @@ class PusherMessenger {
     this.channelID = '';
   }
 
-  broadcast(id, event, send, client) {
-    client.pusherBroadcast(id, event, this.channelID, send);
+  send(id, event, target, send, body, client) {
+    client.pusherBroadcast(id, event, target, this.channelID, body);
   }
 
   listen(id, topic, callback) {

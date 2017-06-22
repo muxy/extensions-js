@@ -96,11 +96,33 @@ export default class SDK {
 
   /**
    * Send message to all listening clients.
+   *
+   * @param event An event name, in the form [a-z0-9_]+
+   * @param optionalUserID an optional opaque user id, used to limit the
+   * scope of send to that user only.
+   * @param data a json object to send.
    */
-  broadcast(event, data) {
-    this.messenger.broadcast(this.extensionID, event, data, this.client);
+  send(event, optionalUserID, data) {
+    let target = 'broadcast';
+    let realData = data;
+
+    if (!data) {
+      realData = optionalUserID;
+    } else {
+      target = `whisper-${optionalUserID}`;
+    }
+
+    this.messenger.send(this.extensionID, event, target, realData, this.client);
   }
 
+  /**
+   * listen will register a callback to listen for events on pusbus.
+   * @param inEvent An event name, in the form [a-z0-9_]+
+   * @param inUserID An optional opaque user id, used to limit
+   * the scope of this listen to that user only.
+   * @param inCallback A callback with the signature function(body)
+   * @return A handle that can be passed to unlisten to unbind this callback.
+   */
   listen(inEvent, inUserID, inCallback) {
     const realEvent = `${this.extensionID}:${inEvent}`;
     let l = 'broadcast';
@@ -124,6 +146,10 @@ export default class SDK {
     return this.messenger.listen(this.extensionID, l, cb);
   }
 
+  /**
+   * Unbinds a callback from the pubsub interface
+   * @param h A handle returned from listen
+   */
   unlisten(h) {
     return this.messenger.unlisten(this.extensionID, h);
   }

@@ -2,6 +2,7 @@ import { ENVIRONMENTS, consolePrint, currentEnvironment } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 import SDK from './sdk';
+import User from './user';
 import { createMessenger } from './messenger';
 
 import * as PackageConfig from '../package.json';
@@ -63,6 +64,8 @@ class Muxy {
       this.messenger.extensionID = auth.clientId;
       this.messenger.channelID = auth.channelId;
       this.client.updateAuth(auth.token);
+      this.user = new User(auth);
+
       this.loadResolve();
     });
 

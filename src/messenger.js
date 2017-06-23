@@ -134,7 +134,7 @@ class PusherMessenger {
     this.channelID = '';
   }
 
-  send(id, event, target, send, body, client) {
+  send(id, event, target, body, client) {
     client.pusherBroadcast(id, event, target, this.channelID, body);
   }
 
@@ -166,7 +166,28 @@ class PusherMessenger {
   }
 }
 
+class BroadcastOnlyMessenger {
+  constructor() {
+    this.channelID = '';
+  }
+
+  send(id, event, target, body, client) {
+    client.broadcast(id, event, target, this.channelID, body);
+  }
+
+  static listen() {
+    return 0;
+  }
+
+  static unlisten() {
+  }
+}
+
 export function createMessenger() {
+  if (!window) {
+    return BroadcastOnlyMessenger();
+  }
+
   if (window.Twitch) {
     return new TwitchMessenger();
   }

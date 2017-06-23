@@ -9,7 +9,7 @@
   "repository": "https://bitbucket.org/muxy/muxyextensionssdk",
   "scripts": {
     "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "build": "webpack -p",
+    "build": "webpack",
     "test": "karma start --single-run",
     "doc": "esdoc"
   },

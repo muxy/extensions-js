@@ -167,20 +167,6 @@ class Client {
   rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data))
   getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank')
   deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank')
-
-  broadcast = (extensionID, event, target, userId, data) => this.signedRequest(extensionID, 'POST', 'broadcast', JSON.stringify({
-    target,
-    event,
-    user_id: userId,
-    data
-  }));
-
-  pusherBroadcast = (extensionID, event, target, userId, data) => this.signedRequest(extensionID, 'POST', 'pusher_broadcast', JSON.stringify({
-    target,
-    event,
-    user_id: userId,
-    data
-  }))
 }
 
 export default Client;

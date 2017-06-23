@@ -25,7 +25,8 @@ function rankOK(body) {
   ];
 }
 
-describe('State Client', function () {
+/** @test {StateClient} */
+describe('StateClient', function () {
   beforeEach(function () {
     server = sinon.fakeServer.create();
   });
@@ -34,17 +35,20 @@ describe('State Client', function () {
     server.restore();
   });
 
+  /** @test {StateClient#validateJWT} */
   it('should fail with invalid JWT', function () {
     const client = new StateClient();
     assertPromiseFails(client.getRank());
   });
 
+  /** @test {StateClient#validateJWT} */
   it('should fail with an expired JWT', function () {
     const client = new StateClient();
     client.updateAuth(expiredJWT);
     assertPromiseFails(client.getRank());
   });
 
+  /** @test {StateClient#getRank} */
   it('should make a request', function () {
     server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', rankOK({
       data: []
@@ -63,6 +67,7 @@ describe('State Client', function () {
     return out;
   });
 
+  /** @test {StateClient#getRank} */
   it('should fail on invalid json', function () {
     server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', [
       200,

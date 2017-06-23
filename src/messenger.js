@@ -1,66 +1,9 @@
 /* globals Twitch */
-import Pusher from 'pusher-js';
+import { ENVIRONMENTS, CurrentEnvironment } from './util';
 
-// Messenger is a convenience wrapper for dispatching and listening for events.
-class Messenger {
-  // broadcast sends JSON data to all viewers listening for `event`.
-  static broadcast(event, send) {
-    const data = send || {};
-    if (window.Twitch) {
-      Twitch.ext.send('broadcast', 'application/json', {
-        event, data
-      });
-    } else {
-      // TODO: send data to muxy test pub/sub
-    }
-  }
-
-  // listen sets up a callback for a given `event`. If `inUserID` is specified,
-  // `inCallback` is only called in response to whispers of type `event` to
-  // that opaque user id. Returns a handler object that can be used to remove
-  // the callback later.
-  static listen(inEvent, inUserID, inCallback) {
-    const event = inEvent;
-    const userID = inUserID;
-
-    let l = 'broadcast';
-    let callback = inCallback;
-    if (callback) {
-      l = `whisper-${userID}`;
-    } else {
-      callback = inUserID;
-    }
-
-    const cb = (topic, contentType, message) => {
-      try {
-        const parsed = JSON.parse(message);
-        if (parsed.event === event) {
-          callback(parsed.data);
-        }
-      } catch (err) {
-        // TODO: Should this fail silently?
-      }
-    };
-
-    if (window.Twitch) {
-      Twitch.ext.listen(l, cb);
-    } else {
-      // TODO: listen to muxy test pub/sub
-    }
-    return {
-      target: l,
-      cb
-    };
-  }
-
-  // unlisten removes the provided handler from the event listener system.
-  static unlisten(h) {
-    if (window.Twitch) {
-      Twitch.ext.unlisten(h.target, h.cb);
-    } else {
-      // TODO: unsub from muxy test pub/sub
-    }
-  }
+let Pusher = null;
+if (CurrentEnvironment() !== ENVIRONMENTS.SERVER) {
+  Pusher = require('pusher-js'); // eslint-disable-line global-require
 }
 
 // TwitchMessenger implements the basic 'messenger' interface, which should be implemented
@@ -123,6 +66,8 @@ class TwitchMessenger {
   }
 }
 
+// PusherMessenger adheres to the 'messenger' interface, but uses https://pusher.com
+// as a pubsub notification provider.
 class PusherMessenger {
   constructor(ch, muxy) {
     this.client = new Pusher('18c26c0d1c7fafb78ba2', {
@@ -135,7 +80,12 @@ class PusherMessenger {
   }
 
   send(id, event, target, body, client) {
-    client.pusherBroadcast(id, event, target, this.channelID, body);
+    client.signedRequest(id, 'POST', 'pusher_broadcast', JSON.stringify({
+      target,
+      event,
+      user_id: this.channelID,
+      data: body
+    }));
   }
 
   listen(id, topic, callback) {
@@ -166,33 +116,45 @@ class PusherMessenger {
   }
 }
 
-class BroadcastOnlyMessenger {
-  constructor() {
-    this.channelID = '';
+// ServerMessenger implements a 'messenger' that is broadcast-only. It cannot
+// listen for messages, but is able to send with a backend-signed JWT.
+class ServerMessenger {
+  constructor(ch, muxy) {
+    this.channelID = ch;
+    this.muxy = muxy;
   }
 
   send(id, event, target, body, client) {
-    client.broadcast(id, event, target, this.channelID, body);
+    client.signedRequest(id, 'POST', 'broadcast',
+      JSON.stringify({
+        target,
+        event,
+        user_id: this.channelID,
+        data: body
+      }));
   }
 
-  static listen() {
-    return 0;
+  /* eslint-disable class-methods-use-this,no-console */
+  listen() {
+    console.error('Server-side message receiving is not implemented.');
   }
 
-  static unlisten() {
+  unlisten() {
+    console.error('Server-side message receiving is not implemented.');
   }
+  /* eslint-enable class-methods-use-this,no-console */
 }
 
-export function createMessenger() {
-  if (!window) {
-    return BroadcastOnlyMessenger();
+export default function Messenger() {
+  switch (CurrentEnvironment()) {
+    case ENVIRONMENTS.DEV:
+    case ENVIRONMENTS.STAGING:
+      return new PusherMessenger();
+    case ENVIRONMENTS.PRODUCTION:
+      return new TwitchMessenger();
+    case ENVIRONMENTS.SERVER:
+      return new ServerMessenger();
+    default:
+      console.error('Could not determine execution environment.'); // eslint-disable-line no-console
   }
-
-  if (window.Twitch) {
-    return new TwitchMessenger();
-  }
-
-  return new PusherMessenger();
 }
-
-export default Messenger;

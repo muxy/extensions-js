@@ -7,7 +7,8 @@ import {
 
 chai.should();
 
-describe('error promise', function () {
+/** @test {errorPromise} */
+describe('errorPromise', function () {
   it('rejects immediately', function () {
     return errorPromise('error string')
       .then(() => {
@@ -25,7 +26,9 @@ describe('error promise', function () {
   });
 });
 
-describe('current environment', function () {
+/** @test {currentEnvironment} */
+describe('currentEnvironment', function () {
+  /** @test {currentEnvironment#DEV} */
   it('correctly detects a dev environment', function () {
     const devWindow = {
       location: {
@@ -35,6 +38,7 @@ describe('current environment', function () {
     currentEnvironment(devWindow).should.equal(ENVIRONMENTS.DEV);
   });
 
+  /** @test {currentEnvironment#STAGING} */
   it('correctly detects a staging environment', function () {
     const stagingWindow = {
       location: {
@@ -47,6 +51,7 @@ describe('current environment', function () {
     currentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
   });
 
+  /** @test {currentEnvironment#PRODUCTION} */
   it('correctly detects a production environment', function () {
     const productionWindow = {
       location: {

@@ -24,20 +24,6 @@ module.exports = {
     ]
   },
 
-  externals: {
-    /* lodash: {
-      commonjs: 'lodash',
-      commonjs2: 'lodash',
-      amd: 'lodash',
-      root: '_'
-    },
-    'xhr-promise': {
-      commonjs: 'xhr-promise',
-      commonjs2: 'xhr-promise',
-      amd: 'xhr-promise'
-    }*/
-  },
-
   output: {
     library: 'Muxy',
     libraryTarget: 'umd',

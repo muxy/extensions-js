@@ -1,10 +1,11 @@
 
 export default class SDK {
-  constructor(extensionID, client, messenger, loadPromise) {
+  constructor(extensionID, client, user, messenger, loadPromise) {
     this.extensionID = extensionID;
     this.client = client;
     this.loadPromise = loadPromise;
     this.messenger = messenger;
+    this.user = user;
   }
 
   loaded() {

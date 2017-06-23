@@ -73,6 +73,11 @@ class Muxy {
       this.client.updateAuth(auth.token);
       this.user = new User(auth);
 
+      const keys = Object.keys(this.SDKClients);
+      for (let i = 0; i < keys.length; i += 1) {
+        this.SDKClients[keys[i]].user = this.user;
+      }
+
       this.loadResolve();
     });
 
@@ -84,7 +89,7 @@ class Muxy {
    */
   SDK(extensionID) {
     if (!this.SDKClients[extensionID]) {
-      this.SDKClients[extensionID] = new SDK(extensionID, this.client,
+      this.SDKClients[extensionID] = new SDK(extensionID, this.client, this.user,
         this.messenger, this.loadPromise);
     }
 

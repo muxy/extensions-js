@@ -1,7 +1,14 @@
 {
+  "title": "Muxy Extension SDK",
   "source": "./src",
   "includes": ["index.js"],
   "destination": "./doc",
-  "plugins": [{"name": "esdoc-node"}],
-  "includeSource": false
+  "plugins": [
+    { "name": "esdoc-node" }
+  ],
+  "includeSource": false,
+  "test": {
+    "type": "mocha",
+    "source": "./spec"
+  }
 }

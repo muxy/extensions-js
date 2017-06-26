@@ -2,29 +2,39 @@
 export const ENVIRONMENTS = {
   DEV: 'dev',
   STAGING: 'staging',
-  PRODUCTION: 'production'
+  PRODUCTION: 'production',
+  SERVER: 'server'
 };
 
-// errorPromise wraps a string error response in an (immediately rejected) promise.
-export function errorPromise(err) {
-  return Promise.reject(err);
-}
-
 /**
- * currentEnvironment uses the hostname and available info to determine in what
- * environment the SDK is running.
- * @param window the actual or mocked window object
- * @returns One of {ENVIRONMENTS}
+ * Node.js vs client-side detection. Borrowed from underscore.js
  */
-export function currentEnvironment(window) {
-  if (window.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-    if (window.document.referrer.indexOf('twitch.tv') !== -1) {
+function environmentDetector() {
+  const root = this; // `window` in the browser, or `global` on the server.
+  if (typeof module !== 'undefined' && module.exports) {
+    return ENVIRONMENTS.SERVER;
+  }
+
+  if (root.location.origin.indexOf('.ext-twitch.tv') !== -1) {
+    if (root.document.referrer.indexOf('twitch.tv') !== -1) {
       return ENVIRONMENTS.PRODUCTION;
     }
     return ENVIRONMENTS.STAGING;
   }
 
   return ENVIRONMENTS.DEV;
+}
+
+/**
+ * CurrentEnvironment uses the hostname and available info to determine in what
+ * environment the SDK is running. Possible values are available in {ENVIRONMENTS}.
+ * @type String
+ */
+export const CurrentEnvironment = environmentDetector;
+
+// errorPromise wraps a string error response in an (immediately rejected) promise.
+export function errorPromise(err) {
+  return Promise.reject(err);
 }
 
 /**
@@ -73,5 +83,9 @@ export function consolePrint(lines, options = {}) {
     style += options.style;
   }
 
-  console.log.call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+  if (CurrentEnvironment === ENVIRONMENTS.SERVER) {
+    console.log.call(this, lineArr.join('\n')); // eslint-disable-line no-console
+  } else {
+    console.log.call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+  }
 }

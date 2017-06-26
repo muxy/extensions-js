@@ -158,29 +158,15 @@ class Client {
   setChannelState = (extensionID, state) => this.postState(extensionID,
                                                   ServerState.CHANNEL, JSON.stringify(state))
 
-  getAccumulation = (extensionID, id, start) => this.signedRequest(extensionID, 'GET', `accumulate?id=${id}&start=${start}`);
-  accumulate = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `accumulate?id=${id}`, JSON.stringify(data));
+  getAccumulation = (extensionID, id, start) => this.signedRequest(extensionID, 'GET', `accumulate?id=${id}&start=${start}`)
+  accumulate = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `accumulate?id=${id}`, JSON.stringify(data))
 
-  vote = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `voting?id=${id}`, JSON.stringify(data));
-  getVotes = (extensionID, id) => this.signedRequest(extensionID, 'GET', `voting?id=${id}`);
+  vote = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `voting?id=${id}`, JSON.stringify(data))
+  getVotes = (extensionID, id) => this.signedRequest(extensionID, 'GET', `voting?id=${id}`)
 
-  rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data));
-  getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank');
-  deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank');
-
-  broadcast = (extensionID, event, target, userId, data) => this.signedRequest(extensionID, 'POST', 'broadcast', JSON.stringify({
-    target,
-    event,
-    user_id: userId,
-    data
-  }));
-
-  pusherBroadcast = (extensionID, event, target, userId, data) => this.signedRequest(extensionID, 'POST', 'pusher_broadcast', JSON.stringify({
-    target,
-    event,
-    user_id: userId,
-    data
-  }));
+  rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data))
+  getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank')
+  deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank')
 }
 
 export default Client;

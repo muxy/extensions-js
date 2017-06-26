@@ -1,12 +1,16 @@
-import { ENVIRONMENTS, consolePrint, currentEnvironment } from './util';
+import { ENVIRONMENTS, consolePrint, CurrentEnvironment } from './util';
 import Ext from './twitch-ext';
 import Client from './state-client';
 import SDK from './sdk';
 import User from './user';
-import { createMessenger } from './messenger';
+import Messenger from './messenger';
 
 import * as PackageConfig from '../package.json';
 
+/**
+ * The Muxy class is used to create entry points into the extensions SDK.
+ * It is
+ */
 class Muxy {
   constructor() {
     // Channel to use when in testing env (currently Lirik)
@@ -20,7 +24,7 @@ class Muxy {
     this.SDKClients = {};
 
     this.client = new Client();
-    this.messenger = createMessenger();
+    this.messenger = new Messenger();
 
     this.loadPromise = new Promise((resolve, reject) => {
       this.loadResolve = resolve;
@@ -34,7 +38,7 @@ class Muxy {
       ''
     ];
 
-    switch (currentEnvironment(window)) {
+    switch (CurrentEnvironment()) {
       case ENVIRONMENTS.DEV:
         SDKInfoText.push('Running in development mode');
         break;
@@ -43,6 +47,9 @@ class Muxy {
         break;
       case ENVIRONMENTS.PRODUCTION:
         SDKInfoText.push('Running on production');
+        break;
+      case ENVIRONMENTS.SERVER:
+        SDKInfoText.push('Running on a NodeJS server');
         break;
       default:
         SDKInfoText.push('Could not determine execution environment.');

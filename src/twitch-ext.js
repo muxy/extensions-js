@@ -14,7 +14,7 @@ class Ext {
   }
 
   static onAuthorized(cb) {
-    switch (CurrentEnvironment) {
+    switch (CurrentEnvironment()) {
       case ENVIRONMENTS.DEV:
       case ENVIRONMENTS.STAGING:
         Ext.fetchTestAuth(cb);
@@ -28,7 +28,7 @@ class Ext {
   }
 
   static onContext(cb) {
-    switch (CurrentEnvironment) {
+    switch (CurrentEnvironment()) {
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.onContext(cb);
         break;

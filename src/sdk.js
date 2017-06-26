@@ -95,6 +95,10 @@ export default class SDK {
     });
   }
 
+  getAllState() {
+    return this.client.getState(this.extensionID);
+  }
+
   /**
    * Send message to all listening clients.
    *

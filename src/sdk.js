@@ -95,6 +95,14 @@ export default class SDK {
     });
   }
 
+  /**
+   * Clear all data for a rankId
+   * @param {string} rankId
+   */
+  clearRanking(rankId) {
+    return this.client.deleteRank(this.extensionID, rankId);
+  }
+
   getAllState() {
     return this.client.getState(this.extensionID);
   }

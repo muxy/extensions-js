@@ -1,5 +1,7 @@
 const path = require('path');
 
+const port = process.env.PORT || 9000;
+
 module.exports = {
   devtool: 'inline-source-map',
   entry: './src/index.js',
@@ -30,5 +32,7 @@ module.exports = {
     umdNamedDefine: true,
     path: path.resolve(__dirname, 'dist'),
     filename: 'muxy-extensions-sdk.js'
-  }
+  },
+
+  devServer: { port }
 };

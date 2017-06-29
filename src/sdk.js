@@ -107,6 +107,14 @@ export default class SDK {
     return this.client.getState(this.extensionID);
   }
 
+  getJsonStore(id) {
+    return this.client.getJsonStore(this.extensionID, id);
+  }
+
+  getTwitchUsers(usernames) {
+    return this.client.getTwitchUsers(this.extensionID, usernames);
+  }
+
   /**
    * Send message to all listening clients.
    *

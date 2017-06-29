@@ -62,6 +62,7 @@ function Muxy() {
     Ext.onAuthorized((auth) => {
       if (!auth) {
         muxy.loadReject();
+        return;
       }
 
       muxy.messenger.extensionID = auth.clientId;

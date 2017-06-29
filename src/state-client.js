@@ -93,7 +93,7 @@ class Client {
   }
 
   // signedTwitchRequests wraps an AJAX request to Twitch's kraken API.
-  signedTwitchRequest(method, endpoint, data) {
+  static signedTwitchRequest(extid, method, endpoint, data) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       return xhrPromise
@@ -102,7 +102,7 @@ class Client {
           url: `https://api.twitch.tv/kraken/${endpoint}`,
           headers: {
             Accept: 'application/vnd.twitchtv.v5+json',
-            'Client-ID': this.extensionID
+            'Client-ID': extid
           },
           data
         })
@@ -167,6 +167,10 @@ class Client {
   rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data))
   getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank')
   deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank')
+
+  getJsonStore = (extensionID, id) => this.signedRequest(extensionID, 'GET', `json_store?id=${id}`)
+
+  getTwitchUsers = (extid, users) => Client.signedTwitchRequest(extid, 'GET', `users?login=${users.join(',')}`)
 }
 
 export default Client;

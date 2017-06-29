@@ -16,13 +16,22 @@ class Ext {
   static onAuthorized(cb) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.DEV:
-      case ENVIRONMENTS.STAGING:
         Ext.fetchTestAuth(cb);
         setInterval(Ext.fetchTestAuth, 1000 * 60 * 25, cb);
         break;
-      case ENVIRONMENTS.PRODUCTION:
-        window.Twitch.ext.onAuthorized(cb);
+
+      case ENVIRONMENTS.STAGING:
+      case ENVIRONMENTS.PRODUCTION: {
+        const timer = setTimeout(() => {
+          cb();
+        }, 1000 * 15);
+
+        window.Twitch.ext.onAuthorized((auth) => {
+          clearTimeout(timer);
+          cb(auth);
+        });
         break;
+      }
       default:
     }
   }

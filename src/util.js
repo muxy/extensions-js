@@ -22,6 +22,10 @@ function environmentDetector() {
     return ENVIRONMENTS.STAGING;
   }
 
+  if (typeof window.Twitch.ext !== 'undefined') {
+    return ENVIRONMENTS.STAGING;
+  }
+
   return ENVIRONMENTS.DEV;
 }
 
@@ -88,4 +92,34 @@ export function consolePrint(lines, options = {}) {
   } else {
     console.log.call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
   }
+}
+
+/**
+ * eventPatternMatch matches an input event name with a pattern.
+ * An event name is a : delimited list of terms, while a pattern
+ * is a : delimited list of terms, with an optional * instead of a term.
+ * '*' will match any term.
+ *
+ * @param input an input event name, : delimited.
+ * Allowed characters are alpha-numeric and _
+ * @param pattern a pattern to match agains, : delimited.
+ * Allowed characters are alpha-numeric and _ and *
+ *
+ * @return true if the pattern matches the input, false otherwise.
+ */
+export function eventPatternMatch(input, pattern) {
+  const inputParts = input.split(':');
+  const patternParts = pattern.split(':');
+
+  if (inputParts.length !== patternParts.length) {
+    return false;
+  }
+
+  for (let i = 0; i < inputParts.length; i += 1) {
+    if (inputParts[i] !== patternParts[i] && patternParts[i] !== '*') {
+      return false;
+    }
+  }
+
+  return true;
 }

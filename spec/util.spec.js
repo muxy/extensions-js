@@ -2,7 +2,7 @@ import chai from 'chai';
 var assert = chai.assert;
 
 import {
-  ENVIRONMENTS, errorPromise, currentEnvironment
+  ENVIRONMENTS, errorPromise, currentEnvironment, eventPatternMatch
 } from '../src/util';
 
 chai.should();
@@ -64,3 +64,26 @@ describe('currentEnvironment', function () {
     currentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);
   });
 });
+
+/** @test {eventPatternMatch} */
+describe('eventPatternMatch', function() {
+  it('correctly matches valid patterns', function () {
+    eventPatternMatch('a:b:c', 'a:b:c').should.be.true;
+    eventPatternMatch('a:b:c', 'a:b:*').should.be.true;
+    eventPatternMatch('a:b:c', 'a:*:c').should.be.true;
+    eventPatternMatch('a:b:c', '*:b:c').should.be.true;
+    eventPatternMatch('a:b:c', '*:*:c').should.be.true;
+    eventPatternMatch('a:b:c', '*:b:*').should.be.true;
+    eventPatternMatch('a:b:c', '*:*:*').should.be.true;
+  });
+
+  it('does not match invalid patterns', function() {
+    eventPatternMatch('a:b:c', 'a:b').should.be.false;
+    eventPatternMatch('a:b:c', 'a:b:**').should.be.false;
+    eventPatternMatch('a:b:c', 'a:b:d').should.be.false;
+    eventPatternMatch('a:b:c', '*:*').should.be.false;
+    eventPatternMatch('a:b:c', 'a:b:c*').should.be.false;
+    eventPatternMatch('a:b:c', 'a:b:c:d').should.be.false;
+    eventPatternMatch('a:b:c', 'a:b:c:*').should.be.false;
+  });
+})

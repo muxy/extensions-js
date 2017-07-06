@@ -1,3 +1,4 @@
+import { eventPatternMatch } from './util';
 
 export default class SDK {
   constructor(extensionID, client, user, messenger, loadPromise) {
@@ -103,16 +104,20 @@ export default class SDK {
     return this.client.deleteRank(this.extensionID, rankId);
   }
 
+  setViewerState(state) {
+    return this.client.setViewerState(this.extensionID, state);
+  }
+
+  setChannelState(state) {
+    return this.client.setChannelState(this.extensionID, state);
+  }
+
   getAllState() {
     return this.client.getState(this.extensionID);
   }
 
-  getJsonStore(id) {
-    return this.client.getJsonStore(this.extensionID, id);
-  }
-
-  getTwitchUsers(usernames) {
-    return this.client.getTwitchUsers(this.extensionID, usernames);
+  getJSONStore(id) {
+    return this.client.getJSONStore(this.extensionID, id);
   }
 
   /**
@@ -138,10 +143,20 @@ export default class SDK {
 
   /**
    * listen will register a callback to listen for events on pusbus.
+   * In general, pubsub events are named in the form `event[:identifier]`,
+   * where the identifier is the user controllable identifier in API calls
+   * like vote, data_fetch.
+   *
+   * You can listen to wildcards by using * instead of an event or identifier name.
+   *
+   * For example, after a POST vote?id=nextgame, all clients will receive a
+   * vote_update:nextgame event which can be listened to by calling listen
+   * with event name "vote_update:nextgame" or "vote_update:*" or "*:nextgame"
+   *
    * @param inEvent An event name, in the form [a-z0-9_]+
    * @param inUserID An optional opaque user id, used to limit
    * the scope of this listen to that user only.
-   * @param inCallback A callback with the signature function(body)
+   * @param inCallback A callback with the signature function(body, eventname)
    * @return A handle that can be passed to unlisten to unbind this callback.
    */
   listen(inEvent, inUserID, inCallback) {
@@ -156,8 +171,11 @@ export default class SDK {
 
     const cb = (msg) => {
       try {
-        if (msg.event === realEvent) {
-          callback(msg.data);
+        if (eventPatternMatch(msg.event, realEvent)) {
+          // Consumers of the SDK only ever interact with events
+          // without the app-id or extension-id prefix.
+          const truncatedEvent = msg.event.split(':').slice(1).join(':');
+          callback(msg.data, truncatedEvent);
         }
       } catch (err) {
         // TODO: Should this fail silently?

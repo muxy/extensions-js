@@ -1,9 +1,10 @@
 import base64 from 'base-64';
 import XMLHttpRequestPromise from 'xhr-promise';
 
-import { errorPromise } from './util';
+import { ENVIRONMENTS, errorPromise } from './util';
 
 const API_URL = 'https://api.muxy.io';
+const STAGING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/staging';
 const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
 
 let SERVER_URL = API_URL;
@@ -51,6 +52,14 @@ class Client {
           }
         });
     });
+  }
+
+  static setEnvironment(env) {
+    if (env === ENVIRONMENTS.DEV) {
+      SERVER_URL = TESTING_URL;
+    } else if (env === ENVIRONMENTS.STAGING) {
+      SERVER_URL = STAGING_URL;
+    }
   }
 
   updateAuth(token) {

@@ -56,6 +56,7 @@ function Muxy() {
       SDKInfoText.push('Could not determine execution environment.');
   }
 
+  Client.setEnvironment(CurrentEnvironment());
   consolePrint(SDKInfoText, { boxed: true });
 
   muxy.watchAuth = (extensionID) => {
@@ -89,7 +90,6 @@ function Muxy() {
   muxy.setup = (cfg) => {
     muxy.twitchClientID = cfg.extensionID;
     muxy.cachedTwitchClient = new InternalTwitchClient(muxy.twitchClientID);
-    muxy.watchAuth(cfg.extensionID);
   };
 
   /**
@@ -99,6 +99,11 @@ function Muxy() {
     const identifier = id || muxy.twitchClientID;
     if (!identifier) {
       return null;
+    }
+
+    if (!muxy.watchingAuth) {
+      muxy.watchingAuth = true;
+      muxy.watchAuth(identifier);
     }
 
     if (!muxy.SDKClients[identifier]) {

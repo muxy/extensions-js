@@ -59,7 +59,7 @@ function Muxy() {
   consolePrint(SDKInfoText, { boxed: true });
 
   muxy.watchAuth = (extensionID) => {
-    Ext.appID = extensionID;
+    Ext.extensionID = extensionID;
     Ext.testChannelID = muxy.testChannelID;
     Ext.testJWTRole = muxy.testJWTRole;
 
@@ -95,18 +95,18 @@ function Muxy() {
   /**
    * Returns a SDK to use
    */
-  muxy.SDK = function MuxySDK(extensionID) {
-    let nonemptyID = extensionID;
-    if (extensionID === undefined) {
-      nonemptyID = muxy.twitchClientID;
+  muxy.SDK = function MuxySDK(id) {
+    const identifier = id || muxy.twitchClientID;
+    if (!identifier) {
+      return null;
     }
 
-    if (!muxy.SDKClients[nonemptyID]) {
-      muxy.SDKClients[nonemptyID] = new SDK(nonemptyID, muxy.client, muxy.user,
-        muxy.messenger, muxy.loadPromise);
+    if (!muxy.SDKClients[identifier]) {
+      muxy.SDKClients[identifier] = new SDK(identifier,
+        muxy.client, muxy.user, muxy.messenger, muxy.loadPromise);
     }
 
-    return muxy.SDKClients[nonemptyID];
+    return muxy.SDKClients[identifier];
   };
 
   /**

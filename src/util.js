@@ -10,20 +10,24 @@ export const ENVIRONMENTS = {
  * Node.js vs client-side detection. Borrowed from underscore.js
  */
 function environmentDetector() {
-  if (typeof module !== 'undefined' && module.exports && typeof window === 'undefined') {
-    return ENVIRONMENTS.SERVER;
-  }
-
-  const root = window;
-  if (root.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-    if (root.document.referrer.indexOf('twitch.tv') !== -1) {
-      return ENVIRONMENTS.PRODUCTION;
+  try {
+    if (typeof module !== 'undefined' && module.exports && typeof window === 'undefined') {
+      return ENVIRONMENTS.SERVER;
     }
-    return ENVIRONMENTS.STAGING;
-  }
 
-  if (typeof window.Twitch.ext !== 'undefined') {
-    return ENVIRONMENTS.STAGING;
+    const root = window;
+    if (root.location.origin.indexOf('.ext-twitch.tv') !== -1) {
+      if (root.document.referrer.indexOf('twitch.tv') !== -1) {
+        return ENVIRONMENTS.PRODUCTION;
+      }
+      return ENVIRONMENTS.STAGING;
+    }
+
+    if (typeof window.Twitch !== 'undefined') {
+      return ENVIRONMENTS.STAGING;
+    }
+  } catch (err) {
+    consolePrint(err, { type: 'error' });
   }
 
   return ENVIRONMENTS.DEV;
@@ -78,6 +82,7 @@ function asciiBox(lines) {
 export function consolePrint(lines, options = {}) {
   let style = 'font-family: monospace;';
   let lineArr = Array.isArray(lines) ? lines : [lines];
+  const type = options.type || 'log';
 
   if (options.boxed) {
     lineArr = asciiBox(lineArr);
@@ -88,9 +93,9 @@ export function consolePrint(lines, options = {}) {
   }
 
   if (CurrentEnvironment() === ENVIRONMENTS.SERVER) {
-    console.log.call(this, lineArr.join('\n')); // eslint-disable-line no-console
+    console[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
   } else {
-    console.log.call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+    console[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
   }
 }
 

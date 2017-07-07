@@ -24,12 +24,14 @@ class TwitchMessenger {
    * The twitch messenger does not need the client, so its not shown in the signature
    * below.
    */
-  static send(id, event, target, body) {
+  /* eslint-disable class-methods-use-this */
+  send(id, event, target, body) {
     const data = body || {};
     Twitch.ext.send(target, 'application/json', {
       event: `${id}:${event}`, data
     });
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * listen is the low level listening interface.
@@ -38,7 +40,8 @@ class TwitchMessenger {
    * @param callback a function(body)
    * @return a handle that can be passed into unlisten to unbind the callback.
    */
-  static listen(id, topic, callback) {
+  /* eslint-disable class-methods-use-this */
+  listen(id, topic, callback) {
     const cb = (t, datatype, message) => {
       try {
         const parsed = JSON.parse(message);
@@ -55,15 +58,18 @@ class TwitchMessenger {
       cb
     };
   }
+  /* eslint-enable class-methods-use-this */
 
   /**
    * unlisten will unregister a listening callback.
    * @param id the extension id or app id of the app thats sending the message.
    * @param h the handle returned from listen
    */
-  static unlisten(id, h) {
+  /* eslint-disable class-methods-use-this */
+  unlisten(id, h) {
     Twitch.ext.unlisten(h.target, h.cb);
   }
+  /* eslint-enable class-methods-use-this */
 }
 
 // PusherMessenger adheres to the 'messenger' interface, but uses https://pusher.com
@@ -148,8 +154,8 @@ class ServerMessenger {
 export default function Messenger() {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.DEV:
-    case ENVIRONMENTS.STAGING:
       return new PusherMessenger();
+    case ENVIRONMENTS.STAGING:
     case ENVIRONMENTS.PRODUCTION:
       return new TwitchMessenger();
     case ENVIRONMENTS.SERVER:

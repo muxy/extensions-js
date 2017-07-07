@@ -92,31 +92,6 @@ class Client {
     });
   }
 
-  // signedTwitchRequests wraps an AJAX request to Twitch's kraken API.
-  signedTwitchRequest(method, endpoint, data) {
-    return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
-      return xhrPromise
-        .send({
-          method,
-          url: `https://api.twitch.tv/kraken/${endpoint}`,
-          headers: {
-            Accept: 'application/vnd.twitchtv.v5+json',
-            'Client-ID': this.extensionID
-          },
-          data
-        })
-        .catch(reject)
-        .then((resp) => {
-          if (resp.status < 400) {
-            resolve(resp.responseText);
-          }
-
-          reject(resp.responseText);
-        });
-    });
-  }
-
   // validateJWT ensures that the current JWT is valid and not expired.
   validateJWT() {
     try {
@@ -143,30 +118,32 @@ class Client {
 
   // getState requests a subset of state stored on the server and sets the
   // local cached version of the state to the response.
-  getState = (extensionID, substate) => this.signedRequest(extensionID, 'GET', substate || ServerState.ALL)
+  getState = (identifier, substate) => this.signedRequest(identifier, 'GET', substate || ServerState.ALL)
 
   // postState sends data to the corrent EBS substate endpoint for persistence.
-  postState = (extensionID, substate, data) => this.signedRequest(extensionID, 'POST', substate || ServerState.ALL, data)
+  postState = (identifier, substate, data) => this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data)
 
-  getUserInfo = extensionID => this.getState(extensionID, ServerState.USER)
-  getViewerState = extensionID => this.getState(extensionID, ServerState.VIEWER)
-  getChannelState = extensionID => this.getState(extensionID, ServerState.CHANNEL)
-  getExtensionState = extensionID => this.getState(extensionID, ServerState.EXTENSION)
+  getUserInfo = identifier => this.getState(identifier, ServerState.USER)
+  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER)
+  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL)
+  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION)
 
-  setViewerState = (extensionID, state) => this.postState(extensionID,
+  setViewerState = (identifier, state) => this.postState(identifier,
                                                   ServerState.VIEWER, JSON.stringify(state))
-  setChannelState = (extensionID, state) => this.postState(extensionID,
+  setChannelState = (identifier, state) => this.postState(identifier,
                                                   ServerState.CHANNEL, JSON.stringify(state))
 
-  getAccumulation = (extensionID, id, start) => this.signedRequest(extensionID, 'GET', `accumulate?id=${id}&start=${start}`)
-  accumulate = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `accumulate?id=${id}`, JSON.stringify(data))
+  getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id}&start=${start}`)
+  accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id}`, JSON.stringify(data))
 
-  vote = (extensionID, id, data) => this.signedRequest(extensionID, 'POST', `voting?id=${id}`, JSON.stringify(data))
-  getVotes = (extensionID, id) => this.signedRequest(extensionID, 'GET', `voting?id=${id}`)
+  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `voting?id=${id}`, JSON.stringify(data))
+  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `voting?id=${id}`)
 
-  rank = (extensionID, data) => this.signedRequest(extensionID, 'POST', 'rank', JSON.stringify(data))
-  getRank = extensionID => this.signedRequest(extensionID, 'GET', 'rank')
-  deleteRank = extensionID => this.signedRequest(extensionID, 'DELETE', 'rank')
+  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data))
+  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank')
+  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank')
+
+  getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id}`)
 }
 
 export default Client;

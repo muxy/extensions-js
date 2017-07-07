@@ -1,5 +1,6 @@
 import { ENVIRONMENTS, consolePrint, CurrentEnvironment } from './util';
 import Ext from './twitch-ext';
+import InternalTwitchClient from './twitch-client';
 import Client from './state-client';
 import SDK from './sdk';
 import User from './user';
@@ -22,6 +23,9 @@ function Muxy() {
 
   muxy.client = new Client();
   muxy.messenger = new Messenger();
+
+  muxy.twitchClientID = '';
+  muxy.cachedTwitchClient = null;
 
   muxy.loadPromise = new Promise((resolve, reject) => {
     muxy.loadResolve = resolve;
@@ -56,14 +60,16 @@ function Muxy() {
 
   muxy.watchAuth = (extensionID) => {
     Ext.appID = extensionID;
-    Ext.testChannelID = this.testChannelID;
-    Ext.testJWTRole = this.testJWTRole;
+    Ext.testChannelID = muxy.testChannelID;
+    Ext.testJWTRole = muxy.testJWTRole;
 
     Ext.onAuthorized((auth) => {
       if (!auth) {
         muxy.loadReject();
+        return;
       }
 
+      muxy.twitchClientID = auth.clientId;
       muxy.messenger.extensionID = auth.clientId;
       muxy.messenger.channelID = auth.channelId;
       muxy.client.updateAuth(auth.token);
@@ -80,21 +86,35 @@ function Muxy() {
     // Ext.onContext(this.onContext);
   };
 
+  muxy.setup = (cfg) => {
+    muxy.twitchClientID = cfg.extensionID;
+    muxy.cachedTwitchClient = new InternalTwitchClient(muxy.twitchClientID);
+    muxy.watchAuth(cfg.extensionID);
+  };
+
   /**
    * Returns a SDK to use
    */
   muxy.SDK = function MuxySDK(extensionID) {
-    if (!muxy.SDKClients[extensionID]) {
-      muxy.SDKClients[extensionID] = new SDK(extensionID, muxy.client, muxy.user,
+    let nonemptyID = extensionID;
+    if (extensionID === undefined) {
+      nonemptyID = muxy.twitchClientID;
+    }
+
+    if (!muxy.SDKClients[nonemptyID]) {
+      muxy.SDKClients[nonemptyID] = new SDK(nonemptyID, muxy.client, muxy.user,
         muxy.messenger, muxy.loadPromise);
     }
 
-    if (!muxy.watchingAuth) {
-      muxy.watchingAuth = true;
-      muxy.watchAuth(extensionID);
-    }
+    return muxy.SDKClients[nonemptyID];
+  };
 
-    return muxy.SDKClients[extensionID];
+  /**
+   * Returns a twitch client to use. Can only be used
+   * after the loaded promise resolves.
+   */
+  muxy.TwitchClient = function TwitchClient() {
+    return muxy.cachedTwitchClient;
   };
 
   return muxy;

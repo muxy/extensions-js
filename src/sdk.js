@@ -1,12 +1,13 @@
 import { eventPatternMatch } from './util';
 
 export default class SDK {
-  constructor(extensionID, client, user, messenger, loadPromise) {
-    this.extensionID = extensionID;
+  constructor(identifier, client, user, messenger, analytics, loadPromise) {
+    this.identifier = identifier;
     this.client = client;
     this.loadPromise = loadPromise;
     this.messenger = messenger;
     this.user = user;
+    this.analytics = analytics;
   }
 
   loaded() {
@@ -19,7 +20,7 @@ export default class SDK {
    * @param start
    */
   getAccumulation(accumulationID, start) {
-    return this.client.getAccumulation(this.extensionID, accumulationID, start);
+    return this.client.getAccumulation(this.identifier, accumulationID, start);
   }
 
   /**
@@ -28,7 +29,7 @@ export default class SDK {
    * @param data
    */
   accumulate(accumulationID, data) {
-    return this.client.accumulate(this.extensionID, accumulationID, data);
+    return this.client.accumulate(this.identifier, accumulationID, data);
   }
 
   /**
@@ -47,7 +48,7 @@ export default class SDK {
    * @returns {Promise}
    */
   getVoteData(voteID) {
-    return this.client.getVotes(this.extensionID, voteID);
+    return this.client.getVotes(this.identifier, voteID);
   }
 
   /**
@@ -56,9 +57,7 @@ export default class SDK {
    * @param {number} value the integer value to vote
    */
   vote(voteID, value) {
-    return this.client.vote(this.extensionID, voteID, {
-      value
-    });
+    return this.client.vote(this.identifier, voteID, { value });
   }
 
   /**
@@ -75,13 +74,12 @@ export default class SDK {
    */
   getRankingData(rankID) {
     return new Promise((accept, reject) => {
-      this.client.getRank(this.extensionID, rankID)
+      this.client
+        .getRank(this.identifier, rankID)
         .then((data) => {
           accept(data.data);
         })
-        .catch((err) => {
-          reject(err);
-        });
+        .catch(reject);
     });
   }
 
@@ -91,9 +89,7 @@ export default class SDK {
    * @param {string} value
    */
   rank(rankID, value) {
-    return this.client.rank(this.extensionID, {
-      key: value
-    });
+    return this.client.rank(this.identifier, { key: value });
   }
 
   /**
@@ -101,23 +97,23 @@ export default class SDK {
    * @param {string} rankId
    */
   clearRanking(rankId) {
-    return this.client.deleteRank(this.extensionID, rankId);
+    return this.client.deleteRank(this.identifier, rankId);
   }
 
   setViewerState(state) {
-    return this.client.setViewerState(this.extensionID, state);
+    return this.client.setViewerState(this.identifier, state);
   }
 
   setChannelState(state) {
-    return this.client.setChannelState(this.extensionID, state);
+    return this.client.setChannelState(this.identifier, state);
   }
 
   getAllState() {
-    return this.client.getState(this.extensionID);
+    return this.client.getState(this.identifier);
   }
 
   getJSONStore(id) {
-    return this.client.getJSONStore(this.extensionID, id);
+    return this.client.getJSONStore(this.identifier, id);
   }
 
   /**
@@ -138,7 +134,7 @@ export default class SDK {
       target = `whisper-${optionalUserID}`;
     }
 
-    this.messenger.send(this.extensionID, event, target, realData, this.client);
+    this.messenger.send(this.identifier, event, target, realData, this.client);
   }
 
   /**
@@ -160,7 +156,7 @@ export default class SDK {
    * @return A handle that can be passed to unlisten to unbind this callback.
    */
   listen(inEvent, inUserID, inCallback) {
-    const realEvent = `${this.extensionID}:${inEvent}`;
+    const realEvent = `${this.identifier}:${inEvent}`;
     let l = 'broadcast';
     let callback = inCallback;
     if (callback) {
@@ -182,7 +178,7 @@ export default class SDK {
       }
     };
 
-    return this.messenger.listen(this.extensionID, l, cb);
+    return this.messenger.listen(this.identifier, l, cb);
   }
 
   /**
@@ -190,6 +186,17 @@ export default class SDK {
    * @param h A handle returned from listen
    */
   unlisten(h) {
-    return this.messenger.unlisten(this.extensionID, h);
+    return this.messenger.unlisten(this.identifier, h);
+  }
+
+  /**
+   * Sends an arbitrary event to the analytics backend.
+   *
+   * @param {string} name - A unique identifier for this event.
+   * @param {*} value - (optional) A value to associate with this event (defaults to 1).
+   * @param {string} label - (optional) A human-readable label for this event.
+   */
+  sendAnalyticsEvent(name, value = 1, label = '') {
+    this.analytics.sendEvent(this.identifier, name, value, label);
   }
 }

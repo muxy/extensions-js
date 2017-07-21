@@ -37,7 +37,7 @@ class Client {
         })
         .catch(reject)
         .then((resp) => {
-          if (resp.status < 400) {
+          if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
             SERVER_URL = TESTING_URL;
 

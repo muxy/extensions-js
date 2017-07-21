@@ -1,4 +1,6 @@
+const fs = require('fs');
 const path = require('path');
+const formatter = require('eslint-friendly-formatter');
 
 const port = process.env.PORT || 9000;
 
@@ -12,9 +14,7 @@ module.exports = {
         loader: 'eslint-loader',
         enforce: 'pre',
         exclude: /node_modules/,
-        options: {
-          formatter: require('eslint-friendly-formatter')
-        }
+        options: { formatter }
       },
       {
         test: /\.js$/,
@@ -34,5 +34,11 @@ module.exports = {
     filename: 'muxy-extensions-sdk.js'
   },
 
-  devServer: { port }
+  devServer: {
+    port,
+    https: {
+      key: fs.readFileSync('./certs/testing.key'),
+      cert: fs.readFileSync('./certs/testing.crt')
+    }
+  }
 };

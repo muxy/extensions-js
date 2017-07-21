@@ -1,8 +1,11 @@
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
 import Client from './state-client';
 
+// 25 minutes between updates of the testing auth token.
+const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
+
 // Wrapper around global Twitch extension object.
-class Ext {
+export default class Ext {
   static fetchTestAuth(cb) {
     Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
       .then((auth) => {
@@ -14,7 +17,7 @@ class Ext {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.DEV:
         Ext.fetchTestAuth(cb);
-        setInterval(Ext.fetchTestAuth, 1000 * 60 * 25, cb);
+        setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, cb);
         break;
 
       case ENVIRONMENTS.STAGING:
@@ -42,5 +45,3 @@ class Ext {
     }
   }
 }
-
-export default Ext;

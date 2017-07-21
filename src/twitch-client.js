@@ -1,11 +1,13 @@
 import XMLHttpRequestPromise from 'xhr-promise';
 
-export default class InternalTwitchClient {
+export default class TwitchClient {
   constructor(extid) {
     this.extensionId = extid;
     this.promise = Promise.resolve();
   }
 
+  // loaded returns a promise which will resolve once the TwitchClient is
+  // available for use.
   loaded() {
     return this.promise;
   }

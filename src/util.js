@@ -1,6 +1,7 @@
 // Possible runtime environments for the SDK.
 export const ENVIRONMENTS = {
   DEV: 'dev',
+  TESTING: 'testing',
   STAGING: 'staging',
   PRODUCTION: 'production',
   SERVER: 'server'
@@ -24,7 +25,7 @@ function environmentDetector() {
     }
 
     if (typeof window.Twitch !== 'undefined') {
-      return ENVIRONMENTS.STAGING;
+      return ENVIRONMENTS.TESTING;
     }
   } catch (err) {
     consolePrint(err, { type: 'error' });

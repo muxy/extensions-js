@@ -155,6 +155,7 @@ export default function Messenger() {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.DEV:
       return new PusherMessenger();
+    case ENVIRONMENTS.TESTING:
     case ENVIRONMENTS.STAGING:
     case ENVIRONMENTS.PRODUCTION:
       return new TwitchMessenger();

@@ -33,7 +33,7 @@ function Muxy() {
   muxy.twitchClientID = '';
   muxy.cachedTwitchClient = null;
 
-  muxy.cachedAnalytics = null;
+  muxy.analytics = null;
 
   muxy.loadPromise = new Promise((resolve, reject) => {
     muxy.loadResolve = resolve;
@@ -50,6 +50,9 @@ function Muxy() {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.DEV:
       SDKInfoText.push('Running in development mode');
+      break;
+    case ENVIRONMENTS.TESTING:
+      SDKInfoText.push('Running in testing environment');
       break;
     case ENVIRONMENTS.STAGING:
       SDKInfoText.push('Running in staging environment');
@@ -89,7 +92,7 @@ function Muxy() {
         muxy.SDKClients[keys[i]].user = muxy.user;
       }
 
-      muxy.cachedAnalytics.user = muxy.user;
+      muxy.analytics.user = muxy.user;
 
       muxy.loadResolve();
     });
@@ -109,7 +112,7 @@ function Muxy() {
     muxy.cachedTwitchClient = new TwitchClient(muxy.twitchClientID);
 
     const uaString = options.uaString || DEFAULT_UA_STRING;
-    muxy.cachedAnalytics = new Analytics(uaString, muxy.loadPromise);
+    muxy.analytics = new Analytics(uaString, muxy.loadPromise);
 
     muxy.setupCalled = true;
   };
@@ -136,7 +139,7 @@ function Muxy() {
 
     if (!muxy.SDKClients[identifier]) {
       muxy.SDKClients[identifier] = new SDK(identifier,
-        muxy.client, muxy.user, muxy.messenger, muxy.cachedAnalytics,
+        muxy.client, muxy.user, muxy.messenger, muxy.analytics,
         muxy.loadPromise);
     }
 

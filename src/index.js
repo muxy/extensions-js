@@ -1,15 +1,21 @@
 import { ENVIRONMENTS, consolePrint, CurrentEnvironment } from './util';
-import Ext from './twitch-ext';
-import InternalTwitchClient from './twitch-client';
+import Analytics from './analytics';
 import Client from './state-client';
+import Ext from './twitch-ext';
+import TwitchClient from './twitch-client';
+import Messenger from './messenger';
 import SDK from './sdk';
 import User from './user';
-import Messenger from './messenger';
 
 import * as PackageConfig from '../package.json';
 
+const DEFAULT_UA_STRING = 'UA-99381428-2';
+
 function Muxy() {
   const muxy = {};
+
+  // muxy.setup() must be called before creating instances of the SDK, TwitchClient and Analytics.
+  muxy.setupCalled = false;
 
   // Channel to use when in testing env (currently Lirik)
   // user can change this with Muxy.testChannelID before Muxy.SDK
@@ -27,6 +33,8 @@ function Muxy() {
   muxy.twitchClientID = '';
   muxy.cachedTwitchClient = null;
 
+  muxy.analytics = null;
+
   muxy.loadPromise = new Promise((resolve, reject) => {
     muxy.loadResolve = resolve;
     muxy.loadReject = reject;
@@ -42,6 +50,9 @@ function Muxy() {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.DEV:
       SDKInfoText.push('Running in development mode');
+      break;
+    case ENVIRONMENTS.TESTING:
+      SDKInfoText.push('Running in testing environment');
       break;
     case ENVIRONMENTS.STAGING:
       SDKInfoText.push('Running in staging environment');
@@ -81,21 +92,41 @@ function Muxy() {
         muxy.SDKClients[keys[i]].user = muxy.user;
       }
 
+      muxy.analytics.user = muxy.user;
+
       muxy.loadResolve();
     });
 
     // Ext.onContext(this.onContext);
   };
 
-  muxy.setup = (cfg) => {
-    muxy.twitchClientID = cfg.extensionID;
-    muxy.cachedTwitchClient = new InternalTwitchClient(muxy.twitchClientID);
+  /**
+   * Mandatory SDK setup call.
+   *
+   * @param {Object} options
+   *  - extensionID
+   *  - uaString
+   */
+  muxy.setup = (options) => {
+    muxy.twitchClientID = options.extensionID;
+    muxy.cachedTwitchClient = new TwitchClient(muxy.twitchClientID);
+
+    const uaString = options.uaString || DEFAULT_UA_STRING;
+    muxy.analytics = new Analytics(uaString, muxy.loadPromise);
+
+    muxy.setupCalled = true;
   };
 
   /**
-   * Returns a SDK to use
+   * Returns a version of the Muxy SDK associated with the provided identifier.
+   *
+   * @param {string} id - A unique identifier for this extension or app.
    */
-  muxy.SDK = function MuxySDK(id) {
+  muxy.SDK = function NewSDK(id) {
+    if (!muxy.setupCalled) {
+      throw new Error('muxy.setup() must be called before creating a new SDK instance');
+    }
+
     const identifier = id || muxy.twitchClientID;
     if (!identifier) {
       return null;
@@ -108,7 +139,8 @@ function Muxy() {
 
     if (!muxy.SDKClients[identifier]) {
       muxy.SDKClients[identifier] = new SDK(identifier,
-        muxy.client, muxy.user, muxy.messenger, muxy.loadPromise);
+        muxy.client, muxy.user, muxy.messenger, muxy.analytics,
+        muxy.loadPromise);
     }
 
     return muxy.SDKClients[identifier];
@@ -118,13 +150,17 @@ function Muxy() {
    * Returns a twitch client to use. Can only be used
    * after the loaded promise resolves.
    */
-  muxy.TwitchClient = function TwitchClient() {
+  muxy.TwitchClient = function NewTwitchClient() {
+    if (!muxy.setupCalled) {
+      throw new Error('muxy.setup() must be called before creating a new TwitchClient instance');
+    }
+
     return muxy.cachedTwitchClient;
   };
 
   return muxy;
 }
 
-// Do this so that the entrypoint as a global library is correct.
-// Babel / webpack have some weirdness
+// Export a globally instantiated Muxy object. This is used to manage auth tokens
+// and other niceties for the lower-level SDK objects (e.g. SDK, Analytics, TwitchClient, etc).
 module.exports = new Muxy();

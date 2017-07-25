@@ -37,7 +37,7 @@ class Client {
         })
         .catch(reject)
         .then((resp) => {
-          if (resp.status < 400) {
+          if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
             SERVER_URL = TESTING_URL;
 
@@ -55,7 +55,7 @@ class Client {
   }
 
   static setEnvironment(env) {
-    if (env === ENVIRONMENTS.DEV) {
+    if (env === ENVIRONMENTS.DEV || env === ENVIRONMENTS.TESTING) {
       SERVER_URL = TESTING_URL;
     } else if (env === ENVIRONMENTS.STAGING) {
       SERVER_URL = STAGING_URL;

@@ -4,7 +4,7 @@ import XMLHttpRequestPromise from 'xhr-promise';
 import { ENVIRONMENTS, errorPromise } from './util';
 
 const API_URL = 'https://api.muxy.io';
-const STAGING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/staging';
+const STAGING_URL = 'https://api.staging.muxy.io';
 const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
 
 let SERVER_URL = API_URL;

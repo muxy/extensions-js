@@ -10,21 +10,27 @@ export const ENVIRONMENTS = {
 /**
  * Node.js vs client-side detection. Borrowed from underscore.js
  */
-function environmentDetector() {
+function environmentDetector(overrideWindow) {
+  let vWindow;
+  if (typeof vWindow !== 'undefined') {
+    vWindow = window;
+  }
+  if (overrideWindow) {
+    vWindow = overrideWindow;
+  }
   try {
-    if (typeof module !== 'undefined' && module.exports && typeof window === 'undefined') {
+    if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
       return ENVIRONMENTS.SERVER;
     }
 
-    const root = window;
-    if (root.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-      if (root.document.referrer.indexOf('twitch.tv') !== -1) {
+    if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
+      if (vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
         return ENVIRONMENTS.PRODUCTION;
       }
       return ENVIRONMENTS.STAGING;
     }
 
-    if (typeof window.Twitch !== 'undefined') {
+    if (typeof vWindow.Twitch !== 'undefined') {
       return ENVIRONMENTS.TESTING;
     }
   } catch (err) {

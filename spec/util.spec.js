@@ -2,7 +2,7 @@ import chai from 'chai';
 var assert = chai.assert;
 
 import {
-  ENVIRONMENTS, errorPromise, currentEnvironment, eventPatternMatch
+  ENVIRONMENTS, errorPromise, CurrentEnvironment, eventPatternMatch
 } from '../src/util';
 
 chai.should();
@@ -35,7 +35,7 @@ describe('currentEnvironment', function () {
         origin: 'http://localhost:4000'
       }
     };
-    currentEnvironment(devWindow).should.equal(ENVIRONMENTS.DEV);
+    CurrentEnvironment(devWindow).should.equal(ENVIRONMENTS.DEV);
   });
 
   /** @test {currentEnvironment#STAGING} */
@@ -48,7 +48,7 @@ describe('currentEnvironment', function () {
         referrer: 'http://localhost:4000'
       }
     };
-    currentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
+    CurrentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
   });
 
   /** @test {currentEnvironment#PRODUCTION} */
@@ -61,7 +61,7 @@ describe('currentEnvironment', function () {
         referrer: 'https://twitch.tv'
       }
     };
-    currentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);
+    CurrentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);
   });
 });
 

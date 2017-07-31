@@ -12,7 +12,7 @@ export const ENVIRONMENTS = {
  */
 function environmentDetector(overrideWindow) {
   let vWindow;
-  if (typeof vWindow !== 'undefined') {
+  if (typeof window !== 'undefined') {
     vWindow = window;
   }
   if (overrideWindow) {

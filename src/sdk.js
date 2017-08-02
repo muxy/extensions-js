@@ -116,6 +116,18 @@ export default class SDK {
     return this.client.getJSONStore(this.identifier, id);
   }
 
+  validateCode(code) {
+    return this.client.validateCode(this.identifier, code);
+  }
+
+  pinTokenExists() {
+    return this.client.pinTokenExists(this.identifier);
+  }
+
+  revokeAllPINCodes() {
+    return this.client.revokeAllPINCodes(this.identifier);
+  }
+
   /**
    * Send message to all listening clients.
    *

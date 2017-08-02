@@ -37,5 +37,11 @@ export default class TwitchClient {
     });
   }
 
-  getTwitchUsers = users => this.signedTwitchRequest('GET', `users?login=${users.join(',')}`)
+  getTwitchUsers = (users) => {
+    if (users.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.signedTwitchRequest('GET', `users?login=${users.join(',')}`);
+  }
 }

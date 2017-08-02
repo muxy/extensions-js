@@ -153,6 +153,10 @@ class Client {
   deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank')
 
   getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id}`)
+
+  validateCode = (identifier, code) => this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }))
+  pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
+  revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
 }
 
 export default Client;

@@ -28,24 +28,14 @@ describe('errorPromise', function () {
 
 /** @test {currentEnvironment} */
 describe('currentEnvironment', function () {
-  /** @test {currentEnvironment#DEV} */
-  it('correctly detects a dev environment', function () {
-    const devWindow = {
-      location: {
-        origin: 'http://localhost:4000'
-      }
-    };
-    CurrentEnvironment(devWindow).should.equal(ENVIRONMENTS.DEV);
-  });
-
-  /** @test {currentEnvironment#STAGING} */
+    /** @test {currentEnvironment#STAGING} */
   it('correctly detects a staging environment', function () {
     const stagingWindow = {
       location: {
-        origin: 'http://<extension id>.ext-twitch.tv'
+        origin: 'http://localhost:4000'
       },
       document: {
-        referrer: 'http://localhost:4000'
+        referrer: 'https://www.twitch.tv/test/dashboard'
       }
     };
     CurrentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
@@ -58,7 +48,7 @@ describe('currentEnvironment', function () {
         origin: 'http://<extension id>.ext-twitch.tv'
       },
       document: {
-        referrer: 'https://twitch.tv'
+        referrer: 'https://www.twitch.tv/test/dashboard'
       }
     };
     CurrentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);

@@ -7,17 +7,20 @@ const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
 // Wrapper around global Twitch extension object.
 export default class Ext {
   static fetchTestAuth(cb) {
-    Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole).always(cb);
+    Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
+      .then((auth) => {
+        cb(auth);
+      }).catch(cb);
   }
 
   static onAuthorized(cb) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.DEV:
+      case ENVIRONMENTS.TESTING:
         Ext.fetchTestAuth(cb);
         setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, cb);
         break;
 
-      case ENVIRONMENTS.TESTING:
       case ENVIRONMENTS.STAGING:
       case ENVIRONMENTS.PRODUCTION: {
         const timer = setTimeout(cb, 1000 * 15);
@@ -35,7 +38,6 @@ export default class Ext {
 
   static onContext(cb) {
     switch (CurrentEnvironment()) {
-      case ENVIRONMENTS.TESTING:
       case ENVIRONMENTS.STAGING:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.onContext(cb);

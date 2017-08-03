@@ -23,21 +23,24 @@ function environmentDetector(overrideWindow) {
       return ENVIRONMENTS.SERVER;
     }
 
-    if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-      if (vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
-        return ENVIRONMENTS.PRODUCTION;
-      }
-      return ENVIRONMENTS.STAGING;
+    // not in an iframe, use testing
+    if (!isWindowFramed()) {
+      return ENVIRONMENTS.TESTING;
     }
 
-    if (typeof vWindow.Twitch !== 'undefined') {
-      return ENVIRONMENTS.TESTING;
+    // Page content is loaded from twitch CDN
+    if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
+      return ENVIRONMENTS.PRODUCTION;
+    }
+
+    if (vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
+      return ENVIRONMENTS.STAGING;
     }
   } catch (err) {
     consolePrint(err, { type: 'error' });
   }
 
-  return ENVIRONMENTS.DEV;
+  return ENVIRONMENTS.TESTING;
 }
 
 /**
@@ -134,4 +137,13 @@ export function eventPatternMatch(input, pattern) {
   }
 
   return true;
+}
+
+function isWindowFramed() {
+  const isNotChildWindow = !window.opener;
+  // Cannot compare WindowProxy objects with ===/!==
+  // eslint-disable-next-line eqeqeq
+  const hasWindowAncestors = !!((window.top && window != window.top) ||
+      (window.parent && window != window.parent));
+  return isNotChildWindow && hasWindowAncestors;
 }

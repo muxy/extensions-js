@@ -144,6 +144,7 @@ function isWindowFramed() {
   // Cannot compare WindowProxy objects with ===/!==
   // eslint-disable-next-line eqeqeq
   const hasWindowAncestors = !!((window.top && window != window.top) ||
+  // eslint-disable-next-line eqeqeq
       (window.parent && window != window.parent));
   return isNotChildWindow && hasWindowAncestors;
 }

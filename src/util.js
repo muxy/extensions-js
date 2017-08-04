@@ -70,7 +70,7 @@ function asciiBox(lines) {
   const intro = `${' '.repeat(contentWidth / 2)}🦊`;
 
   const out = [intro];
-  out.push(`┌${'-'.repeat(contentWidth + 2)}┐`);
+  out.push(`┌${'─'.repeat(contentWidth + 2)}┐`);
 
   lines.forEach((line) => {
     const paddingRight = ' '.repeat(contentWidth - line.length);

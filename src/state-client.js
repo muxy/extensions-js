@@ -22,7 +22,7 @@ const ServerState = {
 
 // Client wraps all state requests (GET/POST) to the extension backend service.
 class Client {
-  static fetchTestAuth(testAppID, channelID, role) {
+  static fetchTestAuth(testExtensionID, channelID, role) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       xhrPromise
@@ -30,7 +30,7 @@ class Client {
           method: 'POST',
           url: `${TESTING_URL}/v1/e/authtoken`,
           data: JSON.stringify({
-            app_id: testAppID,
+            app_id: testExtensionID,
             channel_id: channelID,
             role
           })
@@ -43,7 +43,7 @@ class Client {
 
             const auth = resp.responseText;
             // twitch uses lowercase d
-            auth.clientId = 'ka3y28rrgh2f533mxt9ml37fv6zb8k';
+            auth.clientId = testExtensionID;
             auth.channelId = channelID;
             auth.userId = 'T12345678';
             resolve(auth);

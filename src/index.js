@@ -48,14 +48,11 @@ function Muxy() {
   ];
 
   switch (CurrentEnvironment()) {
-    case ENVIRONMENTS.DEV:
-      SDKInfoText.push('Running in development mode');
+    case ENVIRONMENTS.SANDBOX_DEV:
+      SDKInfoText.push('Running in sandbox environment outside of Twitch');
       break;
-    case ENVIRONMENTS.TESTING:
-      SDKInfoText.push('Running in testing environment');
-      break;
-    case ENVIRONMENTS.STAGING:
-      SDKInfoText.push('Running in staging environment');
+    case ENVIRONMENTS.SANDBOX_TWITCH:
+      SDKInfoText.push('Running in sandbox environment on Twitch');
       break;
     case ENVIRONMENTS.PRODUCTION:
       SDKInfoText.push('Running on production');

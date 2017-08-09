@@ -15,13 +15,12 @@ export default class Ext {
 
   static onAuthorized(cb) {
     switch (CurrentEnvironment()) {
-      case ENVIRONMENTS.DEV:
-      case ENVIRONMENTS.TESTING:
+      case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(cb);
         setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, cb);
         break;
 
-      case ENVIRONMENTS.STAGING:
+      case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION: {
         const timer = setTimeout(cb, 1000 * 15);
         window.Twitch.ext.onAuthorized((auth) => {
@@ -38,7 +37,7 @@ export default class Ext {
 
   static onContext(cb) {
     switch (CurrentEnvironment()) {
-      case ENVIRONMENTS.STAGING:
+      case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.onContext(cb);
         break;

@@ -28,7 +28,7 @@ describe('errorPromise', function () {
 
 /** @test {currentEnvironment} */
 describe('currentEnvironment', function () {
-    /** @test {currentEnvironment#STAGING} */
+    /** @test {currentEnvironment#SANDBOX_TWITCH} */
   it('correctly detects a staging environment', function () {
     const stagingWindow = {
       location: {
@@ -38,7 +38,7 @@ describe('currentEnvironment', function () {
         referrer: 'https://www.twitch.tv/test/dashboard'
       }
     };
-    CurrentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.STAGING);
+    CurrentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.SANDBOX_TWITCH);
   });
 
   /** @test {currentEnvironment#PRODUCTION} */

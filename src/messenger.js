@@ -153,10 +153,9 @@ class ServerMessenger {
 
 export default function Messenger() {
   switch (CurrentEnvironment()) {
-    case ENVIRONMENTS.DEV:
-    case ENVIRONMENTS.TESTING:
+    case ENVIRONMENTS.SANDBOX_DEV:
       return new PusherMessenger();
-    case ENVIRONMENTS.STAGING:
+    case ENVIRONMENTS.SANDBOX_TWITCH:
     case ENVIRONMENTS.PRODUCTION:
       return new TwitchMessenger();
     case ENVIRONMENTS.SERVER:

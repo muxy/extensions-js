@@ -1,4 +1,4 @@
-import { eventPatternMatch } from './util';
+import { eventPatternMatch, CurrentEnvironment } from './util';
 
 export default class SDK {
   constructor(identifier, client, user, messenger, analytics, loadPromise) {
@@ -168,7 +168,8 @@ export default class SDK {
    * @return A handle that can be passed to unlisten to unbind this callback.
    */
   listen(inEvent, inUserID, inCallback) {
-    const realEvent = `${this.identifier}:${inEvent}`;
+    const realEvent = `${CurrentEnvironment()}:${this.identifier}:${inEvent}`;
+
     let l = 'broadcast';
     let callback = inCallback;
     if (callback) {
@@ -182,7 +183,7 @@ export default class SDK {
         if (eventPatternMatch(msg.event, realEvent)) {
           // Consumers of the SDK only ever interact with events
           // without the app-id or extension-id prefix.
-          const truncatedEvent = msg.event.split(':').slice(1).join(':');
+          const truncatedEvent = msg.event.split(':').slice(2).join(':');
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {

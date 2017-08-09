@@ -4,8 +4,7 @@ import XMLHttpRequestPromise from 'xhr-promise';
 import { ENVIRONMENTS, errorPromise } from './util';
 
 const API_URL = 'https://api.muxy.io';
-const STAGING_URL = 'https://api.staging.muxy.io';
-const TESTING_URL = 'https://vx1jst8yv1.execute-api.us-west-2.amazonaws.com/testing';
+const SANDBOX_URL = 'https://sandbox.api.muxy.io';
 
 let SERVER_URL = API_URL;
 
@@ -28,7 +27,7 @@ class Client {
       xhrPromise
         .send({
           method: 'POST',
-          url: `${TESTING_URL}/v1/e/authtoken`,
+          url: `${SANDBOX_URL}/v1/e/authtoken`,
           data: JSON.stringify({
             app_id: testExtensionID,
             channel_id: channelID,
@@ -39,7 +38,7 @@ class Client {
         .then((resp) => {
           if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
-            SERVER_URL = TESTING_URL;
+            SERVER_URL = SANDBOX_URL;
 
             const auth = resp.responseText;
             // twitch uses lowercase d
@@ -55,10 +54,8 @@ class Client {
   }
 
   static setEnvironment(env) {
-    if (env === ENVIRONMENTS.DEV || env === ENVIRONMENTS.TESTING) {
-      SERVER_URL = TESTING_URL;
-    } else if (env === ENVIRONMENTS.STAGING) {
-      SERVER_URL = STAGING_URL;
+    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
+      SERVER_URL = SANDBOX_URL;
     }
   }
 

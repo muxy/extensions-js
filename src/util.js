@@ -1,10 +1,9 @@
 // Possible runtime environments for the SDK.
 export const ENVIRONMENTS = {
-  DEV: 'dev',
-  TESTING: 'testing',
-  STAGING: 'staging',
-  PRODUCTION: 'production',
-  SERVER: 'server'
+  SANDBOX_DEV: { environment: 'sandbox' },
+  SANDBOX_TWITCH: { environment: 'sandbox' },
+  PRODUCTION: { environment: 'production' },
+  SERVER: { environment: 'production' }
 };
 
 /**
@@ -25,7 +24,7 @@ function environmentDetector(overrideWindow) {
 
     // not in an iframe, use testing
     if (!isWindowFramed()) {
-      return ENVIRONMENTS.TESTING;
+      return ENVIRONMENTS.SANDBOX_DEV;
     }
 
     // Page content is loaded from twitch CDN
@@ -34,13 +33,13 @@ function environmentDetector(overrideWindow) {
     }
 
     if (vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
-      return ENVIRONMENTS.STAGING;
+      return ENVIRONMENTS.SANDBOX_TWITCH;
     }
   } catch (err) {
     consolePrint(err, { type: 'error' });
   }
 
-  return ENVIRONMENTS.TESTING;
+  return ENVIRONMENTS.SANDBOX_DEV;
 }
 
 /**

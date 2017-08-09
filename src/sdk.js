@@ -168,7 +168,7 @@ export default class SDK {
    * @return A handle that can be passed to unlisten to unbind this callback.
    */
   listen(inEvent, inUserID, inCallback) {
-    const realEvent = `${CurrentEnvironment()}:${this.identifier}:${inEvent}`;
+    const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
 
     let l = 'broadcast';
     let callback = inCallback;

@@ -145,8 +145,8 @@ class Client {
   getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id}&start=${start}`)
   accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id}`, JSON.stringify(data))
 
-  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `voting?id=${id}`, JSON.stringify(data))
-  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `voting?id=${id}`)
+  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `vote?id=${id}`, JSON.stringify(data))
+  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id}`)
 
   rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data))
   getRank = identifier => this.signedRequest(identifier, 'GET', 'rank')

@@ -4,6 +4,9 @@ The Muxy Extensions JS library provides easy access to Muxy's powerful backend a
 
 The extension provides four main sections of functionality: Data Storage, an Event Manager, a Twitch Client and a Google Analytics system.
 
+## Change Log
+ - [Change Log](CHANGELOG.md)
+
 ## Building
 
 To build a production release of the library, simply run:
@@ -146,4 +149,9 @@ twitchClient.getTwitchUsers(['giantwaffle', 'sevadus']).then((data) => {
 
 ### Analytics
 
-**TODO: Document using the analytics system**
+You can send events to the backend which will be stored in Google Analytics as
+user actions.
+
+```javascript
+sdk.sendAnalyticsEvent('user-action');
+```

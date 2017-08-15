@@ -28,10 +28,17 @@ Including the muxy-extensions-sdk library (either by directly importing or loadi
 <script src="//ext-cdn.muxy.io/muxy-extensions-sdk/latest/muxy-extensions-sdk.js"></script>
 ```
 
+Pass any configuration needed into the setup function on the Global SDK object. Then you can create a new SDK object.
+This returns a promise that resolves when the SDK has finished initializing.
+
 ```javascript
 Muxy.setup({ extensionID: config.extension_id });
 const sdk = new Muxy.SDK();
-const twitchClient = new Muxy.TwitchClient();
+
+sdk.loaded().then(() => {
+  const twitchClient = new Muxy.TwitchClient();
+});
+
 ```
 
 ### Authentication

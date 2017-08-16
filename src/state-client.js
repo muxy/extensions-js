@@ -139,17 +139,17 @@ class Client {
   setChannelState = (identifier, state) => this.postState(identifier,
                                                   ServerState.CHANNEL, JSON.stringify(state))
 
-  getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id}&start=${start}`)
-  accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id}`, JSON.stringify(data))
+  getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`)
+  accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data))
 
-  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `vote?id=${id}`, JSON.stringify(data))
-  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id}`)
+  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data))
+  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`)
 
   rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data))
   getRank = identifier => this.signedRequest(identifier, 'GET', 'rank')
   deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank')
 
-  getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id}`)
+  getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`)
 
   validateCode = (identifier, code) => this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }))
   pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');

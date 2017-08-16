@@ -82,16 +82,36 @@ function Muxy() {
       muxy.messenger.extensionID = auth.clientId;
       muxy.messenger.channelID = auth.channelId;
       muxy.client.updateAuth(auth.token);
-      muxy.user = new User(auth);
 
-      const keys = Object.keys(muxy.SDKClients);
-      for (let i = 0; i < keys.length; i += 1) {
-        muxy.SDKClients[keys[i]].user = muxy.user;
+      const resolvePromise = (user) => {
+        muxy.user = user;
+
+        const keys = Object.keys(muxy.SDKClients);
+        for (let i = 0; i < keys.length; i += 1) {
+          muxy.SDKClients[keys[i]].user = muxy.user;
+        }
+
+        muxy.analytics.user = muxy.user;
+        muxy.loadResolve();
+      };
+
+      const onFirstAuth = () => {
+        muxy.client.getUserInfo(extensionID).then((userinfo) => {
+          const user = new User(auth);
+          user.registeredWithMuxy = userinfo.registered || false;
+          user.ip = userinfo.ip_address;
+
+          resolvePromise(user);
+        });
       }
 
-      muxy.analytics.user = muxy.user;
 
-      muxy.loadResolve();
+      if (muxy.user) {
+        muxy.user.updateAuth(auth);
+        resolvePromise(muxy.user)
+      } else {
+        onFirstAuth();
+      }
     });
 
     // Ext.onContext(this.onContext);

@@ -40,6 +40,9 @@ export default class User {
     // Current Latency
     this.latency = null;
 
+    // True if the user has an active muxy account.
+    this.registeredWithMuxy = false;
+
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.
     this.extractJWTInfo(auth.token);
@@ -72,6 +75,7 @@ export default class User {
 
   // updateAuth stores values from a new auth token in the local store.
   updateAuth(auth) {
+    this.twitchJWT = auth.token;
     this.extractJWTInfo(auth.token);
   }
 }

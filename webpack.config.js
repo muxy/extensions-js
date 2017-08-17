@@ -1,12 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+const webpack = require('webpack');
 const formatter = require('eslint-friendly-formatter');
 
 const port = process.env.PORT || 9000;
 
 module.exports = {
   devtool: 'inline-source-map',
-  entry: './src/index.js',
+
+  entry: {
+    'muxy-extensions-sdk': './src/index.js',
+    'muxy-extensions-sdk.min': './src/index.js'
+  },
+
   module: {
     rules: [
       {
@@ -31,8 +37,15 @@ module.exports = {
     libraryTarget: 'umd',
     umdNamedDefine: true,
     path: path.resolve(__dirname, 'dist'),
-    filename: 'muxy-extensions-sdk.js'
+    filename: '[name].js'
   },
+
+  plugins: [
+    new webpack.optimize.UglifyJsPlugin({
+      include: /\.min\.js$/,
+      minimize: true
+    })
+  ],
 
   devServer: {
     port,

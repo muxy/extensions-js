@@ -180,10 +180,9 @@ export default class SDK {
 
     const cb = (msg) => {
       try {
+        // Production messages may be unprefixed.
         if (CurrentEnvironment().environment === 'production') {
-          if (eventPatternMatch(msg.Event, `${this.identifier}:${inEvent}`)) {
-            // Consumers of the SDK only ever interact with events
-            // without the app-id or extension-id prefix.
+          if (eventPatternMatch(msg.event, `${this.identifier}:${inEvent}`)) {
             const truncatedEvent = msg.event.split(':').slice(1).join(':');
             callback(msg.data, truncatedEvent);
             return;
@@ -198,6 +197,7 @@ export default class SDK {
         }
       } catch (err) {
         // TODO: Should this fail silently?
+        console.error(err); // eslint-disable-line no-console
       }
     };
 

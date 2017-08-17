@@ -103,12 +103,11 @@ function Muxy() {
 
           resolvePromise(user);
         });
-      }
-
+      };
 
       if (muxy.user) {
         muxy.user.updateAuth(auth);
-        resolvePromise(muxy.user)
+        resolvePromise(muxy.user);
       } else {
         onFirstAuth();
       }

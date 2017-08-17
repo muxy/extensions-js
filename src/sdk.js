@@ -180,6 +180,16 @@ export default class SDK {
 
     const cb = (msg) => {
       try {
+        if (CurrentEnvironment().environment === 'production') {
+          if (eventPatternMatch(msg.Event, `${this.identifier}:${inEvent}`)) {
+            // Consumers of the SDK only ever interact with events
+            // without the app-id or extension-id prefix.
+            const truncatedEvent = msg.event.split(':').slice(1).join(':');
+            callback(msg.data, truncatedEvent);
+            return;
+          }
+        }
+
         if (eventPatternMatch(msg.event, realEvent)) {
           // Consumers of the SDK only ever interact with events
           // without the app-id or extension-id prefix.

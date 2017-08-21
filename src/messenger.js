@@ -28,7 +28,7 @@ class TwitchMessenger {
   send(id, event, target, body) {
     const data = body || {};
     Twitch.ext.send(target, 'application/json', {
-      event: `${id}:${event}`, data
+      event: `${CurrentEnvironment().environment}:${id}:${event}`, data
     });
   }
   /* eslint-enable class-methods-use-this */
@@ -86,9 +86,11 @@ class PusherMessenger {
   }
 
   send(id, event, target, body, client) {
+    const scopedEvent = `${CurrentEnvironment().environment}:${id}:${event}`;
+
     client.signedRequest(id, 'POST', 'pusher_broadcast', JSON.stringify({
       target,
-      event,
+      event: scopedEvent,
       user_id: this.channelID,
       data: body
     }));

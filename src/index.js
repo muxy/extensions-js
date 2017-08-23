@@ -98,8 +98,9 @@ function Muxy() {
       const onFirstAuth = () => {
         muxy.client.getUserInfo(extensionID).then((userinfo) => {
           const user = new User(auth);
-          user.registeredWithMuxy = userinfo.registered || false;
           user.ip = userinfo.ip_address;
+          user.registeredWithMuxy = userinfo.registered || false;
+          user.visualizationID = userinfo.visualization_id || '';
 
           resolvePromise(user);
         });

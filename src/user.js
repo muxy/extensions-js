@@ -17,9 +17,17 @@ export default class User {
     // other Twitch services and across the Twitch universe.
     this.twitchID = null;
 
+    // True if the user has an active muxy account.
+    this.registeredWithMuxy = false;
+
     // muxyID is this viewer's ID on Muxy. Used to allow configuration and access
     // to Twitch services from Muxy.
     this.muxyID = null;
+
+    // visualizationID is a unique user string that can be used to identify this user
+    // on Muxy's a.muxy.io subdomain. This is used for things like alerts and
+    // cheer visualizations.
+    this.visualizationID = '';
 
     // role is the current user's role in the extension. May be one of
     // ['viewer', 'config'].
@@ -39,9 +47,6 @@ export default class User {
 
     // Current Latency
     this.latency = null;
-
-    // True if the user has an active muxy account.
-    this.registeredWithMuxy = false;
 
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.

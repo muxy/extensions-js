@@ -36,17 +36,20 @@ export default class User {
     // ip is the user's ip address as returned from the `UserInfo` state endpoint.
     this.ip = '';
 
-    // game being played by streamer
+    // Current game title being played by streamer.
     this.game = '';
 
-    // Video Mode default, fullscreen, or theatre
+    // Current video mode: One of ['default', fullscreen', 'theatre'].
     this.videoMode = 'default';
 
-    // Current Bitrate
+    // Current video bitrate.
     this.bitrate = null;
 
-    // Current Latency
+    // Current video latency.
     this.latency = null;
+
+    // Current buffer size.
+    this.buffer = null;
 
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.

@@ -15,15 +15,25 @@ export default class Analytics {
     this.user = null;
 
     this.gumshoe = gumshoeFactory();
-    this.gumshoe.transport({ name: 'muxy-extension-sdk',
+    this.gumshoe.transport({
+      name: 'muxy-extension-sdk',
       send: (data, fn) => {
-        this.gumshoe.reqwest({
-          data,
-          url: ANALYTICS_ENDPOINT,
-          method: 'POST',
-          contentType: 'application/x-www-form-urlencoded',
-          crossOrigin: true
-        }, () => { if (fn) { fn(null); } });
+        const d = data;
+        delete d.pageData;
+        this.gumshoe.reqwest(
+          {
+            data: d,
+            url: ANALYTICS_ENDPOINT,
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            crossOrigin: true
+          },
+          () => {
+            if (fn) {
+              fn(null);
+            }
+          }
+        );
       },
       map: this.mapData.bind(this)
     });
@@ -70,10 +80,8 @@ export default class Analytics {
     const result = {
       aid: appName,
       an: appName,
-      cid: opaqueID ||
-        data.clientUuid ||
-        data.sessionUuid ||
-        '00000000-0000-0000-0000-000000000000',
+      cid:
+        opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
       dh: pd.hostName,
       dl: pd.url,
       dp: pd.path,

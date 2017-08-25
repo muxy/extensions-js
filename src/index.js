@@ -9,8 +9,6 @@ import User from './user';
 
 import * as PackageConfig from '../package.json';
 
-const DEFAULT_UA_STRING = 'UA-99381428-2';
-
 function Muxy() {
   const muxy = {};
 
@@ -35,6 +33,9 @@ function Muxy() {
 
   muxy.analytics = null;
 
+  // Holds the most recent results from the context callback.
+  muxy.context = {};
+
   muxy.loadPromise = new Promise((resolve, reject) => {
     muxy.loadResolve = resolve;
     muxy.loadReject = reject;
@@ -42,7 +43,7 @@ function Muxy() {
 
   const SDKInfoText = [
     'Muxy Extensions SDK',
-    `v${PackageConfig.version} © ${(new Date()).getFullYear()} ${PackageConfig.author}`,
+    `v${PackageConfig.version} © ${new Date().getFullYear()} ${PackageConfig.author}`,
     PackageConfig.repository,
     ''
   ];
@@ -72,6 +73,7 @@ function Muxy() {
     Ext.testChannelID = muxy.testChannelID;
     Ext.testJWTRole = muxy.testJWTRole;
 
+    // Auth callback handler
     Ext.onAuthorized((auth) => {
       if (!auth) {
         muxy.loadReject();
@@ -91,7 +93,10 @@ function Muxy() {
           muxy.SDKClients[keys[i]].user = muxy.user;
         }
 
-        muxy.analytics.user = muxy.user;
+        if (muxy.analytics) {
+          muxy.analytics.user = muxy.user;
+        }
+
         muxy.loadResolve();
       };
 
@@ -101,6 +106,8 @@ function Muxy() {
           user.ip = userinfo.ip_address;
           user.registeredWithMuxy = userinfo.registered || false;
           user.visualizationID = userinfo.visualization_id || '';
+
+          updateUserContextSettings();
 
           resolvePromise(user);
         });
@@ -114,7 +121,41 @@ function Muxy() {
       }
     });
 
-    // Ext.onContext(this.onContext);
+    // Context callback handler
+    function updateUserContextSettings() {
+      if (!muxy.user || !muxy.context) {
+        return;
+      }
+
+      // Set Video Mode
+      if (muxy.context.isFullScreen) {
+        muxy.user.videoMode = 'fullscreen';
+      } else if (muxy.context.isTheatreMode) {
+        muxy.user.videoMode = 'theatre';
+      } else {
+        muxy.user.videoMode = 'default';
+      }
+
+      muxy.user.game = muxy.context.game;
+      muxy.user.bitrate = Math.round(muxy.context.bitrate || 0);
+      muxy.user.latency = muxy.context.hlsLatencyBroadcaster;
+      muxy.user.buffer = muxy.context.bufferSize;
+
+      // If buffer size goes to 0, send an analytics event that
+      // this user's video is buffering.
+      if (muxy.context.bufferSize < 1 && muxy.analytics) {
+        muxy.analytics.sendEvent('video', 'buffer', 1);
+      }
+    }
+
+    Ext.onContext((context) => {
+      muxy.context = context;
+
+      if (muxy.user) {
+        updateUserContextSettings();
+        // Context callback called before
+      }
+    });
   };
 
   /**
@@ -128,8 +169,9 @@ function Muxy() {
     muxy.twitchClientID = options.extensionID;
     muxy.cachedTwitchClient = new TwitchClient(muxy.twitchClientID);
 
-    const uaString = options.uaString || DEFAULT_UA_STRING;
-    muxy.analytics = new Analytics(uaString, muxy.loadPromise);
+    if (options.uaString) {
+      muxy.analytics = new Analytics(options.uaString, muxy.loadPromise);
+    }
 
     muxy.setupCalled = true;
   };
@@ -155,9 +197,14 @@ function Muxy() {
     }
 
     if (!muxy.SDKClients[identifier]) {
-      muxy.SDKClients[identifier] = new SDK(identifier,
-        muxy.client, muxy.user, muxy.messenger, muxy.analytics,
-        muxy.loadPromise);
+      muxy.SDKClients[identifier] = new SDK(
+        identifier,
+        muxy.client,
+        muxy.user,
+        muxy.messenger,
+        muxy.analytics,
+        muxy.loadPromise
+      );
     }
 
     return muxy.SDKClients[identifier];

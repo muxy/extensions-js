@@ -138,12 +138,38 @@ export function eventPatternMatch(input, pattern) {
   return true;
 }
 
+/**
+ * forceType takes in a variable and a Javascript Type identifier.
+ * It will throw a TypeError if the variable is not of the correct
+ * type. If the type check passes, the function returns without
+ * throwing an error. As a convenience, the type may also be an
+ * array of types.
+ *
+ * Acceptible types:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof
+ *
+ * @param {any} value any variable
+ * @param {string} type a single type string, or an array of multiple types
+ *
+ * @throws {TypeError} if typeof value is not in types
+ */
+export function forceType(value, type) {
+  const types = [].concat(type);
+  const typeString = typeof value;
+
+  if (types.indexOf(typeString) === -1) {
+    throw new TypeError(`expected '${typeString}' to be one of [${types}]`);
+  }
+}
+
 function isWindowFramed() {
   const isNotChildWindow = !window.opener;
   // Cannot compare WindowProxy objects with ===/!==
-  // eslint-disable-next-line eqeqeq
-  const hasWindowAncestors = !!((window.top && window != window.top) ||
-  // eslint-disable-next-line eqeqeq
-      (window.parent && window != window.parent));
+  const hasWindowAncestors = !!(
+    // eslint-disable-next-line eqeqeq
+    (window.top && window != window.top) ||
+    // eslint-disable-next-line eqeqeq
+    (window.parent && window != window.parent)
+  );
   return isNotChildWindow && hasWindowAncestors;
 }

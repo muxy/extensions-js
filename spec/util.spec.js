@@ -1,35 +1,44 @@
 import chai from 'chai';
-var assert = chai.assert;
+const assert = chai.assert;
 
 import {
-  ENVIRONMENTS, errorPromise, CurrentEnvironment, eventPatternMatch
+  ENVIRONMENTS,
+  errorPromise,
+  CurrentEnvironment,
+  eventPatternMatch,
+  forceType
 } from '../src/util';
 
-chai.should();
+const should = chai.should();
+
+// Convenience test harness for forceType.
+function testForceType(value, expected) {
+  return function () {
+    forceType(value, expected);
+  }
+}
 
 /** @test {errorPromise} */
-describe('errorPromise', function () {
-  it('rejects immediately', function () {
-    return errorPromise('error string')
+describe('errorPromise', () => {
+  it('rejects immediately', () =>
+    errorPromise('error string')
       .then(() => {
-        throw new Error("fail");
+        throw new Error('fail');
       })
-      .catch(data => {
-      assert(true);
-    });
-  });
+      .catch((data) => {
+        assert(true);
+      }));
 
-  it('passes error string', function () {
-    return errorPromise('error string').catch(data => {
+  it('passes error string', () =>
+    errorPromise('error string').catch((data) => {
       data.should.equal('error string');
-    });
-  });
+    }));
 });
 
 /** @test {currentEnvironment} */
-describe('currentEnvironment', function () {
-    /** @test {currentEnvironment#SANDBOX_TWITCH} */
-  it('correctly detects a staging environment', function () {
+describe('currentEnvironment', () => {
+  /** @test {currentEnvironment#SANDBOX_TWITCH} */
+  it('correctly detects a staging environment', () => {
     const stagingWindow = {
       location: {
         origin: 'http://localhost:4000'
@@ -42,7 +51,7 @@ describe('currentEnvironment', function () {
   });
 
   /** @test {currentEnvironment#PRODUCTION} */
-  it('correctly detects a production environment', function () {
+  it('correctly detects a production environment', () => {
     const productionWindow = {
       location: {
         origin: 'http://<extension id>.ext-twitch.tv'
@@ -56,8 +65,8 @@ describe('currentEnvironment', function () {
 });
 
 /** @test {eventPatternMatch} */
-describe('eventPatternMatch', function() {
-  it('correctly matches valid patterns', function () {
+describe('eventPatternMatch', () => {
+  it('correctly matches valid patterns', () => {
     eventPatternMatch('a:b:c', 'a:b:c').should.be.true;
     eventPatternMatch('a:b:c', 'a:b:*').should.be.true;
     eventPatternMatch('a:b:c', 'a:*:c').should.be.true;
@@ -67,7 +76,7 @@ describe('eventPatternMatch', function() {
     eventPatternMatch('a:b:c', '*:*:*').should.be.true;
   });
 
-  it('does not match invalid patterns', function() {
+  it('does not match invalid patterns', () => {
     eventPatternMatch('a:b:c', 'a:b').should.be.false;
     eventPatternMatch('a:b:c', 'a:b:**').should.be.false;
     eventPatternMatch('a:b:c', 'a:b:d').should.be.false;
@@ -76,4 +85,39 @@ describe('eventPatternMatch', function() {
     eventPatternMatch('a:b:c', 'a:b:c:d').should.be.false;
     eventPatternMatch('a:b:c', 'a:b:c:*').should.be.false;
   });
-})
+});
+
+/** @test {forceType} */
+describe('forceType', () => {
+  it('correctly identifies the basic types', () => {
+    const testUndefined = undefined;
+    const testBoolean = true;
+    const testNumber = 123;
+    const testString = 'a';
+    const testFunction = new Function();
+    const testObject = {};
+
+    should.not.throw(testForceType(testUndefined, 'undefined'));
+    should.not.throw(testForceType(testBoolean, 'boolean'));
+    should.not.throw(testForceType(testNumber, 'number'));
+    should.not.throw(testForceType(testString, 'string'));
+    should.not.throw(testForceType(testFunction, 'function'));
+    should.not.throw(testForceType(testObject, 'object'));
+  });
+
+  it('correctly detects incorrect types', () => {
+    const testUndefined = undefined;
+    const testBoolean = true;
+    const testNumber = 123;
+    const testString = 'a';
+    const testFunction = new Function();
+    const testObject = {};
+
+    should.throw(testForceType(testUndefined, 'boolean'), TypeError);
+    should.throw(testForceType(testBoolean, 'number'), TypeError);
+    should.throw(testForceType(testNumber, 'boolean'), TypeError);
+    should.throw(testForceType(testString, 'boolean'), TypeError);
+    should.throw(testForceType(testFunction, 'boolean'), TypeError);
+    should.throw(testForceType(testObject, 'boolean'), TypeError);
+  });
+});

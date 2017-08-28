@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
     "build": "webpack",
-    "test": "karma start --single-run",
+    "test": "./node_modules/karma/bin/karma start --single-run",
     "doc": "esdoc"
   },
   "devDependencies": {

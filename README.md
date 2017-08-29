@@ -23,6 +23,11 @@ in this directory. The complete library will be built and both minified and full
 
 ## Using the library
 
+### Managing Twitch Extension Secrets
+Before you can use the Muxy Extension SDK you will have to create a new extension on [https://vulcan.curseforge.com](https://vulcan.curseforge.com).
+Once you have done that take the Extension id and secret and submit them to [https://u.muxy.io/dev](https://u.muxy.io/dev) 
+This will allow the automatic sandbox credentials to work for your extension.
+
 ### Creating a Client
 
 Including the muxy-extensions-sdk library (either by directly importing or loading off Muxy's CDN) will create a global window.Muxy object that handles all interactions with the extension backend system.

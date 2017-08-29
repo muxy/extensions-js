@@ -1,4 +1,4 @@
-import { eventPatternMatch, CurrentEnvironment } from './util';
+import { eventPatternMatch, CurrentEnvironment, forceType } from './util';
 
 export default class SDK {
   constructor(identifier, client, user, messenger, analytics, loadPromise) {
@@ -20,6 +20,7 @@ export default class SDK {
    * @param start
    */
   getAccumulation(accumulationID, start) {
+    forceType(accumulationID, 'string');
     return this.client.getAccumulation(this.identifier, accumulationID, start);
   }
 
@@ -29,6 +30,7 @@ export default class SDK {
    * @param data
    */
   accumulate(accumulationID, data) {
+    forceType(accumulationID, 'string');
     return this.client.accumulate(this.identifier, accumulationID, data);
   }
 
@@ -48,6 +50,7 @@ export default class SDK {
    * @returns {Promise}
    */
   getVoteData(voteID) {
+    forceType(voteID, 'string');
     return this.client.getVotes(this.identifier, voteID);
   }
 
@@ -57,6 +60,7 @@ export default class SDK {
    * @param {number} value the integer value to vote
    */
   vote(voteID, value) {
+    forceType(voteID, 'string');
     return this.client.vote(this.identifier, voteID, { value });
   }
 
@@ -73,6 +77,7 @@ export default class SDK {
    * @returns {Promise} an array of rank data objects
    */
   getRankingData(rankID) {
+    forceType(rankID, 'string');
     return new Promise((accept, reject) => {
       this.client
         .getRank(this.identifier, rankID)
@@ -89,15 +94,17 @@ export default class SDK {
    * @param {string} value
    */
   rank(rankID, value) {
+    forceType(rankID, 'string');
     return this.client.rank(this.identifier, { key: value });
   }
 
   /**
    * Clear all data for a rankId
-   * @param {string} rankId
+   * @param {string} rankID
    */
-  clearRanking(rankId) {
-    return this.client.deleteRank(this.identifier, rankId);
+  clearRanking(rankID) {
+    forceType(rankID, 'string');
+    return this.client.deleteRank(this.identifier, rankID);
   }
 
   setViewerState(state) {

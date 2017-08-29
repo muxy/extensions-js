@@ -44,6 +44,22 @@ sdk.loaded().then(() => {
 
 ```
 
+#### Sandbox environment settings
+
+When running outside of Twitch the SDK will automatically use the sandbox environment.
+
+There are a few options that can be set to make the SDK grab simulated credentials for the sandbox outside
+of Twitch. These need to be set before calling Muxy.setup();
+
+```javascript
+Muxy.testJWTRole = 'broadcaster'; // 'viewer' or 'broadcaster'
+Muxy.testChannelID = '126955211'; // A string representing the ID of the Twitch channel 
+                                  // this extension will be simulated running on.
+                                  
+Muxy.setup({ extensionID: config.extension_id });
+const sdk = new Muxy.SDK();
+```
+
 ### Authentication
 
 When the Muxy Extensions SDK is created, it uses the provided extension id to authenticate the viewer with Muxy's backend. A valid authentication will be stored and used internally by the sdk for all future requests. The authentication expires every 30 minutes, but the sdk will automatically refresh the internal token and the process should be invisible to your application.
@@ -71,22 +87,52 @@ const data = sdk.getJSONStore('awesome_server_action');
 console.log(data.awesomeness);
 ```
 
+The response will be a json object with your values:
+```
+{
+  "potato": "russet",
+  "awesomeness": 11
+}
+```
+
 In addition to retrieving the data at any time, Muxy will broadcast an event to all viewers currently using your app when new data is POSTed to the endpoint. You may listen for specific storage events similar to how vote update events are handled:
 
 ```javascript
 sdk.listen('json_store_update:awesome_server_action', (data) => {
-  console.log(data.awesomeness);
+  console.log(data.value.awesomeness);
 });
+```
+
+The response includes the event id and value:
+```
+{
+  "id": "awesome_server_action",
+  "value": {
+    "potato": "russet",
+    "awesomeness": 11
+  }
+}
 ```
 
 If you are posting json data to several different keys and would like to listen for all JSON store updates, you can use * to reference all update events:
 
 ```javascript
 sdk.listen('json_store_update:*', (data) => {
-  if (data.potato === 'russet') {
-    console.log(data.awesomeness);
+  if (data.id === 'awesome_server_action') {
+    console.log(data.value.awesomeness);
   }
 });
+```
+
+The response includes the event id and value:
+```
+{
+  "id": "awesome_server_action",
+  "value": {
+    "potato": "russet",
+    "awesomeness": 11
+  }
+}
 ```
 
 ### Event Manager

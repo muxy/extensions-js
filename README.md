@@ -47,7 +47,7 @@ entry to the docs are at `docs/index.html`
 
 ### Managing Twitch Extension Secrets
 Before you can use the Muxy Extension SDK you will have to create a new extension on [https://vulcan.curseforge.com](https://vulcan.curseforge.com).
-Once you have done that take the Extension id and secret and submit them to [https://u.muxy.io/dev](https://u.muxy.io/dev) 
+Once you have done that take the Extension id and secret and submit them to [https://u.muxy.io/developers](https://u.muxy.io/developers) 
 This will allow the automatic sandbox credentials to work for your extension.
 
 ### Creating a Client

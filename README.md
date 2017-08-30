@@ -21,6 +21,28 @@ in this directory. The complete library will be built and both minified and full
 - `dist/muxy-extensions-sdk.js`
 - `dist/muxy-extensions-sdk.min.js`
 
+## Running tests
+
+To run the full suite of tests, run:
+
+```sh
+npm run test
+```
+
+This will fully compile the SDK and execute all unit tests, printing the results to the console.
+Note that this can take several minutes to execute, especially the first time.
+
+## Building documentation
+
+The SDK documentation can be build locally by running:
+
+```sh
+npm run docs
+```
+
+This will generate a full suite of HTML-formatted documentation in the `docs/` directory. The main
+entry to the docs are at `docs/index.html`
+
 ## Using the library
 
 ### Managing Twitch Extension Secrets

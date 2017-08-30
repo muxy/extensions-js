@@ -38,6 +38,11 @@ module.exports = {
     'comma-dangle': ['error', 'never'],
 
     // Don't allow reassigning function paramaters.
-    'no-param-reassign': 'error'
+    'no-param-reassign': 'error',
+
+    // We don't actually use JSX, but airbnb does. And there is a bug with
+    // this option in the current eslint/npm versions.
+    'jsx-a11y/href-no-hash': 'off',
+    'jsx-a11y/anchor-is-valid': 'off'
   }
 }

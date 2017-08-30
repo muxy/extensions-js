@@ -135,9 +135,9 @@ class Client {
   getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION)
 
   setViewerState = (identifier, state) => this.postState(identifier,
-                                                  ServerState.VIEWER, JSON.stringify(state))
+    ServerState.VIEWER, JSON.stringify(state))
   setChannelState = (identifier, state) => this.postState(identifier,
-                                                  ServerState.CHANNEL, JSON.stringify(state))
+    ServerState.CHANNEL, JSON.stringify(state))
 
   getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`)
   accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data))

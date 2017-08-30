@@ -9,6 +9,10 @@ import User from './user';
 
 import * as PackageConfig from '../package.json';
 
+/**
+ * Muxy SDK Singleton. This class handles environment detection, data harness collection
+ * and updates (for authentication and backend communication) and SDK instance creation.
+ */
 function Muxy() {
   const muxy = {};
 

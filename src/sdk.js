@@ -25,7 +25,7 @@ export default class SDK {
 
     /**
      * A unique instance identifier. Either the extension or app ID.
-     * @private
+     * @public
      * @type {string}
      */
     this.identifier = identifier;
@@ -81,7 +81,7 @@ export default class SDK {
    *
    * @property {string} latest A Unix timestamp of the most recently posted JSON blob.
    *
-   * @property {[]object} data Array of all JSON blob payloads posted to this identifier.
+   * @property {object[]} data Array of all JSON blob payloads posted to this identifier.
    * @property {number} data.observed A Unix timestamp of when this payload was received.
    * @property {string} data.channel_id The id of the channel this payload is associated with
    * (either the viewer was watching the channel, or the app/server was authed with this channel).
@@ -160,7 +160,7 @@ export default class SDK {
    * @typedef {object} VoteData
    * @property {number} count - The total number of votes received for this vote identifier.
    * @property {number} mean - The average of all votes received for this identifier.
-   * @property {[]number} specific - The number of votes cast for the specific values [0-4].
+   * @property {number[]} specific - The number of votes cast for the specific values [0-4].
    * @property {number} stddev - Approximate standard deviation for all votes received for
    * this identifier.
    * @property {number} sum - The sum of all votes received for this identifier.
@@ -219,7 +219,7 @@ export default class SDK {
    */
 
   /**
-   * @typedef {[]object} RankDatum
+   * @typedef {object[]} RankDatum
    * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
    * @property {number} score - The number of users who have sent this `key` for this identifier.
    */

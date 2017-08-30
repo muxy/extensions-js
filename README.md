@@ -4,6 +4,12 @@ The Muxy Extensions JS library provides easy access to Muxy's powerful backend a
 
 The extension provides four main sections of functionality: Data Storage, an Event Manager, a Twitch Client and a Google Analytics system.
 
+See also:
+
+[Overlay App Rig](https://github.com/muxy/overlay-app-rig)
+
+[Muxy Extension Rig](https://github.com/muxy/extension-rig)
+
 ## Change Log
  - [Change Log](CHANGELOG.md)
 

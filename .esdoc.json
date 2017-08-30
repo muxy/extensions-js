@@ -1,7 +1,7 @@
 {
   "source": "./src",
   "includes": [
-    "index.js",
+    "muxy.js",
     "sdk.js",
     "user.js"
   ],
@@ -17,6 +17,9 @@
           "repository": "https://github.com/muxy/muxyextensionssdk",
           "site": "https://dev.muxy.io",
           "author": "Muxy, Inc"
+        },
+        "unexportedIdentifier": {
+          "enable": true
         }
       },
       "test": {
@@ -34,6 +37,12 @@
         "excludes": [
           "\\.config\\.js$"
         ]
+      }
+    },
+    {
+      "name": "esdoc-ecmascript-proposal-plugin",
+      "option": {
+        "all": true
       }
     }
   ]

@@ -9,8 +9,8 @@ module.exports = {
   devtool: 'inline-source-map',
 
   entry: {
-    'muxy-extensions-sdk': './src/index.js',
-    'muxy-extensions-sdk.min': './src/index.js'
+    'muxy-extensions': './src/index.js',
+    'muxy-extensions.min': './src/index.js'
   },
 
   module: {

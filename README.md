@@ -8,10 +8,22 @@ See also:
 
 [Overlay App Rig](https://github.com/muxy/overlay-app-rig)
 
-[Muxy Extension Rig](https://github.com/muxy/extension-rig)
+[Muxy Extensions Rig](https://github.com/muxy/extensions-rig)
 
 ## Change Log
  - [Change Log](CHANGELOG.md)
+
+## Hosted Versions
+
+Muxy hosts specific versions and latest releases at https://ext-cdn.muxy.io/muxy-extensions-js.
+
+Tagged releases (starting with 1.0.0) can be found at
+https://ext-cdn.muxy.io/muxy-extensions-js/1.0.0/muxy-extensions.js or pre-minified at
+https://ext-cdn.muxy.io/muxy-extensions-js/1.0.0/muxy-extensions.min.js
+
+The latest production release can always be accessed at
+https://ext-cdn.muxy.io/muxy-extensions-js/latest/muxy-extensions.js or pre-minified at
+https://ext-cdn.muxy.io/muxy-extensions-js/latest/muxy-extensions.min.js
 
 ## Building
 
@@ -24,8 +36,8 @@ npm run build
 
 in this directory. The complete library will be built and both minified and full versions will be placed in the `dist/` folder.
 
-- `dist/muxy-extensions-sdk.js`
-- `dist/muxy-extensions-sdk.min.js`
+- `dist/muxy-extensions.js`
+- `dist/muxy-extensions.min.js`
 
 ## Running tests
 
@@ -47,34 +59,41 @@ npm run docs
 ```
 
 This will generate a full suite of HTML-formatted documentation in the `docs/` directory. The main
-entry to the docs are at `docs/index.html`
+entry to the docs is at `docs/index.html`
 
 ## Using the library
 
 ### Managing Twitch Extension Secrets
-Before you can use the Muxy Extension SDK you will have to create a new extension on [https://vulcan.curseforge.com](https://vulcan.curseforge.com).
-Once you have done that take the Extension id and secret and submit them to [https://u.muxy.io/developers](https://u.muxy.io/developers) 
+
+Before you can use the Muxy Extension SDK you will have to create a new extension on
+[https://vulcan.curseforge.com](https://vulcan.curseforge.com).
+
+Once you have done that take the Extension id and secret and submit them to
+[https://u.muxy.io/developers](https://u.muxy.io/developers).
+
 This will allow the automatic sandbox credentials to work for your extension.
 
 ### Creating a Client
 
-Including the muxy-extensions-sdk library (either by directly importing or loading off Muxy's CDN) will create a global window.Muxy object that handles all interactions with the extension backend system.
+Including the muxy-extensions-sdk library (either by directly importing or loading off Muxy's CDN)
+will create a global window.Muxy object that handles all interactions with the extension
+backend system.
 
 ```html
-<script src="//ext-cdn.muxy.io/muxy-extensions-sdk/latest/muxy-extensions-sdk.js"></script>
+<script src="//ext-cdn.muxy.io/muxy-extensions-js/latest/muxy-extensions.min.js"></script>
 ```
 
-Pass any configuration needed into the setup function on the Global SDK object. Then you can create a new SDK object.
-This returns a promise that resolves when the SDK has finished initializing.
+Pass any configuration needed into the setup function on the global `Muxy` object. Then you can
+create a new instance of the SDK. This returns a promise that resolves when the SDK has
+finished initializing.
 
 ```javascript
-Muxy.setup({ extensionID: config.extension_id });
+Muxy.setup({ extensionID: <your extension id from Twitch> });
 const sdk = new Muxy.SDK();
 
 sdk.loaded().then(() => {
-  const twitchClient = new Muxy.TwitchClient();
+  sdk.vote('poll-1', 1);
 });
-
 ```
 
 #### Sandbox environment settings
@@ -86,10 +105,10 @@ of Twitch. These need to be set before calling Muxy.setup();
 
 ```javascript
 Muxy.testJWTRole = 'broadcaster'; // 'viewer' or 'broadcaster'
-Muxy.testChannelID = '126955211'; // A string representing the ID of the Twitch channel 
+Muxy.testChannelID = '126955211'; // A string representing the ID of the Twitch channel
                                   // this extension will be simulated running on.
-                                  
-Muxy.setup({ extensionID: config.extension_id });
+
+Muxy.setup({ extensionID: <your extension id from Twitch> });
 const sdk = new Muxy.SDK();
 ```
 
@@ -116,8 +135,9 @@ Where the json data payload may be any JSON blob and the id is any valid string 
 The data you POST to this endpoint will be stored indefinitely, keyed on your app id and provided identifier. The current stored data may be retrieved at any time by calling:
 
 ```javascript
-const data = sdk.getJSONStore('awesome_server_action');
-console.log(data.awesomeness);
+sdk.getJSONStore('awesome_server_action').then((resp) => {
+  console.log(resp.awesomeness);
+});
 ```
 
 The response will be a json object with your values:
@@ -216,21 +236,31 @@ sdk.unlisten(awesomeHandler);
 We provide a convenience wrapper around certain common Twitch functionality.
 
 ```javascript
+const twitchClient = new Muxy.TwitchClient();
+
 twitchClient.getTwitchUsers(['giantwaffle', 'sevadus']).then((data) => {
- data.users.forEach((user) => {
-   console.log(`${user.display_name} looks like this:`)
-   console.log(user.logo);
- });
+  data.users.forEach((user) => {
+    console.log(`${user.display_name} looks like this:`)
+    console.log(user.logo);
+  });
 }).catch((err) => {
- console.error('Could not look up user info on Twitch: ' + err);
+  console.error('Could not look up user info on Twitch: ' + err);
 });
 ```
 
 ### Analytics
 
-You can send events to the backend which will be stored in Google Analytics as
-user actions.
+If you provide a Google Analytics UA identifier in the `setup` call, you can send events to the
+backend which will be stored in Google Analytics as user actions.
 
 ```javascript
-sdk.sendAnalyticsEvent('user-action');
+Muxy.setup({
+  extensionID: <your extension id from Twitch>,
+  uaString: <your google analytics UA string>
+});
+
+const sdk = new Muxy.SDK();
+sdk.loaded().then(() => {
+  sdk.sendAnalyticsEvent('user-action');
+});
 ```

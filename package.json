@@ -1,15 +1,15 @@
 {
-  "name": "muxyextensionssdk",
+  "name": "muxy-extensions-js",
   "author": "Muxy, Inc.",
-  "version": "0.0.7",
-  "description": "",
-  "license": "UNLICENSED",
-  "main": "dist/muxy-extensions-sdk.js",
+  "version": "1.0.0",
+  "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
+  "license": "ISC",
+  "main": "dist/muxy-extensions.js",
   "module": "src/index.js",
-  "repository": "https://bitbucket.org/muxy/muxyextensionssdk",
+  "repository": "https://github.com/muxy/extensions-js",
   "scripts": {
     "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "build": "webpack",
+    "build": "./node_modules/.bin/webpack",
     "test": "./node_modules/karma/bin/karma start --single-run",
     "docs": "./node_modules/.bin/esdoc"
   },

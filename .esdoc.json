@@ -14,7 +14,7 @@
           "logo": "./assets/images/logo.png",
           "title": "Muxy Extensions SDK",
           "description": "The missing backend to Twitch Extensions",
-          "repository": "https://github.com/muxy/muxyextensionssdk",
+          "repository": "https://github.com/muxy/extensions-js",
           "site": "https://dev.muxy.io",
           "author": "Muxy, Inc"
         },

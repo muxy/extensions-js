@@ -49,7 +49,7 @@ describe('StateClient', function () {
   });
 
   /** @test {StateClient#getRank} */
-  it('should make a request', function () {
+  it.skip('should make a request', function () {
     server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', rankOK({
       data: []
     }));
@@ -68,7 +68,7 @@ describe('StateClient', function () {
   });
 
   /** @test {StateClient#getRank} */
-  it('should fail on invalid json', function () {
+  it.skip('should fail on invalid json', function () {
     server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', [
       200,
       {

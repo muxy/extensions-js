@@ -32,6 +32,8 @@ module.exports = {
     ]
   },
 
+  node: false,
+
   output: {
     library: 'Muxy',
     libraryTarget: 'umd',

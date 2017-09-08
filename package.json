@@ -45,6 +45,7 @@
     "karma-phantomjs-launcher": "^1.0.4",
     "karma-sinon": "^1.0.5",
     "karma-webpack": "^2.0.4",
+    "lodash": "^4.17.4",
     "mocha": "^3.5.0",
     "sinon": "^3.2.1",
     "webpack": "^3.5.5",
@@ -52,7 +53,6 @@
   },
   "dependencies": {
     "base-64": "^0.1.0",
-    "lodash": "^4.17.4",
     "pusher-js": "^4.1.0",
     "xhr-promise": "^2.0.0"
   }

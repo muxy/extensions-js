@@ -9,9 +9,9 @@
   "repository": "https://github.com/muxy/extensions-js",
   "scripts": {
     "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "build": "./node_modules/.bin/webpack",
-    "test": "./node_modules/karma/bin/karma start --single-run",
-    "docs": "./node_modules/.bin/esdoc"
+    "build": "webpack",
+    "test": "mocha --compilers js:babel-core/register spec/*.js",
+    "docs": "esdoc"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -37,14 +37,6 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.3.0",
-    "karma": "^1.7.0",
-    "karma-babel-preprocessor": "^6.0.1",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-mocha": "^1.3.0",
-    "karma-phantomjs-launcher": "^1.0.4",
-    "karma-sinon": "^1.0.5",
-    "karma-webpack": "^2.0.4",
     "lodash": "^4.17.4",
     "mocha": "^3.5.0",
     "sinon": "^3.2.1",

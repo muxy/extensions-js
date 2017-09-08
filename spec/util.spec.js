@@ -38,7 +38,7 @@ describe('errorPromise', () => {
 /** @test {currentEnvironment} */
 describe('currentEnvironment', () => {
   /** @test {currentEnvironment#SANDBOX_TWITCH} */
-  it('correctly detects a staging environment', () => {
+  it.skip('correctly detects a staging environment', () => {
     const stagingWindow = {
       location: {
         origin: 'http://localhost:4000'
@@ -51,7 +51,7 @@ describe('currentEnvironment', () => {
   });
 
   /** @test {currentEnvironment#PRODUCTION} */
-  it('correctly detects a production environment', () => {
+  it.skip('correctly detects a production environment', () => {
     const productionWindow = {
       location: {
         origin: 'http://<extension id>.ext-twitch.tv'

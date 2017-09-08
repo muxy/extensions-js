@@ -13,6 +13,12 @@ module.exports = {
     'muxy-extensions.min': './src/index.js'
   },
 
+  resolve: {
+    alias: {
+      lodash$: 'libs/lodash.custom.min.js'
+    }
+  },
+
   module: {
     rules: [
       {

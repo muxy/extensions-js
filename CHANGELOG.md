@@ -2,10 +2,17 @@
 
 ## Change Log
 
-## In Progress
+## 2017-09-08
 
 ### Updated
-- Environments have simplified to sandbox.api.muxy.io for pre-production data and api.muxy.io for production.
+- Removed analytics access to localStorage (unused and unneeded).
+- Removed some potentially unique identifiers.
 
 ### Fixed
-- Voting functions now point to the correct endpoints.
+- Setup documentation now uses the same words as Twitch.
+- Changed Twitch dev site link.
+
+
+## 2017-08-31
+
+Initial release

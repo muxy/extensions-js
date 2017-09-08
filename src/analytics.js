@@ -19,7 +19,11 @@ export default class Analytics {
       name: 'muxy-extension-sdk',
       send: (data, fn) => {
         const d = data;
+        // Remove stuff that we don't want to send up
         delete d.pageData;
+        delete d.clientUuid;
+        delete d.uuid;
+        delete d.sessionUuid;
         this.gumshoe.reqwest(
           {
             data: d,

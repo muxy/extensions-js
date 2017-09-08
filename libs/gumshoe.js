@@ -961,11 +961,11 @@ function gumshoeFactory() {
         if (window.store){ _.conflict = window.store; }
         var store =
             // safely set this up (throws error in IE10/32bit mode for local files)
-            _.Store("local", (function(){try{ return localStorage; }catch(e){}})());
+            _.Store("local");
         store.local = store;// for completeness
         store._ = _;// for extenders and debuggers...
         // safely setup store.session (throws exception in FF for file:/// urls)
-        store.area("session", (function(){try{ return sessionStorage; }catch(e){}})());
+        store.area("session");
 
         //Expose store to the global object
         window.store = store;

@@ -1,4 +1,4 @@
-import XMLHttpRequestPromise from 'xhr-promise';
+import XMLHttpRequestPromise from '../libs/xhr-promise';
 
 export default class TwitchClient {
   constructor(extid) {

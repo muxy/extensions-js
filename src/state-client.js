@@ -1,5 +1,5 @@
 import base64 from 'base-64';
-import XMLHttpRequestPromise from 'xhr-promise';
+import XMLHttpRequestPromise from '../libs/xhr-promise';
 
 import { ENVIRONMENTS, errorPromise } from './util';
 

@@ -37,6 +37,9 @@ module.exports = {
     // Don't allow trailing commas (e.g. ['a',]).
     'comma-dangle': ['error', 'never'],
 
+    // Keep spacing around function parens consistent.
+    'space-before-function-paren': ['error', 'never'],
+
     // Don't allow reassigning function paramaters.
     'no-param-reassign': 'error',
 

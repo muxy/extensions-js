@@ -126,7 +126,7 @@ export default class SDK {
    * @deprecated Use getAccumulateData instead.
    */
   getAccumulation(accumulationID, start) {
-    return this.getAccumulationData(accumulationID, start);
+    return this.getAccumulateData(accumulationID, start);
   }
 
   /**

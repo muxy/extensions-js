@@ -35,7 +35,7 @@ class Client {
           })
         })
         .catch(reject)
-        .then((resp) => {
+        .then(resp => {
           if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
             SERVER_URL = SANDBOX_URL;
@@ -82,7 +82,7 @@ class Client {
           data
         })
         .catch(reject)
-        .then((resp) => {
+        .then(resp => {
           try {
             if (resp.status < 400) {
               resolve(resp.responseText);
@@ -124,34 +124,47 @@ class Client {
 
   // getState requests a subset of state stored on the server and sets the
   // local cached version of the state to the response.
-  getState = (identifier, substate) => this.signedRequest(identifier, 'GET', substate || ServerState.ALL)
+  getState = (identifier, substate) =>
+    this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   // postState sends data to the corrent EBS substate endpoint for persistence.
-  postState = (identifier, substate, data) => this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data)
+  postState = (identifier, substate, data) =>
+    this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
-  getUserInfo = identifier => this.getState(identifier, ServerState.USER)
-  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER)
-  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL)
-  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION)
+  getUserInfo = identifier => this.getState(identifier, ServerState.USER);
+  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
+  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
+  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION);
 
-  setViewerState = (identifier, state) => this.postState(identifier,
-    ServerState.VIEWER, JSON.stringify(state))
-  setChannelState = (identifier, state) => this.postState(identifier,
-    ServerState.CHANNEL, JSON.stringify(state))
+  setViewerState = (identifier, state) =>
+    this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
+  setChannelState = (identifier, state) =>
+    this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
 
-  getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`)
-  accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data))
+  getAccumulation = (identifier, id, start) =>
+    this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
+  accumulate = (identifier, id, data) =>
+    this.signedRequest(
+      identifier,
+      'POST',
+      `accumulate?id=${id || 'default'}`,
+      JSON.stringify(data)
+    );
 
-  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data))
-  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`)
+  vote = (identifier, id, data) =>
+    this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data));
+  getVotes = (identifier, id) =>
+    this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
 
-  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data))
-  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank')
-  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank')
+  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data));
+  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank');
+  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank');
 
-  getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`)
+  getJSONStore = (identifier, id) =>
+    this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
 
-  validateCode = (identifier, code) => this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }))
+  validateCode = (identifier, code) =>
+    this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }));
   pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
   revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
 }

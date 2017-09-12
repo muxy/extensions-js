@@ -27,7 +27,7 @@ export default class TwitchClient {
           data
         })
         .catch(reject)
-        .then((resp) => {
+        .then(resp => {
           if (resp.status < 400) {
             resolve(resp.responseText);
           }
@@ -37,11 +37,11 @@ export default class TwitchClient {
     });
   }
 
-  getTwitchUsers = (users) => {
+  getTwitchUsers = users => {
     if (users.length === 0) {
       return Promise.resolve([]);
     }
 
     return this.signedTwitchRequest('GET', `users?login=${users.join(',')}`);
-  }
+  };
 }

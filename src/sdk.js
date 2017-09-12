@@ -250,7 +250,7 @@ export default class SDK {
     return new Promise((accept, reject) => {
       this.client
         .getRank(this.identifier, rankID)
-        .then((data) => {
+        .then(data => {
           accept(data.data);
         })
         .catch(reject);
@@ -311,7 +311,6 @@ export default class SDK {
   clearRanking(rankID) {
     return this.clearRanking(rankID);
   }
-
 
   /**
    * User State
@@ -439,7 +438,6 @@ export default class SDK {
     forceType(key, 'string');
     return this.client.getJSONStore(this.identifier, key);
   }
-
 
   /**
    * Two-Factor Auth
@@ -598,12 +596,15 @@ export default class SDK {
       callback = inUserID;
     }
 
-    const cb = (msg) => {
+    const cb = msg => {
       try {
         // Production messages may be unprefixed.
         if (CurrentEnvironment().environment === 'production') {
           if (eventPatternMatch(msg.event, `${this.identifier}:${inEvent}`)) {
-            const truncatedEvent = msg.event.split(':').slice(1).join(':');
+            const truncatedEvent = msg.event
+              .split(':')
+              .slice(1)
+              .join(':');
             callback(msg.data, truncatedEvent);
             return;
           }
@@ -612,7 +613,10 @@ export default class SDK {
         if (eventPatternMatch(msg.event, realEvent)) {
           // Consumers of the SDK only ever interact with events
           // without the app-id or extension-id prefix.
-          const truncatedEvent = msg.event.split(':').slice(2).join(':');
+          const truncatedEvent = msg.event
+            .split(':')
+            .slice(2)
+            .join(':');
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {

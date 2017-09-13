@@ -28,7 +28,8 @@ class TwitchMessenger {
   send(id, event, target, body) {
     const data = body || {};
     Twitch.ext.send(target, 'application/json', {
-      event: `${CurrentEnvironment().environment}:${id}:${event}`, data
+      event: `${CurrentEnvironment().environment}:${id}:${event}`,
+      data
     });
   }
   /* eslint-enable class-methods-use-this */
@@ -88,12 +89,17 @@ class PusherMessenger {
   send(id, event, target, body, client) {
     const scopedEvent = `${CurrentEnvironment().environment}:${id}:${event}`;
 
-    client.signedRequest(id, 'POST', 'pusher_broadcast', JSON.stringify({
-      target,
-      event: scopedEvent,
-      user_id: this.channelID,
-      data: body
-    }));
+    client.signedRequest(
+      id,
+      'POST',
+      'pusher_broadcast',
+      JSON.stringify({
+        target,
+        event: scopedEvent,
+        user_id: this.channelID,
+        data: body
+      })
+    );
   }
 
   listen(id, topic, callback) {
@@ -102,7 +108,7 @@ class PusherMessenger {
       this.channel = this.client.subscribe(channelName);
     }
 
-    const cb = (message) => {
+    const cb = message => {
       try {
         const parsed = JSON.parse(message.message);
         callback(parsed);
@@ -133,13 +139,17 @@ class ServerMessenger {
   }
 
   send(id, event, target, body, client) {
-    client.signedRequest(id, 'POST', 'broadcast',
+    client.signedRequest(
+      id,
+      'POST',
+      'broadcast',
       JSON.stringify({
         target,
         event,
         user_id: this.channelID,
         data: body
-      }));
+      })
+    );
   }
 
   /* eslint-disable class-methods-use-this,no-console */

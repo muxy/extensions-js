@@ -80,13 +80,13 @@ export default function Muxy() {
   Client.setEnvironment(CurrentEnvironment());
   consolePrint(SDKInfoText, { boxed: true });
 
-  muxy.watchAuth = (extensionID) => {
+  muxy.watchAuth = extensionID => {
     Ext.extensionID = extensionID;
     Ext.testChannelID = muxy.testChannelID;
     Ext.testJWTRole = muxy.testJWTRole;
 
     // Auth callback handler
-    Ext.onAuthorized((auth) => {
+    Ext.onAuthorized(auth => {
       if (!auth) {
         muxy.loadReject();
         return;
@@ -97,7 +97,7 @@ export default function Muxy() {
       muxy.messenger.channelID = auth.channelId;
       muxy.client.updateAuth(auth.token);
 
-      const resolvePromise = (user) => {
+      const resolvePromise = user => {
         muxy.user = user;
 
         const keys = Object.keys(muxy.SDKClients);
@@ -113,7 +113,7 @@ export default function Muxy() {
       };
 
       const onFirstAuth = () => {
-        muxy.client.getUserInfo(extensionID).then((userinfo) => {
+        muxy.client.getUserInfo(extensionID).then(userinfo => {
           const user = new User(auth);
           user.ip = userinfo.ip_address;
           user.registeredWithMuxy = userinfo.registered || false;
@@ -160,7 +160,7 @@ export default function Muxy() {
       }
     }
 
-    Ext.onContext((context) => {
+    Ext.onContext(context => {
       muxy.context = context;
 
       if (muxy.user) {
@@ -177,7 +177,7 @@ export default function Muxy() {
    *  - extensionID
    *  - uaString
    */
-  muxy.setup = (options) => {
+  muxy.setup = options => {
     muxy.twitchClientID = options.extensionID;
     muxy.cachedTwitchClient = new TwitchClient(muxy.twitchClientID);
 
@@ -236,4 +236,3 @@ export default function Muxy() {
 
   return muxy;
 }
-

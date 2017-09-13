@@ -32,7 +32,7 @@ module.exports = {
     // ES6 let and const don't hoist variables, so it is an error to use them
     // before they are defined. However, without a good function definition/declaration
     // distinction trying to get definition order correct is ugly at best.
-    'no-use-before-define': ['error', { 'functions': false }],
+    'no-use-before-define': ['error', { functions: false }],
 
     // Don't allow trailing commas (e.g. ['a',]).
     'comma-dangle': ['error', 'never'],
@@ -43,9 +43,15 @@ module.exports = {
     // Don't allow reassigning function paramaters.
     'no-param-reassign': 'error',
 
+    // Allow omitting parens when there is only one argument to an arrow function.
+    'arrow-parens': ['error', 'as-needed'],
+
+    // Require all immediately-invoked function expressions to be outside parentheses.
+    'wrap-iife': ['error', 'inside'],
+
     // We don't actually use JSX, but airbnb does. And there is a bug with
     // this option in the current eslint/npm versions.
     'jsx-a11y/href-no-hash': 'off',
     'jsx-a11y/anchor-is-valid': 'off'
   }
-}
+};

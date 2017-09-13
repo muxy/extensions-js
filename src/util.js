@@ -71,7 +71,7 @@ function asciiBox(lines) {
   const out = [intro];
   out.push(`┌${'─'.repeat(contentWidth + 2)}┐`);
 
-  lines.forEach((line) => {
+  lines.forEach(line => {
     const paddingRight = ' '.repeat(contentWidth - line.length);
     out.push(`| ${line}${paddingRight} |`);
   });
@@ -164,12 +164,11 @@ export function forceType(value, type) {
 
 function isWindowFramed() {
   const isNotChildWindow = !window.opener;
+
   // Cannot compare WindowProxy objects with ===/!==
-  const hasWindowAncestors = !!(
-    // eslint-disable-next-line eqeqeq
-    (window.top && window != window.top) ||
-    // eslint-disable-next-line eqeqeq
-    (window.parent && window != window.parent)
-  );
+  const windowTop = window.top && window != window.top; // eslint-disable-line eqeqeq
+  const windowParent = window.parent && window != window.parent; // eslint-disable-line eqeqeq
+  const hasWindowAncestors = !!(windowTop || windowParent);
+
   return isNotChildWindow && hasWindowAncestors;
 }

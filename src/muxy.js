@@ -1,6 +1,6 @@
 import { ENVIRONMENTS, consolePrint, CurrentEnvironment } from './util';
 import Analytics from './analytics';
-import Client from './state-client';
+import StateClient from './state-client';
 import Ext from './twitch-ext';
 import TwitchClient from './twitch-client';
 import Messenger from './messenger';
@@ -10,110 +10,221 @@ import User from './user';
 import * as PackageConfig from '../package.json';
 
 /**
- * Muxy SDK Singleton. This class handles environment detection, data harness collection
- * and updates (for authentication and backend communication) and SDK instance creation.
+ * The main extension entry interface. Only one instance of this class should ever exist.
+ *
+ * This class handles environment detection, data harness collection and updates (for
+ * authentication and backend communication) and SDK instance creation.
  *
  * On import or inclusion in an HTML file, will be globally accessible as the `Muxy` object.
  */
-export default function Muxy() {
-  const muxy = {};
+class Muxy {
+  constructor() {
+    /**
+     * A flag used to signal when {@link setup} has been called. This function must be called once
+     * and only once before SDK objects may be created.
+     *
+     * @public
+     * @type {boolean}
+     */
+    this.setupCalled = false;
 
-  // muxy.setup() must be called before creating instances of the SDK, TwitchClient and Analytics.
-  muxy.setupCalled = false;
+    /**
+     * The Twitch Channel ID to use for testing. This will determine who the viewer and/or
+     * broadcaster appears as when testing the extension.
+     *
+     * Changes to this value must be made before calling {@link SDK}.
+     *
+     * @public
+     * @type {string}
+     */
+    this.testChannelID = '23161357';
 
-  /**
-   * The Twitch Channel ID to use for testing. This will determine who the viewer and/or broadcaster
-   * appears as when testing the extension.
-   *
-   * Changes to this value must be made before calling `Muxy.SDK()`.
-   *
-   * @type string
-   */
-  muxy.testChannelID = '23161357';
+    /**
+     * Role for the current user in the sandbox environment. May be one of {@link User.UserRoles}.
+     *
+     * Changes to this value must be made before calling {@link SDK}.
+     *
+     * @public
+     * @type {string}
+     */
+    this.testJWTRole = 'viewer';
 
-  // Role to create an auth token with in testing env
-  // user can change this with Muxy.testJWTRole before Muxy.SDK
-  muxy.testJWTRole = 'viewer';
+    /**
+     * The Twitch ClientID as returned from the auth callback. This is used for all
+     * requests to Twitch's API.
+     *
+     * @public
+     * @readonly
+     * @type {string}
+     */
+    this.twitchClientID = '';
 
-  muxy.SDKClients = {};
+    /**
+     * Internal cache for created {@link SDK} client objects mapped to SDK id.
+     *
+     * @private
+     * @type {Object}
+     */
+    this.SDKClients = {};
 
-  muxy.client = new Client();
-  muxy.messenger = new Messenger();
+    /**
+     * Internal {@link StateClient}.
+     *
+     * @private
+     * @type {StateClient}
+     */
+    this.client = new StateClient();
 
-  muxy.twitchClientID = '';
-  muxy.cachedTwitchClient = null;
+    /**
+     * Internal {@link Messenger}.
+     *
+     * @private
+     * @type {Messenger}
+     */
+    this.messenger = new Messenger();
 
-  muxy.analytics = null;
+    /**
+     * Internal {@link TwitchClient}.
+     *
+     * @private
+     * @type {TwitchClient}.
+     */
+    this.cachedTwitchClient = null;
 
-  // Holds the most recent results from the context callback.
-  muxy.context = {};
+    /**
+     * Internal {@link Analytics}.
+     *
+     * @private
+     * @type {Analytics}.
+     */
+    this.analytics = null;
 
-  muxy.loadPromise = new Promise((resolve, reject) => {
-    muxy.loadResolve = resolve;
-    muxy.loadReject = reject;
-  });
+    /**
+     * Internal caching for most recent context callback result.
+     *
+     * @private
+     * @type {Object}
+     */
+    this.context = {};
 
-  const SDKInfoText = [
-    'Muxy Extensions SDK',
-    `v${PackageConfig.version} © ${new Date().getFullYear()} ${PackageConfig.author}`,
-    PackageConfig.repository,
-    ''
-  ];
+    /**
+     * Internal reference to the current {@link User}.
+     *
+     * @private
+     * @type {User}
+     */
+    this.user = null;
 
-  switch (CurrentEnvironment()) {
-    case ENVIRONMENTS.SANDBOX_DEV:
-      SDKInfoText.push('Running in sandbox environment outside of Twitch');
-      break;
-    case ENVIRONMENTS.SANDBOX_TWITCH:
-      SDKInfoText.push('Running in sandbox environment on Twitch');
-      break;
-    case ENVIRONMENTS.PRODUCTION:
-      SDKInfoText.push('Running on production');
-      break;
-    case ENVIRONMENTS.SERVER:
-      SDKInfoText.push('Running on a NodeJS server');
-      break;
-    default:
-      SDKInfoText.push('Could not determine execution environment.');
+    /**
+     * Promise to resolve once the Muxy singleton is full loaded and ready
+     * to be used.
+     *
+     * @private
+     * @type {Promise}
+     */
+    this.loadPromise = new Promise((resolve, reject) => {
+      /** @ignore */
+      this.loadResolve = resolve;
+      /** @ignore */
+      this.loadReject = reject;
+    });
+
+    StateClient.setEnvironment(CurrentEnvironment());
   }
 
-  Client.setEnvironment(CurrentEnvironment());
-  consolePrint(SDKInfoText, { boxed: true });
+  /**
+   * Prints to console a description of the library's current version and
+   * environment info. This is called automatically when the library is
+   * setup, unless the `quiet` parameter is passed to {@link setup}.
+   *
+   * @since 1.0.0
+   * @public
+   *
+   * @example
+   * Muxy.printInfo();
+   * >
+     ┌──────────────────────────────────────────────────┐
+     | Muxy Extensions SDK                              |
+     | v1.0.0 © 2017 Muxy, Inc.                         |
+     | https://github.com/muxy/extensions-js            |
+     |                                                  |
+     | Running in sandbox environment outside of Twitch |
+     └──────────────────────────────────────────────────┘
+   *
+   */
+  static printInfo() {
+    const SDKInfoText = [
+      'Muxy Extensions SDK',
+      `v${PackageConfig.version} © ${new Date().getFullYear()} ${PackageConfig.author}`,
+      PackageConfig.repository,
+      ''
+    ];
 
-  muxy.watchAuth = extensionID => {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_DEV:
+        SDKInfoText.push('Running in sandbox environment outside of Twitch');
+        break;
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+        SDKInfoText.push('Running in sandbox environment on Twitch');
+        break;
+      case ENVIRONMENTS.PRODUCTION:
+        SDKInfoText.push('Running on production');
+        break;
+      case ENVIRONMENTS.SERVER:
+        SDKInfoText.push('Running on a NodeJS server');
+        break;
+      default:
+        SDKInfoText.push('Could not determine execution environment.');
+    }
+
+    consolePrint(SDKInfoText, { boxed: true });
+  }
+
+  /**
+   * Called the first time the {@link setup} is called to start watching the auth
+   * and context callbacks and updating values automatically. This method should
+   * not normally be called directly.
+   *
+   * @since 1.0.0
+   * @private
+   *
+   * @param {string} extensionID - The Twitch Extension Client ID to use for all
+   * Twitch API requests.
+   */
+  watchAuth(extensionID) {
     Ext.extensionID = extensionID;
-    Ext.testChannelID = muxy.testChannelID;
-    Ext.testJWTRole = muxy.testJWTRole;
+    Ext.testChannelID = this.testChannelID;
+    Ext.testJWTRole = this.testJWTRole;
 
     // Auth callback handler
     Ext.onAuthorized(auth => {
       if (!auth) {
-        muxy.loadReject();
+        this.loadReject();
         return;
       }
 
-      muxy.twitchClientID = auth.clientId;
-      muxy.messenger.extensionID = auth.clientId;
-      muxy.messenger.channelID = auth.channelId;
-      muxy.client.updateAuth(auth.token);
+      this.twitchClientID = auth.clientId;
+      this.messenger.extensionID = auth.clientId;
+      this.messenger.channelID = auth.channelId;
+      this.client.updateAuth(auth.token);
 
       const resolvePromise = user => {
-        muxy.user = user;
+        this.user = user;
 
-        const keys = Object.keys(muxy.SDKClients);
+        const keys = Object.keys(this.SDKClients);
         for (let i = 0; i < keys.length; i += 1) {
-          muxy.SDKClients[keys[i]].user = muxy.user;
+          this.SDKClients[keys[i]].user = this.user;
         }
 
-        if (muxy.analytics) {
-          muxy.analytics.user = muxy.user;
+        if (this.analytics) {
+          this.analytics.user = this.user;
         }
 
-        muxy.loadResolve();
+        this.loadResolve();
       };
 
       const onFirstAuth = () => {
-        muxy.client.getUserInfo(extensionID).then(userinfo => {
+        this.client.getUserInfo(extensionID).then(userinfo => {
           const user = new User(auth);
           user.ip = userinfo.ip_address;
           user.registeredWithMuxy = userinfo.registered || false;
@@ -125,9 +236,9 @@ export default function Muxy() {
         });
       };
 
-      if (muxy.user) {
-        muxy.user.updateAuth(auth);
-        resolvePromise(muxy.user);
+      if (this.user) {
+        this.user.updateAuth(auth);
+        resolvePromise(this.user);
       } else {
         onFirstAuth();
       }
@@ -135,40 +246,40 @@ export default function Muxy() {
 
     // Context callback handler
     function updateUserContextSettings() {
-      if (!muxy.user || !muxy.context) {
+      if (!this.user || !this.context) {
         return;
       }
 
       // Set Video Mode
-      if (muxy.context.isFullScreen) {
-        muxy.user.videoMode = 'fullscreen';
-      } else if (muxy.context.isTheatreMode) {
-        muxy.user.videoMode = 'theatre';
+      if (this.context.isFullScreen) {
+        this.user.videoMode = 'fullscreen';
+      } else if (this.context.isTheatreMode) {
+        this.user.videoMode = 'theatre';
       } else {
-        muxy.user.videoMode = 'default';
+        this.user.videoMode = 'default';
       }
 
-      muxy.user.game = muxy.context.game;
-      muxy.user.bitrate = Math.round(muxy.context.bitrate || 0);
-      muxy.user.latency = muxy.context.hlsLatencyBroadcaster;
-      muxy.user.buffer = muxy.context.bufferSize;
+      this.user.game = this.context.game;
+      this.user.bitrate = Math.round(this.context.bitrate || 0);
+      this.user.latency = this.context.hlsLatencyBroadcaster;
+      this.user.buffer = this.context.bufferSize;
 
       // If buffer size goes to 0, send an analytics event that
       // this user's video is buffering.
-      if (muxy.context.bufferSize < 1 && muxy.analytics) {
-        muxy.analytics.sendEvent('video', 'buffer', 1);
+      if (this.context.bufferSize < 1 && this.analytics) {
+        this.analytics.sendEvent('video', 'buffer', 1);
       }
     }
 
     Ext.onContext(context => {
-      muxy.context = context;
+      this.context = context;
 
-      if (muxy.user) {
+      if (this.user) {
         updateUserContextSettings();
         // Context callback called before
       }
     });
-  };
+  }
 
   /**
    * Mandatory SDK setup call.
@@ -176,63 +287,72 @@ export default function Muxy() {
    * @param {Object} options
    *  - extensionID
    *  - uaString
+   *  - quiet
    */
-  muxy.setup = options => {
-    muxy.twitchClientID = options.extensionID;
-    muxy.cachedTwitchClient = new TwitchClient(muxy.twitchClientID);
-
-    if (options.uaString) {
-      muxy.analytics = new Analytics(options.uaString, muxy.loadPromise);
+  setup(options) {
+    if (this.setupCalled) {
+      throw new Error('Muxy.setup() was called twice');
     }
 
-    muxy.setupCalled = true;
-  };
+    this.twitchClientID = options.extensionID;
+    this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
+
+    if (options.uaString) {
+      this.analytics = new Analytics(options.uaString, this.loadPromise);
+    }
+
+    if (!options.quiet) {
+      Muxy.printInfo();
+    }
+
+    this.setupCalled = true;
+  }
 
   /**
    * Returns a version of the Muxy SDK associated with the provided identifier.
    *
    * @param {string} id - A unique identifier for this extension or app.
    */
-  muxy.SDK = function NewSDK(id) {
-    if (!muxy.setupCalled) {
-      throw new Error('muxy.setup() must be called before creating a new SDK instance');
+  SDK(id) {
+    if (!this.setupCalled) {
+      throw new Error('Muxy.setup() must be called before creating a new SDK instance');
     }
 
-    const identifier = id || muxy.twitchClientID;
+    const identifier = id || this.twitchClientID;
     if (!identifier) {
       return null;
     }
 
-    if (!muxy.watchingAuth) {
-      muxy.watchingAuth = true;
-      muxy.watchAuth(identifier);
+    if (!this.watchingAuth) {
+      this.watchingAuth = true;
+      this.watchAuth(identifier);
     }
 
-    if (!muxy.SDKClients[identifier]) {
-      muxy.SDKClients[identifier] = new SDK(
+    if (!this.SDKClients[identifier]) {
+      this.SDKClients[identifier] = new SDK(
         identifier,
-        muxy.client,
-        muxy.user,
-        muxy.messenger,
-        muxy.analytics,
-        muxy.loadPromise
+        this.client,
+        this.user,
+        this.messenger,
+        this.analytics,
+        this.loadPromise
       );
     }
 
-    return muxy.SDKClients[identifier];
-  };
+    return this.SDKClients[identifier];
+  }
 
   /**
    * Returns a twitch client to use. Can only be used
    * after the loaded promise resolves.
    */
-  muxy.TwitchClient = function NewTwitchClient() {
-    if (!muxy.setupCalled) {
-      throw new Error('muxy.setup() must be called before creating a new TwitchClient instance');
+  TwitchClient() {
+    if (!this.setupCalled) {
+      throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
     }
 
-    return muxy.cachedTwitchClient;
-  };
-
-  return muxy;
+    return this.cachedTwitchClient;
+  }
 }
+
+export default Muxy;

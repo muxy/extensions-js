@@ -2,8 +2,7 @@
   "name": "muxy-extensions-js",
   "author": "Muxy, Inc.",
   "version": "1.0.2",
-  "description":
-    "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
+  "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "license": "ISC",
   "main": "dist/muxy-extensions.js",
   "module": "src/index.js",

@@ -77,11 +77,11 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object} AccumulateData
+   * @typedef {Object} AccumulateData
    *
    * @property {string} latest A Unix timestamp of the most recently posted JSON blob.
    *
-   * @property {object[]} data Array of all JSON blob payloads posted to this identifier.
+   * @property {Object[]} data Array of all JSON blob payloads posted to this identifier.
    * @property {number} data.observed A Unix timestamp of when this payload was received.
    * @property {string} data.channel_id The id of the channel this payload is associated with
    * (either the viewer was watching the channel, or the app/server was authed with this channel).
@@ -90,7 +90,7 @@ export default class SDK {
    * whisper events to a particular viewer.
    * @property {string} data.user_id If the viewer has chosen to share their identity with the
    * extension, this field will hold the viewer's actual Twitch ID.
-   * @property {object} data.data The actual JSON blob payload as sent to the accumulate endpoint.
+   * @property {Object} data.data The actual JSON blob payload as sent to the accumulate endpoint.
    */
 
   /**
@@ -134,7 +134,7 @@ export default class SDK {
    * @since 1.0.0
    *
    * @param {string} accumulationID - The identifier that this datum is accumulated with.
-   * @param {object} data - Any JSON serializable JavaScript object.
+   * @param {Object} data - Any JSON serializable JavaScript object.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -157,7 +157,7 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object} VoteData
+   * @typedef {Object} VoteData
    * @property {number} count - The total number of votes received for this vote identifier.
    * @property {number} mean - The average of all votes received for this identifier.
    * @property {number[]} specific - The number of votes cast for the specific values [0-4].
@@ -219,7 +219,7 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object[]} RankDatum
+   * @typedef {Object[]} RankDatum
    * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
    * @property {number} score - The number of users who have sent this `key` for this identifier.
    */
@@ -322,7 +322,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {object} state - A complete JS object representing the current viewer state.
+   * @param {Object} state - A complete JS object representing the current viewer state.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -348,7 +348,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {object} state - A complete JS object representing the current channel state.
+   * @param {Object} state - A complete JS object representing the current channel state.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -367,12 +367,12 @@ export default class SDK {
   }
 
   /**
-   * @typedef {object} AllState
-   * @property {object} extension - A state object only settable by the extension iteself.
+   * @typedef {Object} AllState
+   * @property {Object} extension - A state object only settable by the extension iteself.
    * Universal for all channels.
-   * @property {object} channel - A state object only settable by a broadcaster. Universal for all
+   * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
    * viewers of the same channel.
-   * @property {object} viewer - A state object settable by each viewer. Specific to the viewer of
+   * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
    * a given channel.
    */
 
@@ -424,7 +424,7 @@ export default class SDK {
    *
    * @param {string} key - The lookup key for data in the JSON store.
    *
-   * @return {Promise<object>} Resolves with the stored JSON parsed to a JS Object associated with
+   * @return {Promise<Object>} Resolves with the stored JSON parsed to a JS Object associated with
    * the key. Rejects on server error or if the key has no associated data.
    *
    * @example
@@ -479,7 +479,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @return {Promise<object>}
+   * @return {Promise<Object>}
    * @property {boolean} exists - True if an auth token has been validated, false otherwise.
    *
    * @example
@@ -577,7 +577,7 @@ export default class SDK {
    * This callback will receive the message body as its first parameter and the `event` parameter
    * to {@link send} as the second.
    *
-   * @return {object} A listener handle that can be passed to {@see unlisten} to unbind
+   * @return {Object} A listener handle that can be passed to {@see unlisten} to unbind
    * this callback.
    *
    * @example
@@ -633,7 +633,7 @@ export default class SDK {
    *
    * @since 1.0.0
    *
-   * @param {object} handle - An event handle as returned from {@see listen}.
+   * @param {Object} handle - An event handle as returned from {@see listen}.
    */
   unlisten(handle) {
     return this.messenger.unlisten(this.identifier, handle);

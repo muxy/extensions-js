@@ -45,7 +45,7 @@ function environmentDetector(overrideWindow) {
 /**
  * CurrentEnvironment uses the hostname and available info to determine in what
  * environment the SDK is running. Possible values are available in {ENVIRONMENTS}.
- * @type String
+ * @type {string}
  */
 export const CurrentEnvironment = environmentDetector;
 
@@ -116,7 +116,7 @@ export function consolePrint(lines, options = {}) {
  *
  * @param input an input event name, : delimited.
  * Allowed characters are alpha-numeric and _
- * @param pattern a pattern to match agains, : delimited.
+ * @param pattern a pattern to match against, : delimited.
  * Allowed characters are alpha-numeric and _ and *
  *
  * @return true if the pattern matches the input, false otherwise.
@@ -145,7 +145,7 @@ export function eventPatternMatch(input, pattern) {
  * throwing an error. As a convenience, the type may also be an
  * array of types.
  *
- * Acceptible types:
+ * Acceptable types:
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof
  *
  * @param {any} value any variable

@@ -1,11 +1,34 @@
 /**
+ * Defines the current user's role on Twitch relative to the current channel being
+ * viewed. May be "viewer" if the user is simply viewing the channel, "moderator"
+ * if the user is a moderator of the channel or "broadcaster" if the user is also
+ * the broadcaster of the channel.
+ */
+export const UserRoles = {
+  Viewer: 'viewer',
+  Broadcaster: 'broadcaster',
+  Moderator: 'moderator'
+};
+
+/**
+ * Defines the video mode for the current user. This may be "default" for the default
+ * windowed viewing experience on Twitch, "fullscreen" for the fullscreen, video-only
+ * mode or "theatre" for the video full window-width.
+ */
+export const VideoModes = {
+  Default: 'default',
+  Fullscreen: 'fullscreen',
+  Theatre: 'theatre'
+};
+
+/**
  * User stores fields related to the current extension user, either a viewer or the broadcaster.
  * These fields are automatically updated by the SDK.
  */
 export default class User {
   /**
    * @since 1.0.0
-   * @param {object} auth - An auth token usable by this user for backend requests.
+   * @param {Object} auth - An auth token usable by this user for backend requests.
    */
   constructor(auth) {
     /**
@@ -20,7 +43,7 @@ export default class User {
      * twitchJWT holds the raw JWT response from the Twitch Extension SDK.
      *
      * @since 1.0.0
-     * @type {object}
+     * @type {Object}
      */
     this.twitchJWT = auth.token;
 
@@ -72,12 +95,12 @@ export default class User {
     this.visualizationID = '';
 
     /**
-     * role is the current user's role in the extension. May be one of ['viewer', 'config'].
+     * role is the current user's role in the extension. May be one of {@link UserRoles}.
      *
      * @since 1.0.0
      * @type {string}
      */
-    this.role = 'viewer';
+    this.role = UserRoles.Viewer;
 
     /**
      * ip is the current user's IP address. May be an empty string if undetectable.
@@ -96,12 +119,12 @@ export default class User {
     this.game = '';
 
     /**
-     * Current video mode: One of ['default', fullscreen', 'theatre'].
+     * User's current video mode. One of {@link VideoModes}.
      *
      * @since 1.0.0
      * @type {string}
      */
-    this.videoMode = 'default';
+    this.videoMode = VideoModes.Default;
 
     /**
      * Current video bitrate. Null if no video or unknown.
@@ -120,7 +143,7 @@ export default class User {
     this.latency = null;
 
     /**
-     * Current buffer size of the viewer's player. Null if no video or uknown.
+     * Current buffer size of the viewer's player. Null if no video or unknown.
      *
      * @since 1.0.0
      * @type {null|number}
@@ -136,7 +159,7 @@ export default class User {
    * Attempts to parse the provided JWT and persist any found information in store.
    * @since 1.0.0
    *
-   * @param {object} jwt - The auth JWT token as returned from the auth harness.
+   * @param {Object} jwt - The auth JWT token as returned from the auth harness.
    */
   extractJWTInfo(jwt) {
     try {
@@ -171,7 +194,7 @@ export default class User {
    * Stores values from a new auth token in the local store.
    * @since 1.0.0
    *
-   * @param {object} auth - An auth JWT with updated user information.
+   * @param {Object} auth - An auth JWT with updated user information.
    */
   updateAuth(auth) {
     this.twitchJWT = auth.token;

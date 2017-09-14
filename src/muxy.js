@@ -15,9 +15,14 @@ import * as PackageConfig from '../package.json';
  * This class handles environment detection, data harness collection and updates (for
  * authentication and backend communication) and SDK instance creation.
  *
- * On import or inclusion in an HTML file, will be globally accessible as the `Muxy` object.
+ * On import or inclusion in an HTML file, a singleton object will be globally accessible
+ * as `Muxy`.
  */
 class Muxy {
+  /**
+   * Private constructor for singleton use only.
+   * @ignore
+   */
   constructor() {
     /**
      * A flag used to signal when {@link setup} has been called. This function must be called once
@@ -62,7 +67,7 @@ class Muxy {
     /**
      * Internal cache for created {@link SDK} client objects mapped to SDK id.
      *
-     * @private
+     * @ignore
      * @type {Object}
      */
     this.SDKClients = {};
@@ -70,7 +75,7 @@ class Muxy {
     /**
      * Internal {@link StateClient}.
      *
-     * @private
+     * @ignore
      * @type {StateClient}
      */
     this.client = new StateClient();
@@ -78,7 +83,7 @@ class Muxy {
     /**
      * Internal {@link Messenger}.
      *
-     * @private
+     * @ignore
      * @type {Messenger}
      */
     this.messenger = new Messenger();
@@ -86,7 +91,7 @@ class Muxy {
     /**
      * Internal {@link TwitchClient}.
      *
-     * @private
+     * @ignore
      * @type {TwitchClient}.
      */
     this.cachedTwitchClient = null;
@@ -94,7 +99,7 @@ class Muxy {
     /**
      * Internal {@link Analytics}.
      *
-     * @private
+     * @ignore
      * @type {Analytics}.
      */
     this.analytics = null;
@@ -102,7 +107,7 @@ class Muxy {
     /**
      * Internal caching for most recent context callback result.
      *
-     * @private
+     * @ignore
      * @type {Object}
      */
     this.context = {};
@@ -110,16 +115,16 @@ class Muxy {
     /**
      * Internal reference to the current {@link User}.
      *
-     * @private
+     * @ignore
      * @type {User}
      */
     this.user = null;
 
     /**
      * Promise to resolve once the Muxy singleton is full loaded and ready
-     * to be used.
+     * to be used. Use the {@see loaded} method instead of accessing directly.
      *
-     * @private
+     * @ignore
      * @type {Promise}
      */
     this.loadPromise = new Promise((resolve, reject) => {
@@ -142,14 +147,13 @@ class Muxy {
    *
    * @example
    * Muxy.printInfo();
-   * >
-     ┌──────────────────────────────────────────────────┐
-     | Muxy Extensions SDK                              |
-     | v1.0.0 © 2017 Muxy, Inc.                         |
-     | https://github.com/muxy/extensions-js            |
-     |                                                  |
-     | Running in sandbox environment outside of Twitch |
-     └──────────────────────────────────────────────────┘
+   * ┌──────────────────────────────────────────────────┐
+   * | Muxy Extensions SDK                              |
+   * | v1.0.0 © 2017 Muxy, Inc.                         |
+   * | https://github.com/muxy/extensions-js            |
+   * |                                                  |
+   * | Running in sandbox environment outside of Twitch |
+   * └──────────────────────────────────────────────────┘
    *
    */
   static printInfo() {
@@ -186,7 +190,7 @@ class Muxy {
    * not normally be called directly.
    *
    * @since 1.0.0
-   * @private
+   * @ignore
    *
    * @param {string} extensionID - The Twitch Extension Client ID to use for all
    * Twitch API requests.
@@ -230,7 +234,7 @@ class Muxy {
           user.registeredWithMuxy = userinfo.registered || false;
           user.visualizationID = userinfo.visualization_id || '';
 
-          updateUserContextSettings();
+          updateUserContextSettings.call(this);
 
           resolvePromise(user);
         });
@@ -275,23 +279,46 @@ class Muxy {
       this.context = context;
 
       if (this.user) {
-        updateUserContextSettings();
-        // Context callback called before
+        updateUserContextSettings.call(this);
       }
     });
   }
 
   /**
-   * Mandatory SDK setup call.
+   * Mandatory SDK setup call. Must be called once and only once to establish the Extension
+   * environment and client ID to use.
+   *
+   * @since 1.0.0
+   * @public
    *
    * @param {Object} options
-   *  - extensionID
-   *  - uaString
-   *  - quiet
+   *
+   * @param {string} options.extensionID - The Extension Client ID as provided by Twitch.
+   * @since 1.0.0
+   *
+   * @param {string?} options.uaString - An optional Google Analytics UA_String to send
+   * events to.
+   * @since 1.0.0
+   *
+   * @param {boolean?} options.quiet - If true, will not print library information to the
+   * console.
+   * @since 1.0.3
+   *
+   * @throws {Error} Will throw an error if setup() has already been called, or if no
+   * Extension Client ID is provided.
+   *
+   * @example
+   * Muxy.setup({
+   *   extensionID: <your extension client id>
+   * });
    */
   setup(options) {
     if (this.setupCalled) {
-      throw new Error('Muxy.setup() was called twice');
+      throw new Error('Muxy.setup() can only be called once.');
+    }
+
+    if (!options || !options.extensionID) {
+      throw new Error('Muxy.setup() was called without an Extension Client ID');
     }
 
     this.twitchClientID = options.extensionID;
@@ -310,49 +337,88 @@ class Muxy {
 
   /**
    * Returns a version of the Muxy SDK associated with the provided identifier.
+   * @since 1.0.0
+   * @public
    *
-   * @param {string} id - A unique identifier for this extension or app.
+   * @param {string?} id - A unique identifier for this extension or app. If omitted, the
+   * extension client id will be used.
+   *
+   * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
+   *
+   * @returns {SDK} An instance of the SDK class.
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.loaded().then(() => {
+   *   sdk.send('Hello World');
+   * });
    */
-  SDK(id) {
-    if (!this.setupCalled) {
-      throw new Error('Muxy.setup() must be called before creating a new SDK instance');
-    }
-
-    const identifier = id || this.twitchClientID;
-    if (!identifier) {
-      return null;
-    }
-
-    if (!this.watchingAuth) {
-      this.watchingAuth = true;
-      this.watchAuth(identifier);
-    }
-
-    if (!this.SDKClients[identifier]) {
-      this.SDKClients[identifier] = new SDK(
-        identifier,
-        this.client,
-        this.user,
-        this.messenger,
-        this.analytics,
-        this.loadPromise
-      );
-    }
-
-    return this.SDKClients[identifier];
-  }
+  SDK(id) {} // eslint-disable-line
 
   /**
-   * Returns a twitch client to use. Can only be used
-   * after the loaded promise resolves.
+   * Returns a twitch client to use. Can only be used after the loaded promise resolves.
+   *
+   * @since 1.0.0
+   * @public
+   *
+   * @returns {TwitchClient} An instance of the TwitchClient class.
+   *
+   * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
    */
-  TwitchClient() {
-    if (!this.setupCalled) {
-      throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
-    }
-
-    return this.cachedTwitchClient;
-  }
+  TwitchClient() {} // eslint-disable-line
 }
 
-export default Muxy;
+/**
+ * Global Muxy singleton object.
+ * @ignore
+ */
+const mxy = new Muxy();
+
+// Constructors for sub-objects are added to the singleton so that using the `new`
+// operator doesn't mess with the mxy singleton scope. Only applies to SDK, TwitchClient
+// and Analytics if we ever add that functionality.
+
+/** @ignore */
+mxy.SDK = function NewSDK(id) {
+  if (!mxy.setupCalled) {
+    throw new Error('Muxy.setup() must be called before creating a new SDK instance');
+  }
+
+  const identifier = id || mxy.twitchClientID;
+  if (!identifier) {
+    return null;
+  }
+
+  if (!mxy.watchingAuth) {
+    mxy.watchingAuth = true;
+    mxy.watchAuth(identifier);
+  }
+
+  if (!mxy.SDKClients[identifier]) {
+    mxy.SDKClients[identifier] = new SDK(
+      identifier,
+      mxy.client,
+      mxy.user,
+      mxy.messenger,
+      mxy.analytics,
+      mxy.loadPromise
+    );
+  }
+
+  return mxy.SDKClients[identifier];
+};
+
+/** @ignore */
+mxy.TwitchClient = function NewTwitchClient() {
+  if (!mxy.setupCalled) {
+    throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
+  }
+
+  return mxy.cachedTwitchClient;
+};
+
+/**
+ * Only export the Muxy singleton to avoid creation of competing/conflicting instances.
+ * @ignore
+ */
+export default mxy;

@@ -420,9 +420,10 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @throws {TypeError} Will throw an error if key is not a string.
+   * @throws {TypeError} Will throw an error if key is provided but is not a string.
    *
-   * @param {string} key - The lookup key for data in the JSON store.
+   * @param {string?} key - The lookup key for data in the JSON store. Uses 'default' if no value
+   * is provided.
    *
    * @return {Promise<Object>} Resolves with the stored JSON parsed to a JS Object associated with
    * the key. Rejects on server error or if the key has no associated data.
@@ -435,7 +436,10 @@ export default class SDK {
    * });
    */
   getJSONStore(key) {
-    forceType(key, 'string');
+    if (key) {
+      forceType(key, 'string');
+    }
+
     return this.client.getJSONStore(this.identifier, key);
   }
 

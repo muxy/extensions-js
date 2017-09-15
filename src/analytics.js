@@ -1,6 +1,9 @@
 import gumshoeFactory from '../libs/gumshoe';
 
-// The analytics collection endpoint
+/**
+ * The analytics collection endpoint.
+ * @ignore
+ */
 const ANALYTICS_ENDPOINT = 'https://info.muxy.io';
 
 /**

@@ -1,10 +1,6 @@
 {
   "source": "./src",
-  "includes": [
-    "muxy.js",
-    "sdk.js",
-    "user.js"
-  ],
+  "includes": ["muxy.js", "sdk.js", "twitch-client.js", "state-client.js", "user.js"],
   "destination": "./docs",
   "plugins": [
     {
@@ -24,19 +20,9 @@
       },
       "test": {
         "source": "./spec/",
-        "interfaces": [
-          "describe",
-          "it",
-          "context",
-          "suite",
-          "test"
-        ],
-        "includes": [
-          "(spec|Spec|test|Test)\\.js$"
-        ],
-        "excludes": [
-          "\\.config\\.js$"
-        ]
+        "interfaces": ["describe", "it", "context", "suite", "test"],
+        "includes": ["(spec|Spec|test|Test)\\.js$"],
+        "excludes": ["\\.config\\.js$"]
       }
     },
     {

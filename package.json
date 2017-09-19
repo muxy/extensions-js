@@ -2,8 +2,7 @@
   "name": "muxy-extensions-js",
   "author": "Muxy, Inc.",
   "version": "1.0.2",
-  "description":
-    "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
+  "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "license": "ISC",
   "main": "dist/muxy-extensions.js",
   "module": "src/index.js",
@@ -29,6 +28,7 @@
     "esdoc": "^1.0.1",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-node": "^1.0.2",
+    "esdoc-publish-html-plugin": "^1.1.0",
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^4.5.0",
     "eslint-config-airbnb": "^15.1.0",

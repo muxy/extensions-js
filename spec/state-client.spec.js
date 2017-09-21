@@ -26,7 +26,7 @@ function rankOK(body) {
 }
 
 /** @test {StateClient} */
-describe('StateClient', function() {
+describe('StateClient', () => {
   beforeEach(function() {
     this.server = sinon.fakeServer.create();
   });
@@ -36,16 +36,16 @@ describe('StateClient', function() {
   });
 
   /** @test {StateClient#validateJWT} */
-  it('should fail with invalid JWT', function() {
+  it('should fail with invalid JWT', () => {
     const client = new StateClient();
-    assertPromiseFails(client.getRank());
+    return assertPromiseFails(client.getRank());
   });
 
   /** @test {StateClient#validateJWT} */
-  it('should fail with an expired JWT', function() {
+  it('should fail with an expired JWT', () => {
     const client = new StateClient();
     client.updateAuth(expiredJWT);
-    assertPromiseFails(client.getRank());
+    return assertPromiseFails(client.getRank());
   });
 
   /** @test {StateClient#getRank} */

@@ -1,7 +1,7 @@
-import { eventPatternMatch, CurrentEnvironment, forceType } from './util';
+import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
 
 /**
- * Main Muxy SDK interface.
+ * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
  *
  * Instances of this class created through the global `Muxy` object can be used to easily
  * interact with Muxy's Extension Backend Service. It includes functionality to aggregate
@@ -77,6 +77,8 @@ export default class SDK {
    */
 
   /**
+   * The response from {@link getAccumulateData}.
+   *
    * @typedef {Object} AccumulateData
    *
    * @property {string} latest A Unix timestamp of the most recently posted JSON blob.
@@ -94,7 +96,7 @@ export default class SDK {
    */
 
   /**
-   * Fetches the accumulated user data for a given id received by the backen since start.
+   * Fetches the accumulated user data for a given id received by the backend since start.
    *
    * Broadcaster-only functionality.
    *
@@ -157,7 +159,10 @@ export default class SDK {
    */
 
   /**
+   * The response from {@link getVoteData}.
+   *
    * @typedef {Object} VoteData
+   *
    * @property {number} count - The total number of votes received for this vote identifier.
    * @property {number} mean - The average of all votes received for this identifier.
    * @property {number[]} specific - The number of votes cast for the specific values [0-4].
@@ -219,7 +224,10 @@ export default class SDK {
    */
 
   /**
-   * @typedef {Object[]} RankDatum
+   * The response from {@link getRankData}.
+   *
+   * @typedef {Object[]} RankData
+   *
    * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
    * @property {number} score - The number of users who have sent this `key` for this identifier.
    */
@@ -237,7 +245,7 @@ export default class SDK {
    * on server error.
    *
    * @example
-   * sdk.getRankingData('favorite_color').then((colors) => {
+   * sdk.getRankData('favorite_color').then((colors) => {
    *   if (colors.length > 0) {
    *     colors.forEach((color) => {
    *       console.log(`${color.key}: ${color.score}`);
@@ -367,8 +375,11 @@ export default class SDK {
   }
 
   /**
+   * The response from {@link getAllState}.
+   *
    * @typedef {Object} AllState
-   * @property {Object} extension - A state object only settable by the extension iteself.
+   *
+   * @property {Object} extension - A state object only settable by the extension itself.
    * Universal for all channels.
    * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
    * viewers of the same channel.
@@ -625,7 +636,7 @@ export default class SDK {
         }
       } catch (err) {
         // TODO: Should this fail silently?
-        console.error(err); // eslint-disable-line no-console
+        consolePrint(err, { type: 'error' });
       }
     };
 

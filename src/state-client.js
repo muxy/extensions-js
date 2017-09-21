@@ -37,8 +37,7 @@ const ServerState = {
 };
 
 /**
- * StateClient wraps all extension backend accessor and mutator endpoints in
- * convenience functions.
+ * Wraps all extension backend accessor and mutator endpoints in convenience functions.
  *
  * Should not normally be created directly, instead an instance is made available
  * and namespaced appropriately when using {@link Muxy.SDK}.

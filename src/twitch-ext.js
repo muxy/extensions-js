@@ -1,4 +1,4 @@
-import { ENVIRONMENTS, CurrentEnvironment } from './util';
+import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
 import Client from './state-client';
 
 // 25 minutes between updates of the testing auth token.
@@ -36,6 +36,9 @@ export default class Ext {
       }
 
       default:
+        consolePrint([`No authorization callback for ${CurrentEnvironment()}`], {
+          type: 'error'
+        });
     }
   }
 

@@ -1,28 +1,22 @@
 import chai from 'chai';
+import Util from '../src/util';
+
 const assert = chai.assert;
-
-import {
-  ENVIRONMENTS,
-  errorPromise,
-  CurrentEnvironment,
-  eventPatternMatch,
-  forceType
-} from '../src/util';
-
 const should = chai.should();
 
 // Convenience test harness for forceType.
 function testForceType(value, expected) {
   return function() {
-    forceType(value, expected);
+    Util.forceType(value, expected);
   };
 }
 
-describe('Util', function() {
-  /** @test {errorPromise} */
+/** @test {Util} */
+describe('Util', () => {
+  /** @test {Util.errorPromise} */
   describe('errorPromise', () => {
     it('rejects immediately', () =>
-      errorPromise('error string')
+      Util.errorPromise('error string')
         .then(() => {
           throw new Error('fail');
         })
@@ -31,15 +25,28 @@ describe('Util', function() {
         }));
 
     it('passes error string', () =>
-      errorPromise('error string').catch(data => {
+      Util.errorPromise('error string').catch(data => {
         data.should.equal('error string');
       }));
   });
 
-  /** @test {currentEnvironment} */
+  /** @test {Util.currentEnvironment} */
   describe('currentEnvironment', () => {
-    /** @test {currentEnvironment#SANDBOX_TWITCH} */
-    it('correctly detects a staging environment', () => {
+    /** @test {Util.currentEnvironment#SANDBOX_DEV} */
+    it('correctly detects a sandbox development environment', () => {
+      const sandboxWindow = {
+        location: {
+          origin: 'http://localhost:4000'
+        },
+        document: {
+          referrer: ''
+        }
+      };
+      Util.currentEnvironment(sandboxWindow).should.equal(Util.Environments.SandboxDev);
+    });
+
+    /** @test {Util.currentEnvironment#SANDBOX_TWITCH} */
+    it('correctly detects a sandbox twitch environment', () => {
       const stagingWindow = {
         location: {
           origin: 'http://localhost:4000'
@@ -48,10 +55,10 @@ describe('Util', function() {
           referrer: 'https://www.twitch.tv/test/dashboard'
         }
       };
-      CurrentEnvironment(stagingWindow).should.equal(ENVIRONMENTS.SANDBOX_TWITCH);
+      Util.currentEnvironment(stagingWindow).should.equal(Util.Environments.SandboxTwitch);
     });
 
-    /** @test {currentEnvironment#PRODUCTION} */
+    /** @test {Util.currentEnvironment#PRODUCTION} */
     it('correctly detects a production environment', () => {
       const productionWindow = {
         location: {
@@ -61,30 +68,30 @@ describe('Util', function() {
           referrer: 'https://www.twitch.tv/test/dashboard'
         }
       };
-      CurrentEnvironment(productionWindow).should.equal(ENVIRONMENTS.PRODUCTION);
+      Util.currentEnvironment(productionWindow).should.equal(Util.Environments.Production);
     });
   });
 
   /** @test {eventPatternMatch} */
   describe('eventPatternMatch', () => {
     it('correctly matches valid patterns', () => {
-      eventPatternMatch('a:b:c', 'a:b:c').should.be.true;
-      eventPatternMatch('a:b:c', 'a:b:*').should.be.true;
-      eventPatternMatch('a:b:c', 'a:*:c').should.be.true;
-      eventPatternMatch('a:b:c', '*:b:c').should.be.true;
-      eventPatternMatch('a:b:c', '*:*:c').should.be.true;
-      eventPatternMatch('a:b:c', '*:b:*').should.be.true;
-      eventPatternMatch('a:b:c', '*:*:*').should.be.true;
+      Util.eventPatternMatch('a:b:c', 'a:b:c').should.be.true;
+      Util.eventPatternMatch('a:b:c', 'a:b:*').should.be.true;
+      Util.eventPatternMatch('a:b:c', 'a:*:c').should.be.true;
+      Util.eventPatternMatch('a:b:c', '*:b:c').should.be.true;
+      Util.eventPatternMatch('a:b:c', '*:*:c').should.be.true;
+      Util.eventPatternMatch('a:b:c', '*:b:*').should.be.true;
+      Util.eventPatternMatch('a:b:c', '*:*:*').should.be.true;
     });
 
     it('does not match invalid patterns', () => {
-      eventPatternMatch('a:b:c', 'a:b').should.be.false;
-      eventPatternMatch('a:b:c', 'a:b:**').should.be.false;
-      eventPatternMatch('a:b:c', 'a:b:d').should.be.false;
-      eventPatternMatch('a:b:c', '*:*').should.be.false;
-      eventPatternMatch('a:b:c', 'a:b:c*').should.be.false;
-      eventPatternMatch('a:b:c', 'a:b:c:d').should.be.false;
-      eventPatternMatch('a:b:c', 'a:b:c:*').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b:**').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b:d').should.be.false;
+      Util.eventPatternMatch('a:b:c', '*:*').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b:c*').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b:c:d').should.be.false;
+      Util.eventPatternMatch('a:b:c', 'a:b:c:*').should.be.false;
     });
   });
 

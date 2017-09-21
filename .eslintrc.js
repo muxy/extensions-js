@@ -49,6 +49,10 @@ module.exports = {
     // Require all immediately-invoked function expressions to be outside parentheses.
     'wrap-iife': ['error', 'inside'],
 
+    // util.js has a wrapper class around some deprecated functions named the same.
+    // Once those have been removed we can turn this error back on.
+    'import/no-named-as-default-member': 'off',
+
     // We don't actually use JSX, but airbnb does. And there is a bug with
     // this option in the current eslint/npm versions.
     'jsx-a11y/href-no-hash': 'off',

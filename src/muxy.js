@@ -1,4 +1,3 @@
-import { ENVIRONMENTS, consolePrint, CurrentEnvironment } from './util';
 import Analytics from './analytics';
 import StateClient from './state-client';
 import Ext from './twitch-ext';
@@ -6,11 +5,19 @@ import TwitchClient from './twitch-client';
 import Messenger from './messenger';
 import SDK from './sdk';
 import User from './user';
+import Util from './util';
 
 import * as PackageConfig from '../package.json';
 
 /**
- * The main extension entry interface. Only one instance of this class should ever exist.
+ * Convenience variables for backwards-compatibility. Remove once all function
+ * invocations have moved over to Util.*
+ */
+/** @ignore */ const ENVIRONMENTS = Util.Environments;
+/** @ignore */ const consolePrint = Util.consolePrint;
+
+/**
+ * The main extension entry interface, available as the global `Muxy` object.
  *
  * This class handles environment detection, data harness collection and updates (for
  * authentication and backend communication) and SDK instance creation.
@@ -24,6 +31,14 @@ class Muxy {
    * @ignore
    */
   constructor() {
+    /**
+     * Convenience accessor for users of the Muxy library, makes the util functions accessible
+     * from `Muxy.Util.<whatever>`. Full documentation in the util.js file.
+     *
+     * @ignore
+     */
+    this.Util = Util;
+
     /**
      * A flag used to signal when {@link setup} has been called. This function must be called once
      * and only once before SDK objects may be created.
@@ -45,7 +60,7 @@ class Muxy {
     this.testChannelID = '23161357';
 
     /**
-     * Role for the current user in the sandbox environment. May be one of {@link User.UserRoles}.
+     * Role for the current user in the sandbox environment. May be one of {@link User.Roles}.
      *
      * Changes to this value must be made before calling {@link SDK}.
      *
@@ -134,7 +149,7 @@ class Muxy {
       this.loadReject = reject;
     });
 
-    StateClient.setEnvironment(CurrentEnvironment());
+    StateClient.setEnvironment(Util.currentEnvironment());
   }
 
   /**
@@ -164,7 +179,7 @@ class Muxy {
       ''
     ];
 
-    switch (CurrentEnvironment()) {
+    switch (Util.currentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
         break;

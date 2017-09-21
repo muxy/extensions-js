@@ -58,8 +58,8 @@ The SDK documentation can be build locally by running:
 npm run docs
 ```
 
-This will generate a full suite of HTML-formatted documentation in the `docs/` directory. The main
-entry to the docs is at `docs/index.html`
+This will generate a full suite of HTML-formatted documentation in the `dist/docs/` directory. The main
+entry to the docs is at `dist/docs/index.html`
 
 ## Using the library
 

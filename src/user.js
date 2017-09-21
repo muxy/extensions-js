@@ -1,31 +1,39 @@
 /**
- * Defines the current user's role on Twitch relative to the current channel being
- * viewed. May be "viewer" if the user is simply viewing the channel, "moderator"
- * if the user is a moderator of the channel or "broadcaster" if the user is also
- * the broadcaster of the channel.
- */
-export const UserRoles = {
-  Viewer: 'viewer',
-  Broadcaster: 'broadcaster',
-  Moderator: 'moderator'
-};
-
-/**
- * Defines the video mode for the current user. This may be "default" for the default
- * windowed viewing experience on Twitch, "fullscreen" for the fullscreen, video-only
- * mode or "theatre" for the video full window-width.
- */
-export const VideoModes = {
-  Default: 'default',
-  Fullscreen: 'fullscreen',
-  Theatre: 'theatre'
-};
-
-/**
- * User stores fields related to the current extension user, either a viewer or the broadcaster.
+ * Stores fields related to the current extension user, either a viewer or the broadcaster.
  * These fields are automatically updated by the SDK.
  */
 export default class User {
+  /**
+   * Defines the current user's role on Twitch relative to the current channel being
+   * viewed. May be "viewer" if the user is simply viewing the channel, "moderator"
+   * if the user is a moderator of the channel or "broadcaster" if the user is also
+   * the broadcaster of the channel.
+   *
+   * @since 1.0.3
+   */
+  static get Roles() {
+    return {
+      Viewer: 'viewer',
+      Broadcaster: 'broadcaster',
+      Moderator: 'moderator'
+    };
+  }
+
+  /**
+   * Defines the video mode for the current user. This may be "default" for the default
+   * windowed viewing experience on Twitch, "fullscreen" for the fullscreen, video-only
+   * mode or "theatre" for the video full window-width.
+   *
+   * @since 1.0.3
+   */
+  static get VideoModes() {
+    return {
+      Default: 'default',
+      Fullscreen: 'fullscreen',
+      Theatre: 'theatre'
+    };
+  }
+
   /**
    * @since 1.0.0
    * @param {Object} auth - An auth token usable by this user for backend requests.
@@ -95,12 +103,12 @@ export default class User {
     this.visualizationID = '';
 
     /**
-     * role is the current user's role in the extension. May be one of {@link UserRoles}.
+     * role is the current user's role in the extension. May be one of {@link Roles}.
      *
      * @since 1.0.0
      * @type {string}
      */
-    this.role = UserRoles.Viewer;
+    this.role = User.Roles.Viewer;
 
     /**
      * ip is the current user's IP address. May be an empty string if undetectable.
@@ -124,7 +132,7 @@ export default class User {
      * @since 1.0.0
      * @type {string}
      */
-    this.videoMode = VideoModes.Default;
+    this.videoMode = User.VideoModes.Default;
 
     /**
      * Current video bitrate. Null if no video or unknown.

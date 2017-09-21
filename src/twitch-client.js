@@ -2,7 +2,10 @@ import XMLHttpRequestPromise from '../libs/xhr-promise';
 import { forceType } from './util';
 
 /**
+ * A single user object as from {@link getTwitchUsers}.
+ *
  * @typedef {Object} TwitchUser
+
  * @property {string} _id - The Twitch ID of the user. Universally unique.
  * @property {string} bio - A description of the user provided by the user. May be empty.
  * @property {string} created_at - A timestamp of the user account creation time in ISO 8601
@@ -17,7 +20,7 @@ import { forceType } from './util';
  */
 
 /**
- * TwitchClient wraps all Twitch API requests with an automatically set and updated
+ * Provides a convenient interface for Twitch API requests with an automatically set and updated
  * extension client id.
  *
  * Should not normally be created directly, instead an instance is made available
@@ -110,8 +113,8 @@ export default class TwitchClient {
    *
    * @param {[]string} usernames - A list of usernames to lookup on Twitch.
    *
-   * @return {Promise<[]TwitchUser>} Resolves with a list of TwitchUser objects for
-   * each of the usernames provided.
+   * @return {Promise<[]TwitchUser>} Resolves with a list of {@link TwitchUser}
+   * objects for each of the usernames provided.
    *
    * @example
    * twitchClient.getTwitchUsers(['muxy'], (response) => {

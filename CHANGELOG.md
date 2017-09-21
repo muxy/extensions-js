@@ -2,6 +2,12 @@
 
 ## Change Log
 
+## 2017-09-21
+v1.0.3
+
+### Updated
+- Additional documentation.
+- Fixed UMD ES6 class fighting.
 
 ## 2017-09-11
 v1.0.2

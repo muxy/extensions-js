@@ -13,6 +13,8 @@ module.exports = {
     'muxy-extensions.min': './src/index.js'
   },
 
+  target: 'web',
+
   module: {
     rules: [
       {
@@ -48,6 +50,8 @@ module.exports = {
       minimize: true
     })
   ],
+
+  externals: ['sinon'],
 
   devServer: {
     port,

@@ -3,13 +3,30 @@ import XMLHttpRequestPromise from '../libs/xhr-promise';
 
 import { ENVIRONMENTS, errorPromise } from './util';
 
+/**
+ * Muxy production API URL.
+ * @ignore
+ */
 const API_URL = 'https://api.muxy.io';
+
+/**
+ * Muxy sandbox API URL.
+ * @ignore
+ */
 const SANDBOX_URL = 'https://sandbox.api.muxy.io';
 
+/**
+ * API URL to use for backend requests. Uses production API be default, but
+ * can be updated using {@link setEnvironment}.
+ * @ignore
+ */
 let SERVER_URL = API_URL;
 
-// ServerState enum maps the subsets of state persisted to the server to
-// their respective endpoints.
+/**
+ * ServerState enum maps the subsets of state persisted to the server to
+ * their respective endpoints.
+ * @ignore
+ */
 const ServerState = {
   AUTHENTICATION: 'authentication',
   USER: 'user_info',
@@ -19,8 +36,28 @@ const ServerState = {
   ALL: 'all_state'
 };
 
-// Client wraps all state requests (GET/POST) to the extension backend service.
-class Client {
+/**
+ * Wraps all extension backend accessor and mutator endpoints in convenience functions.
+ *
+ * Should not normally be created directly, instead an instance is made available
+ * and namespaced appropriately when using {@link Muxy.SDK}.
+ *
+ * @private
+ *
+ * @example
+ * const sdk = new Muxy.SDK();
+ * sdk.getAllState().then((state) => {
+ *   console.log(state);
+ * });
+ */
+class StateClient {
+  /** @ignore */
+  constructor() {
+    /** @ignore */
+    this.token = null;
+  }
+
+  /** @ignore */
   static fetchTestAuth(testExtensionID, channelID, role) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
@@ -35,7 +72,7 @@ class Client {
           })
         })
         .catch(reject)
-        .then((resp) => {
+        .then(resp => {
           if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
             SERVER_URL = SANDBOX_URL;
@@ -53,18 +90,23 @@ class Client {
     });
   }
 
+  /** @ignore */
   static setEnvironment(env) {
     if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
       SERVER_URL = SANDBOX_URL;
     }
   }
 
+  /** @ignore */
   updateAuth(token) {
     this.token = token;
   }
 
-  // signedRequest checks that we have a valid JWT and wraps a standard AJAX
-  // request to the EBS with valid auth credentials.s
+  /**
+   * signedRequest checks that we have a valid JWT and wraps a standard AJAX
+   * request to the EBS with valid auth credentials.s
+   * @ignore
+   */
   signedRequest(extensionID, method, endpoint, data) {
     if (!this.validateJWT()) {
       return errorPromise('Your authentication token has expired.');
@@ -82,7 +124,7 @@ class Client {
           data
         })
         .catch(reject)
-        .then((resp) => {
+        .then(resp => {
           try {
             if (resp.status < 400) {
               resolve(resp.responseText);
@@ -98,7 +140,10 @@ class Client {
     });
   }
 
-  // validateJWT ensures that the current JWT is valid and not expired.
+  /**
+   * validateJWT ensures that the current JWT is valid and not expired.
+   * @ignore
+   */
   validateJWT() {
     try {
       const splitToken = this.token.split('.');
@@ -122,38 +167,84 @@ class Client {
     }
   }
 
-  // getState requests a subset of state stored on the server and sets the
-  // local cached version of the state to the response.
-  getState = (identifier, substate) => this.signedRequest(identifier, 'GET', substate || ServerState.ALL)
+  /**
+   * getState requests a subset of state stored on the server and sets the
+   * local cached version of the state to the response.
+   * @ignore
+   */
+  getState = (identifier, substate) =>
+    this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
-  // postState sends data to the corrent EBS substate endpoint for persistence.
-  postState = (identifier, substate, data) => this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data)
+  /**
+   * postState sends data to the corrent EBS substate endpoint for persistence.
+   * @ignore
+   */
+  postState = (identifier, substate, data) =>
+    this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
-  getUserInfo = identifier => this.getState(identifier, ServerState.USER)
-  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER)
-  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL)
-  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION)
+  /** @ignore */
+  getUserInfo = identifier => this.getState(identifier, ServerState.USER);
 
-  setViewerState = (identifier, state) => this.postState(identifier,
-    ServerState.VIEWER, JSON.stringify(state))
-  setChannelState = (identifier, state) => this.postState(identifier,
-    ServerState.CHANNEL, JSON.stringify(state))
+  /** @ignore */
+  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
 
-  getAccumulation = (identifier, id, start) => this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`)
-  accumulate = (identifier, id, data) => this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data))
+  /** @ignore */
+  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
 
-  vote = (identifier, id, data) => this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data))
-  getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`)
+  /** @ignore */
+  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION);
 
-  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data))
-  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank')
-  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank')
+  /** @ignore */
+  setViewerState = (identifier, state) =>
+    this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
 
-  getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`)
+  /** @ignore */
+  setChannelState = (identifier, state) =>
+    this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
 
-  validateCode = (identifier, code) => this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }))
+  /** @ignore */
+  getAccumulation = (identifier, id, start) =>
+    this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
+
+  /** @ignore */
+  accumulate = (identifier, id, data) =>
+    this.signedRequest(
+      identifier,
+      'POST',
+      `accumulate?id=${id || 'default'}`,
+      JSON.stringify(data)
+    );
+
+  /** @ignore */
+  vote = (identifier, id, data) =>
+    this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data));
+
+  /** @ignore */
+  getVotes = (identifier, id) =>
+    this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
+
+  /** @ignore */
+  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data));
+
+  /** @ignore */
+  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank');
+
+  /** @ignore */
+  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank');
+
+  /** @ignore */
+  getJSONStore = (identifier, id) =>
+    this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
+
+  /** @ignore */
+  validateCode = (identifier, code) =>
+    this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }));
+
+  /** @ignore */
   pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
+
+  /** @ignore */
   revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
 }
 
-export default Client;
+export default StateClient;

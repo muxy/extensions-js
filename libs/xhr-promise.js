@@ -9,7 +9,6 @@ var ParseHeaders, XMLHttpRequestPromise;
 
 ParseHeaders = require('parse-headers');
 
-
 /*
  * Module to wrap an XMLHttpRequest in a promise.
  */
@@ -18,7 +17,6 @@ module.exports = XMLHttpRequestPromise = (function() {
   function XMLHttpRequestPromise() {}
 
   XMLHttpRequestPromise.DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8';
-
 
   /*
    * XMLHttpRequestPromise.send(options) -> Promise
@@ -42,68 +40,69 @@ module.exports = XMLHttpRequestPromise = (function() {
       withCredentials: false
     };
     options = Object.assign({}, defaults, options);
-    return new Promise((function(_this) {
-      return function(resolve, reject) {
-        var e, header, ref, value, xhr;
-        if (!XMLHttpRequest) {
-          _this._handleError('browser', reject, null, "browser doesn't support XMLHttpRequest");
-          return;
-        }
-        if (typeof options.url !== 'string' || options.url.length === 0) {
-          _this._handleError('url', reject, null, 'URL is a required parameter');
-          return;
-        }
-        _this._xhr = xhr = new XMLHttpRequest;
-        xhr.onload = function() {
-          var responseText;
-          _this._detachWindowUnload();
-          try {
-            responseText = _this._getResponseText();
-          } catch (_error) {
-            _this._handleError('parse', reject, null, 'invalid JSON response');
+    return new Promise(
+      (function(_this) {
+        return function(resolve, reject) {
+          var e, header, ref, value, xhr;
+          if (!XMLHttpRequest) {
+            _this._handleError('browser', reject, null, "browser doesn't support XMLHttpRequest");
             return;
           }
-          return resolve({
-            url: _this._getResponseUrl(),
-            status: xhr.status,
-            statusText: xhr.statusText,
-            responseText: responseText,
-            headers: _this._getHeaders(),
-            xhr: xhr
-          });
+          if (typeof options.url !== 'string' || options.url.length === 0) {
+            _this._handleError('url', reject, null, 'URL is a required parameter');
+            return;
+          }
+          _this._xhr = xhr = new XMLHttpRequest();
+          xhr.onload = function() {
+            var responseText;
+            _this._detachWindowUnload();
+            try {
+              responseText = _this._getResponseText();
+            } catch (_error) {
+              _this._handleError('parse', reject, null, 'invalid JSON response');
+              return;
+            }
+            return resolve({
+              url: _this._getResponseUrl(),
+              status: xhr.status,
+              statusText: xhr.statusText,
+              responseText: responseText,
+              headers: _this._getHeaders(),
+              xhr: xhr
+            });
+          };
+          xhr.onerror = function() {
+            return _this._handleError('error', reject);
+          };
+          xhr.ontimeout = function() {
+            return _this._handleError('timeout', reject);
+          };
+          xhr.onabort = function() {
+            return _this._handleError('abort', reject);
+          };
+          _this._attachWindowUnload();
+          xhr.open(options.method, options.url, options.async, options.username, options.password);
+          if (options.withCredentials) {
+            xhr.withCredentials = true;
+          }
+          if (options.data != null && !options.headers['Content-Type']) {
+            options.headers['Content-Type'] = _this.constructor.DEFAULT_CONTENT_TYPE;
+          }
+          ref = options.headers;
+          for (header in ref) {
+            value = ref[header];
+            xhr.setRequestHeader(header, value);
+          }
+          try {
+            return xhr.send(options.data);
+          } catch (_error) {
+            e = _error;
+            return _this._handleError('send', reject, null, e.toString());
+          }
         };
-        xhr.onerror = function() {
-          return _this._handleError('error', reject);
-        };
-        xhr.ontimeout = function() {
-          return _this._handleError('timeout', reject);
-        };
-        xhr.onabort = function() {
-          return _this._handleError('abort', reject);
-        };
-        _this._attachWindowUnload();
-        xhr.open(options.method, options.url, options.async, options.username, options.password);
-        if (options.withCredentials) {
-          xhr.withCredentials = true;
-        }
-        if ((options.data != null) && !options.headers['Content-Type']) {
-          options.headers['Content-Type'] = _this.constructor.DEFAULT_CONTENT_TYPE;
-        }
-        ref = options.headers;
-        for (header in ref) {
-          value = ref[header];
-          xhr.setRequestHeader(header, value);
-        }
-        try {
-          return xhr.send(options.data);
-        } catch (_error) {
-          e = _error;
-          return _this._handleError('send', reject, null, e.toString());
-        }
-      };
-    })(this));
+      })(this)
+    );
   };
-
 
   /*
    * XMLHttpRequestPromise.getXHR() -> XMLHttpRequest
@@ -112,7 +111,6 @@ module.exports = XMLHttpRequestPromise = (function() {
   XMLHttpRequestPromise.prototype.getXHR = function() {
     return this._xhr;
   };
-
 
   /*
    * XMLHttpRequestPromise._attachWindowUnload()
@@ -130,7 +128,6 @@ module.exports = XMLHttpRequestPromise = (function() {
     }
   };
 
-
   /*
    * XMLHttpRequestPromise._detachWindowUnload()
    */
@@ -141,7 +138,6 @@ module.exports = XMLHttpRequestPromise = (function() {
     }
   };
 
-
   /*
    * XMLHttpRequestPromise._getHeaders() -> Object
    */
@@ -149,7 +145,6 @@ module.exports = XMLHttpRequestPromise = (function() {
   XMLHttpRequestPromise.prototype._getHeaders = function() {
     return ParseHeaders(this._xhr.getAllResponseHeaders());
   };
-
 
   /*
    * XMLHttpRequestPromise._getResponseText() -> Mixed
@@ -168,7 +163,6 @@ module.exports = XMLHttpRequestPromise = (function() {
     return responseText;
   };
 
-
   /*
    * XMLHttpRequestPromise._getResponseUrl() -> String
    *
@@ -184,7 +178,6 @@ module.exports = XMLHttpRequestPromise = (function() {
     }
     return '';
   };
-
 
   /*
    * XMLHttpRequestPromise._handleError(reason, reject, status, statusText)
@@ -204,7 +197,6 @@ module.exports = XMLHttpRequestPromise = (function() {
     });
   };
 
-
   /*
    * XMLHttpRequestPromise._handleWindowUnload()
    */
@@ -214,5 +206,4 @@ module.exports = XMLHttpRequestPromise = (function() {
   };
 
   return XMLHttpRequestPromise;
-
 })();

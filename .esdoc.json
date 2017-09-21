@@ -1,11 +1,7 @@
 {
   "source": "./src",
-  "includes": [
-    "muxy.js",
-    "sdk.js",
-    "user.js"
-  ],
-  "destination": "./docs",
+  "includes": ["muxy.js", "sdk.js", "twitch-client.js", "state-client.js", "user.js", "util.js"],
+  "destination": "./dist/docs",
   "plugins": [
     {
       "name": "esdoc-standard-plugin",
@@ -24,20 +20,14 @@
       },
       "test": {
         "source": "./spec/",
-        "interfaces": [
-          "describe",
-          "it",
-          "context",
-          "suite",
-          "test"
-        ],
-        "includes": [
-          "(spec|Spec|test|Test)\\.js$"
-        ],
-        "excludes": [
-          "\\.config\\.js$"
-        ]
+        "interfaces": ["describe", "it", "context", "suite", "test"],
+        "includes": ["(spec|Spec|test|Test)\\.js$"],
+        "excludes": ["\\.config\\.js$"]
       }
+    },
+    {
+      "name": "esdoc-publish-html-plugin",
+      "option": { "template": "docs/template" }
     },
     {
       "name": "esdoc-ecmascript-proposal-plugin",

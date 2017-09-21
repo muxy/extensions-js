@@ -1,4 +1,4 @@
-import { ENVIRONMENTS, CurrentEnvironment } from './util';
+import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
 import Client from './state-client';
 
 // 25 minutes between updates of the testing auth token.
@@ -11,7 +11,7 @@ const CONTEXT_CALLBACK_TIMEOUT = 30 * 1000;
 export default class Ext {
   static fetchTestAuth(cb) {
     Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
-      .then((auth) => {
+      .then(auth => {
         cb(auth);
       })
       .catch(cb);
@@ -27,7 +27,7 @@ export default class Ext {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION: {
         const timer = setTimeout(cb, 1000 * 15);
-        window.Twitch.ext.onAuthorized((auth) => {
+        window.Twitch.ext.onAuthorized(auth => {
           clearTimeout(timer);
           cb(auth);
         });
@@ -36,6 +36,9 @@ export default class Ext {
       }
 
       default:
+        consolePrint([`No authorization callback for ${CurrentEnvironment()}`], {
+          type: 'error'
+        });
     }
   }
 
@@ -50,7 +53,7 @@ export default class Ext {
           // throttle the onContext callbacks.
           let lastContextCall = 0;
 
-          window.Twitch.ext.onContext((context) => {
+          window.Twitch.ext.onContext(context => {
             // Check the last time the auth callback was called and restrict.
             const diff = new Date().getTime() - lastContextCall;
             if (diff < CONTEXT_CALLBACK_TIMEOUT) {
@@ -60,7 +63,7 @@ export default class Ext {
 
             cb(context);
           });
-        }());
+        })();
         break;
 
       default:

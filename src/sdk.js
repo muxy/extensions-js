@@ -1,7 +1,7 @@
-import { eventPatternMatch, CurrentEnvironment, forceType } from './util';
+import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
 
 /**
- * Main Muxy SDK interface.
+ * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
  *
  * Instances of this class created through the global `Muxy` object can be used to easily
  * interact with Muxy's Extension Backend Service. It includes functionality to aggregate
@@ -77,11 +77,13 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object} AccumulateData
+   * The response from {@link getAccumulateData}.
+   *
+   * @typedef {Object} AccumulateData
    *
    * @property {string} latest A Unix timestamp of the most recently posted JSON blob.
    *
-   * @property {object[]} data Array of all JSON blob payloads posted to this identifier.
+   * @property {Object[]} data Array of all JSON blob payloads posted to this identifier.
    * @property {number} data.observed A Unix timestamp of when this payload was received.
    * @property {string} data.channel_id The id of the channel this payload is associated with
    * (either the viewer was watching the channel, or the app/server was authed with this channel).
@@ -90,11 +92,11 @@ export default class SDK {
    * whisper events to a particular viewer.
    * @property {string} data.user_id If the viewer has chosen to share their identity with the
    * extension, this field will hold the viewer's actual Twitch ID.
-   * @property {object} data.data The actual JSON blob payload as sent to the accumulate endpoint.
+   * @property {Object} data.data The actual JSON blob payload as sent to the accumulate endpoint.
    */
 
   /**
-   * Fetches the accumulated user data for a given id received by the backen since start.
+   * Fetches the accumulated user data for a given id received by the backend since start.
    *
    * Broadcaster-only functionality.
    *
@@ -126,7 +128,7 @@ export default class SDK {
    * @deprecated Use getAccumulateData instead.
    */
   getAccumulation(accumulationID, start) {
-    return this.getAccumulationData(accumulationID, start);
+    return this.getAccumulateData(accumulationID, start);
   }
 
   /**
@@ -134,7 +136,7 @@ export default class SDK {
    * @since 1.0.0
    *
    * @param {string} accumulationID - The identifier that this datum is accumulated with.
-   * @param {object} data - Any JSON serializable JavaScript object.
+   * @param {Object} data - Any JSON serializable JavaScript object.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -157,7 +159,10 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object} VoteData
+   * The response from {@link getVoteData}.
+   *
+   * @typedef {Object} VoteData
+   *
    * @property {number} count - The total number of votes received for this vote identifier.
    * @property {number} mean - The average of all votes received for this identifier.
    * @property {number[]} specific - The number of votes cast for the specific values [0-4].
@@ -219,7 +224,10 @@ export default class SDK {
    */
 
   /**
-   * @typedef {object[]} RankDatum
+   * The response from {@link getRankData}.
+   *
+   * @typedef {Object[]} RankData
+   *
    * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
    * @property {number} score - The number of users who have sent this `key` for this identifier.
    */
@@ -237,7 +245,7 @@ export default class SDK {
    * on server error.
    *
    * @example
-   * sdk.getRankingData('favorite_color').then((colors) => {
+   * sdk.getRankData('favorite_color').then((colors) => {
    *   if (colors.length > 0) {
    *     colors.forEach((color) => {
    *       console.log(`${color.key}: ${color.score}`);
@@ -250,7 +258,7 @@ export default class SDK {
     return new Promise((accept, reject) => {
       this.client
         .getRank(this.identifier, rankID)
-        .then((data) => {
+        .then(data => {
           accept(data.data);
         })
         .catch(reject);
@@ -312,7 +320,6 @@ export default class SDK {
     return this.clearRanking(rankID);
   }
 
-
   /**
    * User State
    */
@@ -323,7 +330,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {object} state - A complete JS object representing the current viewer state.
+   * @param {Object} state - A complete JS object representing the current viewer state.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -349,7 +356,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {object} state - A complete JS object representing the current channel state.
+   * @param {Object} state - A complete JS object representing the current channel state.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
@@ -368,12 +375,15 @@ export default class SDK {
   }
 
   /**
-   * @typedef {object} AllState
-   * @property {object} extension - A state object only settable by the extension iteself.
+   * The response from {@link getAllState}.
+   *
+   * @typedef {Object} AllState
+   *
+   * @property {Object} extension - A state object only settable by the extension itself.
    * Universal for all channels.
-   * @property {object} channel - A state object only settable by a broadcaster. Universal for all
+   * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
    * viewers of the same channel.
-   * @property {object} viewer - A state object settable by each viewer. Specific to the viewer of
+   * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
    * a given channel.
    */
 
@@ -421,11 +431,12 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @throws {TypeError} Will throw an error if key is not a string.
+   * @throws {TypeError} Will throw an error if key is provided but is not a string.
    *
-   * @param {string} key - The lookup key for data in the JSON store.
+   * @param {string?} key - The lookup key for data in the JSON store. Uses 'default' if no value
+   * is provided.
    *
-   * @return {Promise<object>} Resolves with the stored JSON parsed to a JS Object associated with
+   * @return {Promise<Object>} Resolves with the stored JSON parsed to a JS Object associated with
    * the key. Rejects on server error or if the key has no associated data.
    *
    * @example
@@ -436,10 +447,12 @@ export default class SDK {
    * });
    */
   getJSONStore(key) {
-    forceType(key, 'string');
+    if (key) {
+      forceType(key, 'string');
+    }
+
     return this.client.getJSONStore(this.identifier, key);
   }
-
 
   /**
    * Two-Factor Auth
@@ -481,7 +494,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @return {Promise<object>}
+   * @return {Promise<Object>}
    * @property {boolean} exists - True if an auth token has been validated, false otherwise.
    *
    * @example
@@ -579,7 +592,7 @@ export default class SDK {
    * This callback will receive the message body as its first parameter and the `event` parameter
    * to {@link send} as the second.
    *
-   * @return {object} A listener handle that can be passed to {@see unlisten} to unbind
+   * @return {Object} A listener handle that can be passed to {@see unlisten} to unbind
    * this callback.
    *
    * @example
@@ -598,12 +611,15 @@ export default class SDK {
       callback = inUserID;
     }
 
-    const cb = (msg) => {
+    const cb = msg => {
       try {
         // Production messages may be unprefixed.
         if (CurrentEnvironment().environment === 'production') {
           if (eventPatternMatch(msg.event, `${this.identifier}:${inEvent}`)) {
-            const truncatedEvent = msg.event.split(':').slice(1).join(':');
+            const truncatedEvent = msg.event
+              .split(':')
+              .slice(1)
+              .join(':');
             callback(msg.data, truncatedEvent);
             return;
           }
@@ -612,12 +628,15 @@ export default class SDK {
         if (eventPatternMatch(msg.event, realEvent)) {
           // Consumers of the SDK only ever interact with events
           // without the app-id or extension-id prefix.
-          const truncatedEvent = msg.event.split(':').slice(2).join(':');
+          const truncatedEvent = msg.event
+            .split(':')
+            .slice(2)
+            .join(':');
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {
         // TODO: Should this fail silently?
-        console.error(err); // eslint-disable-line no-console
+        consolePrint(err, { type: 'error' });
       }
     };
 
@@ -629,7 +648,7 @@ export default class SDK {
    *
    * @since 1.0.0
    *
-   * @param {object} handle - An event handle as returned from {@see listen}.
+   * @param {Object} handle - An event handle as returned from {@see listen}.
    */
   unlisten(handle) {
     return this.messenger.unlisten(this.identifier, handle);

@@ -1,5 +1,5 @@
 {
-  "name": "muxy-extensions-js",
+  "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
   "version": "1.0.3",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",

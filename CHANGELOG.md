@@ -1,6 +1,13 @@
-# [Muxy Extensions JS Library](https://github.com/muxy/extensions-js)
+# Change Log
 
-## Change Log
+## In Progress
+
+### Updated
+- Deprecated `extensionID` in favor of `clientID` when calling Muxy.setup().
+- Moved documentation into `manual/`.
+
+### Fixed
+- Fixed npm pre-built library.
 
 ## 2017-09-21
 v1.0.3

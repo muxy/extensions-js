@@ -1,6 +1,13 @@
 {
   "source": "./src",
-  "includes": ["muxy.js", "sdk.js", "twitch-client.js", "state-client.js", "user.js", "util.js"],
+  "includes": [
+    "muxy.js",
+    "sdk.js",
+    "twitch-client.js",
+    "state-client.js",
+    "user.js",
+    "util.js"
+  ],
   "destination": "./dist/docs",
   "plugins": [
     {
@@ -16,18 +23,45 @@
         },
         "unexportedIdentifier": {
           "enable": true
+        },
+        "manual": {
+          "index": "./manual/index.md",
+          "asset": "./manual/assets",
+          "files": [
+            "./manual/setup.md",
+            "./manual/using.md",
+            "./manual/data.md",
+            "./manual/events.md",
+            "./manual/twitch.md",
+            "./manual/analytics.md",
+            "./manual/extension-rig.md",
+            "./manual/app-rig.md",
+            "./CHANGELOG.md"
+          ]
         }
-      },
-      "test": {
+      }
+    },
+    {
+      "name": "esdoc-integrate-test-plugin",
+      "option": {
         "source": "./spec/",
-        "interfaces": ["describe", "it", "context", "suite", "test"],
-        "includes": ["(spec|Spec|test|Test)\\.js$"],
-        "excludes": ["\\.config\\.js$"]
+        "interfaces": [
+          "describe",
+          "it",
+          "context",
+          "suite",
+          "test"
+        ],
+        "includes": [
+          "spec\\.js$"
+        ]
       }
     },
     {
       "name": "esdoc-publish-html-plugin",
-      "option": { "template": "docs/template" }
+      "option": {
+        "template": "docs/template"
+      }
     },
     {
       "name": "esdoc-ecmascript-proposal-plugin",

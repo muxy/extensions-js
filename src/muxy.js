@@ -308,8 +308,8 @@ class Muxy {
    *
    * @param {Object} options
    *
-   * @param {string} options.extensionID - The Extension Client ID as provided by Twitch.
-   * @since 1.0.0
+   * @param {string} options.clientID - The Extension Client ID as provided by Twitch.
+   * @since 1.0.4
    *
    * @param {string?} options.uaString - An optional Google Analytics UA_String to send
    * events to.
@@ -324,7 +324,7 @@ class Muxy {
    *
    * @example
    * Muxy.setup({
-   *   extensionID: <your extension client id>
+   *   clientID: <your extension client id>
    * });
    */
   setup(options) {
@@ -332,11 +332,11 @@ class Muxy {
       throw new Error('Muxy.setup() can only be called once.');
     }
 
-    if (!options || !options.extensionID) {
+    if (!options || (!options.extensionID && !options.clientID)) {
       throw new Error('Muxy.setup() was called without an Extension Client ID');
     }
 
-    this.twitchClientID = options.extensionID;
+    this.twitchClientID = options.clientID || options.extensionID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
 
     if (options.uaString) {
@@ -368,7 +368,7 @@ class Muxy {
    *   sdk.send('Hello World');
    * });
    */
-  SDK(id) {} // eslint-disable-line
+  SDK(id) { } // eslint-disable-line
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -380,7 +380,7 @@ class Muxy {
    *
    * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
    */
-  TwitchClient() {} // eslint-disable-line
+  TwitchClient() { } // eslint-disable-line
 }
 
 /**

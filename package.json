@@ -12,7 +12,8 @@
     "build": "webpack",
     "test": "NODE_ENV=testing karma start",
     "test:watch": "NODE_ENV=testing karma start",
-    "docs": "esdoc"
+    "docs": "esdoc",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

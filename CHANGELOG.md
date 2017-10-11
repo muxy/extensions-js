@@ -1,6 +1,7 @@
 # Change Log
 
 ## 2017-10-11
+v1.0.4
 
 ### Updated
 - Deprecated `extensionID` in favor of `clientID` when calling Muxy.setup().

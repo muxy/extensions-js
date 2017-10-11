@@ -1,7 +1,7 @@
 {
   "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "license": "ISC",
   "main": "dist/muxy-extensions.js",

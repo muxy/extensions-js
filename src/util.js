@@ -170,6 +170,9 @@ export default class Util {
    * consolePrint prints each line of text with optional global settings and per-line
    * console flags.
    *
+   * **NOTE:** Twitch's CSP enforcement disallows printing to console. This function
+   * will not print anything to the console if it is running in production mode.
+   *
    * @since 1.0.0
    * @public
    *
@@ -194,7 +197,7 @@ export default class Util {
    *  └───────────────┘
    */
   static consolePrint(lines, options = {}) {
-    if (!lines) {
+    if (!lines || Util.environmentDetector() === Util.Environments.Production) {
       return;
     }
 

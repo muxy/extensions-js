@@ -33,6 +33,12 @@ describe('Muxy', () => {
     Muxy.setupCalled.should.equal(false);
   });
 
+  it('needs an extension client id to setup', () => {
+    should.throw(() => {
+      Muxy.setup({ quiet: true });
+    }, Error);
+  });
+
   it('can be set up', () => {
     should.not.throw(() => {
       Muxy.setup({
@@ -47,6 +53,10 @@ describe('Muxy', () => {
     should.throw(() => {
       Muxy.setup({ extensionID: 'textextensionid', quiet: true });
     }, Error);
+  });
+
+  it('accepts client id on setup', () => {
+    Muxy.setup({ clientID: 'testextensionid', quiet: true });
   });
 
   it('cannot create SDK objects before setup', () => {

@@ -1,7 +1,7 @@
 {
-  "name": "muxy-extensions-js",
+  "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "license": "ISC",
   "main": "dist/muxy-extensions.js",
@@ -12,7 +12,8 @@
     "build": "webpack",
     "test": "NODE_ENV=testing karma start",
     "test:watch": "NODE_ENV=testing karma start",
-    "docs": "esdoc"
+    "docs": "esdoc",
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

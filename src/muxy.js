@@ -316,7 +316,7 @@ class Muxy {
    * @since 1.0.0
    *
    * @param {boolean?} options.quiet - If true, will not print library information to the
-   * console.
+   * console. This is always true when running in production.
    * @since 1.0.3
    *
    * @throws {Error} Will throw an error if setup() has already been called, or if no

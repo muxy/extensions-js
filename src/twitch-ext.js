@@ -36,7 +36,7 @@ export default class Ext {
       }
 
       default:
-        consolePrint([`No authorization callback for ${CurrentEnvironment()}`], {
+        consolePrint(`No authorization callback for ${CurrentEnvironment()}`, {
           type: 'error'
         });
     }

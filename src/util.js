@@ -197,7 +197,7 @@ export default class Util {
    *  └───────────────┘
    */
   static consolePrint(lines, options = {}) {
-    if (!lines || Util.environmentDetector() === Util.Environments.Production) {
+    if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
     }
 
@@ -213,7 +213,7 @@ export default class Util {
       style += options.style;
     }
 
-    if (Util.environmentDetector() === Util.Environments.Server) {
+    if (Util.currentEnvironment() === Util.Environments.Server) {
       console[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
     } else {
       console[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console

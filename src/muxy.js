@@ -149,6 +149,14 @@ class Muxy {
       this.loadReject = reject;
     });
 
+    /**
+     * List of SKUs and product metadata that is used for monetization purposes
+     *
+     * @ignore
+     * @type {Object}
+     */
+    this.SKUs = [];
+
     StateClient.setEnvironment(Util.currentEnvironment());
   }
 
@@ -416,7 +424,8 @@ mxy.SDK = function NewSDK(id) {
       mxy.user,
       mxy.messenger,
       mxy.analytics,
-      mxy.loadPromise
+      mxy.loadPromise,
+      mxy.SKUs
     );
   }
 

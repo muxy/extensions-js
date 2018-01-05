@@ -708,8 +708,8 @@ export default class SDK {
     if (this.SKUs.length === 0) {
       throw new Error('getPrices() cannot be used unless SKUs are provided.');
     }
-    return new Promise((resolve) => {
-      Ext.getPrices((prices) => {
+    return new Promise(resolve => {
+      Ext.getPrices(prices => {
         resolve(prices);
       });
     });

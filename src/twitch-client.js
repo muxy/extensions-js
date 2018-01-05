@@ -20,6 +20,32 @@ import { forceType } from './util';
  */
 
 /**
+ * A single good object as from {@link getUserGoods}.
+ *
+ * @typedef {Object} ExtensionGood
+
+ * @property {string} next_instruction - The next instruction (action) for the purchase. Can be:
+ *   - "NOOP" - No action is needed, the good was fullfilled.
+ *   - "FULFILL" - Fulfill the purchase, then call the Twitch entitlement system to indicate
+ *     successful completion of the fullfillment.
+ *   - "REVOKE" - Unwind the transaction.
+ * @property {string} receipt_id - An ID which uniquely identifies the purchase transaction.
+ * @property {string} sku - The SKU for the digital good.
+ */
+
+/**
+ * A receipt detailing which good's fulfillment status needs to be set. Used as a parameter for
+ * {@link updateFulfilledGoods}.
+ *
+ * @typedef {Object} Receipt
+
+ * @property {string} fulfillment_address - Twitch User ID
+ * @property {string} receipt_id - Receipt ID for the digital good, returned by {@link getUserGoods}
+ * @property {string} last_instruction - The last thing you did. Corresponds to the "next
+ * instruction" for the purchase returned by {@link getUserGoods}. Value value: `FULFILL`.
+ */
+
+/**
  * Provides a convenient interface for Twitch API requests with an automatically set and updated
  * extension client id.
  *
@@ -75,21 +101,28 @@ export default class TwitchClient {
    * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
    * @param {string} endpoint - The Twitch kraken API endpoint.
    * @param {string?} data - A string-encoded JSON payload to send with the request.
+   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
    *
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchRequest(method, endpoint, data) {
+  signedTwitchRequest(method, endpoint, data, JWT) {
+    const headers = {
+      Accept: 'application/vnd.twitchtv.v5+json',
+      'Client-ID': this.extensionId
+    };
+
+    if (JWT) {
+      headers.Authorization = `Bearer ${JWT}`;
+    }
+
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       return xhrPromise
         .send({
           method,
           url: `https://api.twitch.tv/kraken/${endpoint}`,
-          headers: {
-            Accept: 'application/vnd.twitchtv.v5+json',
-            'Client-ID': this.extensionId
-          },
+          headers,
           data
         })
         .catch(reject)
@@ -128,5 +161,35 @@ export default class TwitchClient {
     }
 
     return this.signedTwitchRequest('GET', `users?login=${usernames.join(',')}`);
+  }
+
+  /**
+   * Monetization
+   */
+
+  /**
+   * Gets a list of the digital goods the current user has.
+   *
+   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT
+   *
+   * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
+   * each of the goods the user is entitled to.
+   */
+  getUserGoods(JWT) {
+    return this.signedTwitchRequest('POST', 'commerce/user/goods', {}, JWT);
+  }
+
+  /**
+   * Sets the fulfillment status for the specified receipts (purchases).
+   *
+   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT
+   * @param {[]Receipt} Receipts - List of {@link Receipt} objects detailing which goods need to be
+   * updated.
+   *
+   * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
+   * Receipts parameter.
+   */
+  updateFulfilledGoods(JWT, receipts) {
+    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, JWT);
   }
 }

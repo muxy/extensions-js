@@ -1,4 +1,5 @@
 import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
+import Ext from './twitch-ext';
 
 /**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
@@ -19,7 +20,7 @@ import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from '
  */
 export default class SDK {
   /** @ignore */
-  constructor(identifier, client, user, messenger, analytics, loadPromise) {
+  constructor(identifier, client, user, messenger, analytics, loadPromise, SKUs) {
     /** @ignore */
     this.loadPromise = loadPromise;
 
@@ -60,6 +61,13 @@ export default class SDK {
      * @type {User}
      */
     this.user = user;
+
+    /**
+     * SKUs associated with the products offered in the extension.
+     * @public
+     * @type {Object}
+     */
+    this.SKUs = SKUs;
   }
 
   /**
@@ -670,5 +678,53 @@ export default class SDK {
    */
   sendAnalyticsEvent(name, value = 1, label = '') {
     this.analytics.sendEvent(this.identifier, name, value, label);
+  }
+
+  /**
+   * Monetization
+   */
+
+  /**
+   * Begins the purchase flow for a given product's SKU.
+   *
+   * @param {string} The SKU of the digital good that the user has indicated they want to buy.
+   */
+  beginPurchase(sku) {
+    if (this.SKUs.length === 0) {
+      throw new Error('beginPurchase() cannot be used unless SKUs are provided.');
+    }
+    forceType(sku, 'string');
+    return Ext.beginPurchase(sku);
+  }
+
+  /**
+   * Gets the current price for each item offered.
+   *
+   * @async
+   *
+   * @return {Object} An object with the SKU codes as keys.
+   */
+  getPrices() {
+    if (this.SKUs.length === 0) {
+      throw new Error('getPrices() cannot be used unless SKUs are provided.');
+    }
+    return new Promise(resolve => {
+      Ext.getPrices(prices => {
+        resolve(prices);
+      });
+    });
+  }
+
+  /**
+   * Sets a function to be used as a callback when entitlements need to be reloaded, i.e. after a
+   * purchase has been made.
+   *
+   * @param {function} The function to be called to update user entitlements.
+   */
+  onReloadEntitlements(cb) {
+    if (this.SKUs.length === 0) {
+      throw new Error('onReloadEntitlements() cannot be used unless SKUs are provided.');
+    }
+    return Ext.onReloadEntitlements(cb);
   }
 }

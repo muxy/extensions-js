@@ -69,4 +69,50 @@ export default class Ext {
       default:
     }
   }
+
+  static beginPurchase(sku) {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        window.Twitch.ext.purchases.beginPurchase(sku);
+        break;
+
+      default:
+        consolePrint(`beginPurchase not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
+    }
+  }
+
+  static getPrices(cb) {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        window.Twitch.ext.purchases.getPrices()
+          .then(prices => {
+            cb(prices);
+          })
+          .catch(cb);
+        break;
+
+      default:
+        consolePrint(`getPrices not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
+    }
+  }
+
+  static onReloadEntitlements(cb) {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        window.Twitch.ext.purchases.onReloadEntitlements(cb);
+        break;
+
+      default:
+        consolePrint(`onReloadEntitlements not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
+    }
+  }
 }

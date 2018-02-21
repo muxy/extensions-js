@@ -187,17 +187,17 @@ class Muxy {
       ''
     ];
 
-    switch (Util.currentEnvironment()) {
-      case ENVIRONMENTS.SANDBOX_DEV:
+    switch (Util.currentEnvironment().environment) {
+      case ENVIRONMENTS.SANDBOX_DEV.environment:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
         break;
-      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.SANDBOX_TWITCH.environment:
         SDKInfoText.push('Running in sandbox environment on Twitch');
         break;
-      case ENVIRONMENTS.PRODUCTION:
+      case ENVIRONMENTS.PRODUCTION.environment:
         SDKInfoText.push('Running on production');
         break;
-      case ENVIRONMENTS.SERVER:
+      case ENVIRONMENTS.SERVER.environment:
         SDKInfoText.push('Running on a NodeJS server');
         break;
       default:

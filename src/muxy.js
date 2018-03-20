@@ -10,13 +10,6 @@ import Util from './util';
 import * as PackageConfig from '../package.json';
 
 /**
- * Convenience variables for backwards-compatibility. Remove once all function
- * invocations have moved over to Util.*
- */
-/** @ignore */ const ENVIRONMENTS = Util.Environments;
-/** @ignore */ const consolePrint = Util.consolePrint;
-
-/**
  * The main extension entry interface, available as the global `Muxy` object.
  *
  * This class handles environment detection, data harness collection and updates (for
@@ -188,23 +181,26 @@ class Muxy {
     ];
 
     switch (Util.currentEnvironment().environment) {
-      case ENVIRONMENTS.SANDBOX_DEV.environment:
+      case Util.Environments.Testing.environment:
+        SDKInfoText.push('Running in testing environment outside of Twitch');
+        break;
+      case Util.Environments.SandboxDev.environment:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
         break;
-      case ENVIRONMENTS.SANDBOX_TWITCH.environment:
+      case Util.Environments.SandboxTwitch.environment:
         SDKInfoText.push('Running in sandbox environment on Twitch');
         break;
-      case ENVIRONMENTS.PRODUCTION.environment:
+      case Util.Environments.Production.environment:
         SDKInfoText.push('Running on production');
         break;
-      case ENVIRONMENTS.SERVER.environment:
+      case Util.Environments.Server.environment:
         SDKInfoText.push('Running on a NodeJS server');
         break;
       default:
         SDKInfoText.push('Could not determine execution environment.');
     }
 
-    consolePrint(SDKInfoText, { boxed: true });
+    Util.consolePrint(SDKInfoText, { boxed: true });
   }
 
   /**

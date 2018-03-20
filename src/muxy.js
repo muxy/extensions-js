@@ -226,7 +226,7 @@ class Muxy {
     // Auth callback handler
     Ext.onAuthorized(auth => {
       if (!auth) {
-        this.loadReject();
+        this.loadReject('Received invalid authorization from Twitch');
         return;
       }
 
@@ -246,21 +246,24 @@ class Muxy {
         if (this.analytics) {
           this.analytics.user = this.user;
         }
-
-        this.loadResolve();
       };
 
       const onFirstAuth = () => {
-        this.client.getUserInfo(extensionID).then(userinfo => {
-          const user = new User(auth);
-          user.ip = userinfo.ip_address;
-          user.registeredWithMuxy = userinfo.registered || false;
-          user.visualizationID = userinfo.visualization_id || '';
+        this.client.getUserInfo(extensionID)
+          .then(userinfo => {
+            const user = new User(auth);
+            user.ip = userinfo.ip_address;
+            user.registeredWithMuxy = userinfo.registered || false;
+            user.visualizationID = userinfo.visualization_id || '';
 
-          updateUserContextSettings.call(this);
+            updateUserContextSettings.call(this);
 
-          resolvePromise(user);
-        });
+            resolvePromise(user);
+            this.loadResolve();
+          })
+          .catch(err => {
+            this.loadReject(err);
+          });
       };
 
       if (this.user) {
@@ -374,6 +377,8 @@ class Muxy {
    * const sdk = new Muxy.SDK();
    * sdk.loaded().then(() => {
    *   sdk.send('Hello World');
+   * }).catch((err) => {
+   *   console.error(err);
    * });
    */
   SDK(id) { } // eslint-disable-line

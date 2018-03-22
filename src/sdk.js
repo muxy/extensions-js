@@ -301,7 +301,7 @@ export default class SDK {
     forceType(rankID, 'string');
     forceType(value, 'string');
 
-    return this.client.rank(this.identifier, { key: value });
+    return this.client.rank(this.identifier, rankID, { key: value });
   }
 
   /**

@@ -10,13 +10,6 @@ import Util from './util';
 import * as PackageConfig from '../package.json';
 
 /**
- * Convenience variables for backwards-compatibility. Remove once all function
- * invocations have moved over to Util.*
- */
-/** @ignore */ const ENVIRONMENTS = Util.Environments;
-/** @ignore */ const consolePrint = Util.consolePrint;
-
-/**
  * The main extension entry interface, available as the global `Muxy` object.
  *
  * This class handles environment detection, data harness collection and updates (for
@@ -188,23 +181,26 @@ class Muxy {
     ];
 
     switch (Util.currentEnvironment().environment) {
-      case ENVIRONMENTS.SANDBOX_DEV.environment:
+      case Util.Environments.Testing.environment:
+        SDKInfoText.push('Running in testing environment outside of Twitch');
+        break;
+      case Util.Environments.SandboxDev.environment:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
         break;
-      case ENVIRONMENTS.SANDBOX_TWITCH.environment:
+      case Util.Environments.SandboxTwitch.environment:
         SDKInfoText.push('Running in sandbox environment on Twitch');
         break;
-      case ENVIRONMENTS.PRODUCTION.environment:
+      case Util.Environments.Production.environment:
         SDKInfoText.push('Running on production');
         break;
-      case ENVIRONMENTS.SERVER.environment:
+      case Util.Environments.Server.environment:
         SDKInfoText.push('Running on a NodeJS server');
         break;
       default:
         SDKInfoText.push('Could not determine execution environment.');
     }
 
-    consolePrint(SDKInfoText, { boxed: true });
+    Util.consolePrint(SDKInfoText, { boxed: true });
   }
 
   /**
@@ -226,7 +222,7 @@ class Muxy {
     // Auth callback handler
     Ext.onAuthorized(auth => {
       if (!auth) {
-        this.loadReject();
+        this.loadReject('Received invalid authorization from Twitch');
         return;
       }
 
@@ -246,21 +242,24 @@ class Muxy {
         if (this.analytics) {
           this.analytics.user = this.user;
         }
-
-        this.loadResolve();
       };
 
       const onFirstAuth = () => {
-        this.client.getUserInfo(extensionID).then(userinfo => {
-          const user = new User(auth);
-          user.ip = userinfo.ip_address;
-          user.registeredWithMuxy = userinfo.registered || false;
-          user.visualizationID = userinfo.visualization_id || '';
+        this.client.getUserInfo(extensionID)
+          .then(userinfo => {
+            const user = new User(auth);
+            user.ip = userinfo.ip_address;
+            user.registeredWithMuxy = userinfo.registered || false;
+            user.visualizationID = userinfo.visualization_id || '';
 
-          updateUserContextSettings.call(this);
+            updateUserContextSettings.call(this);
 
-          resolvePromise(user);
-        });
+            resolvePromise(user);
+            this.loadResolve();
+          })
+          .catch(err => {
+            this.loadReject(err);
+          });
       };
 
       if (this.user) {
@@ -374,6 +373,8 @@ class Muxy {
    * const sdk = new Muxy.SDK();
    * sdk.loaded().then(() => {
    *   sdk.send('Hello World');
+   * }).catch((err) => {
+   *   console.error(err);
    * });
    */
   SDK(id) { } // eslint-disable-line

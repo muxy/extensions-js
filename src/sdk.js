@@ -72,9 +72,18 @@ export default class SDK {
 
   /**
    * Returns a Promise that will resolve once this SDK instance is ready for use.
+   * Will reject if an error occurs communicating with the backend server.
    * @since 1.0.0
    *
    * @return {Promise}
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.loaded().then(() => {
+   *   sdk.send('Hello World');
+   * }).catch((err) => {
+   *   console.error(err);
+   * });
    */
   loaded() {
     return this.loadPromise;
@@ -292,7 +301,7 @@ export default class SDK {
     forceType(rankID, 'string');
     forceType(value, 'string');
 
-    return this.client.rank(this.identifier, { key: value });
+    return this.client.rank(this.identifier, rankID, { key: value });
   }
 
   /**

@@ -224,10 +224,12 @@ class StateClient {
     this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
 
   /** @ignore */
-  rank = (identifier, data) => this.signedRequest(identifier, 'POST', 'rank', JSON.stringify(data));
+  rank = (identifier, id, data) =>
+    this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  getRank = identifier => this.signedRequest(identifier, 'GET', 'rank');
+  getRank = (identifier, id) =>
+    this.signedRequest(identifier, 'GET', `rank?id=${id || 'default'}`);
 
   /** @ignore */
   deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank');

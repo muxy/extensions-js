@@ -20,6 +20,25 @@ import { forceType } from './util';
  */
 
 /**
+ * A single user object as from {@link getTwitchUsersByID}.
+ *
+ * @typedef {Object} HelixTwitchUser
+
+ * @property {string} id - The Twitch ID of the user. Universally unique.
+ * @property {string} login - The user's login name
+ * @property {string} description - The user's channel description
+ * @property {string} display_name - A user formatted version of their username for display.
+ * @property {string} profile_image_url - A URL to a Twitch-hosted version of this user's avatar.
+ * @property {string} offline_image_url - A URL to a Twitch-hosted version of this user's offline
+ * background.
+ * @property {string} type - The user's "type" on Twitch.
+ * One of ["staff", "admin", "global_mod", ""].
+ * @property {string} broadcaster_type - The user's broadcaster type on Twitch.
+ * One of ["partner", "affiliate", ""].
+ * @property {int} view_count - The user's total view count.
+ */
+
+/**
  * A single good object as from {@link getUserGoods}.
  *
  * @typedef {Object} ExtensionGood
@@ -137,12 +156,56 @@ export default class TwitchClient {
   }
 
   /**
+   * Wraps an AJAX request to Twitch's helix API. Used internally by the API
+   * convenience methods.
+   *
+   * @async
+   * @ignore
+   *
+   * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
+   * @param {string} endpoint - The Twitch helix API endpoint.
+   * @param {string?} data - A string-encoded JSON payload to send with the request.
+   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
+   *
+   * @return {Promise} Resolves with the AJAX payload on response < 400.
+   * Rejects otherwise.
+   */
+  signedTwitchHelixRequest(method, endpoint, data, JWT) {
+    const headers = {
+      'Client-ID': this.extensionId
+    };
+
+    if (JWT) {
+      headers.Authorization = `Bearer ${JWT}`;
+    }
+
+    return new Promise((resolve, reject) => {
+      const xhrPromise = new XMLHttpRequestPromise();
+      return xhrPromise
+        .send({
+          method,
+          url: `https://api.twitch.tv/helix/${endpoint}`,
+          headers,
+          data
+        })
+        .catch(reject)
+        .then(resp => {
+          if (resp.status < 400) {
+            resolve(resp.responseText.data);
+          }
+
+          reject(resp.responseText);
+        });
+    });
+  }
+
+  /**
    * Returns a list of Twitch User objects for a given list of usernames.
    *
    * @async
    * @since 1.0.0
    *
-   * @throws {TypeError} Will throw an error id users is not an array of strings.
+   * @throws {TypeError} Will throw an error if users is not an array of strings.
    *
    * @param {[]string} usernames - A list of usernames to lookup on Twitch.
    *
@@ -164,6 +227,35 @@ export default class TwitchClient {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Returns a list of Twitch User objects for a given list of user IDs.
+   *
+   * @async
+   *
+   * @throws {TypeError} Will throw an error if userIDs is not an array of strings.
+   *
+   * @param {[]string} userIDs - A list of user IDs to lookup on Twitch.
+   *
+   * @return {Promise<[]HelixTwitchUser>} Resolves with a list of {@link HelixTwitchUser}
+   * objects for each of the user IDs provided.
+   *
+   * @example
+   * twitchClient.getTwitchUsersByID(['126955211'], (response) => {
+   *  console.log(response.users[0].display_name);
+   * });
+   */
+  getTwitchUsersByID(userIDs) {
+    forceType(userIDs, 'array');
+    if (userIDs.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    return this.signedTwitchHelixRequest('GET', `users?id=${userIDs.join(',')}`);
+  }
+
+  /**
+>>>>>>> master
    * Monetization
    */
 

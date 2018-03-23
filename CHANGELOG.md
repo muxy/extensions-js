@@ -1,5 +1,30 @@
 # Change Log
 
+## 2018-03-22
+v1.0.7
+
+### Added
+- Added helix method for fetching a list of users by IDs.
+
+### Updated
+- Updated `loaded` method to properly reject on server communication error.
+
+### Fixed
+- Fix for environment detection.
+- Fixed passing rank id to backend for proper rank isolation.
+
+## 2018-01-05
+v1.0.6
+
+### Added
+- Convenience functions for working with new Twitch commerce functionality.
+
+## 2017-10-11
+v1.0.5
+
+### Fixed
+- Fixed missing function `environmentDetector` error.
+
 ## 2017-10-11
 v1.0.5
 

@@ -227,10 +227,6 @@ export default class TwitchClient {
   }
 
   /**
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
    * Returns a list of Twitch User objects for a given list of user IDs.
    *
    * @async
@@ -257,8 +253,6 @@ export default class TwitchClient {
   }
 
   /**
->>>>>>> master
->>>>>>> release
    * Monetization
    */
 

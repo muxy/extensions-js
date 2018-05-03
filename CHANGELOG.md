@@ -32,12 +32,6 @@ v1.0.5
 - Fixed missing function `environmentDetector` error.
 
 ## 2017-10-11
-v1.0.5
-
-### Fixed
-- Fixed missing function `environmentDetector` error.
-
-## 2017-10-11
 v1.0.4
 
 ### Updated

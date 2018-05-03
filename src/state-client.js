@@ -31,6 +31,7 @@ const ServerState = {
   AUTHENTICATION: 'authentication',
   USER: 'user_info',
   VIEWER: 'viewer_state',
+  EXTENSION_VIEWER: 'extension_viewer_state',
   CHANNEL: 'channel_state',
   EXTENSION: 'extension_state',
   ALL: 'all_state'
@@ -189,6 +190,9 @@ class StateClient {
   getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
 
   /** @ignore */
+  getExtensionViewerState = identifier => this.getState(identifier, ServerState.EXTENSION_VIEWER);
+
+  /** @ignore */
   getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
@@ -197,6 +201,10 @@ class StateClient {
   /** @ignore */
   setViewerState = (identifier, state) =>
     this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
+
+  /** @ignore */
+  setExtensionViewerState = (identifier, state) =>
+    this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
 
   /** @ignore */
   setChannelState = (identifier, state) =>

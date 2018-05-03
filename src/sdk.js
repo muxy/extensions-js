@@ -342,8 +342,10 @@ export default class SDK {
    */
 
   /**
-   * Sets the viewer-specific state to a JS object, this can be called by any viewer. Future calls
-   * to {@link getAllState} by **this** user will have a clone of this object in the `viewer` field.
+   * Sets the channel specific viewer-specific state to a JS object, this can be called by
+   * any viewer.
+   * Future calls to {@link getAllState} by **this** user will have a clone of this object in the
+   * `viewer` field.
    * @async
    * @since 1.0.0
    *
@@ -362,6 +364,30 @@ export default class SDK {
    */
   setViewerState(state) {
     return this.client.setViewerState(this.identifier, state);
+  }
+
+  /**
+   * Sets the extension wide viewer-specific state to a JS object, this can be called by any viewer.
+   * Future calls to {@link getAllState} by **this** user will have a clone of this object in the
+   * `extension_viewer` field.
+   * @async
+   * @since 1.1.0
+   *
+   * @param {Object} state - A complete JS object representing the current viewer state.
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionViewerState({
+   *   favorite_movie: 'Jaws: The Revenge'
+   * }).then(() => {
+   *   console.log('Viewer state saved!');
+   * }).catch((err) => {
+   *   console.error(`Failed saving viewer state: ${err}`);
+   * });
+   */
+  setExtensionViewerState(state) {
+    return this.client.setExtensionViewerState(this.identifier, state);
   }
 
   /**

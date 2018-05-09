@@ -211,6 +211,10 @@ class StateClient {
     this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
 
   /** @ignore */
+  setExtensionState = (identifier, state) =>
+    this.postState(identifier, ServerState.EXTENSION, JSON.stringify(state));
+
+  /** @ignore */
   getAccumulation = (identifier, id, start) =>
     this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
 

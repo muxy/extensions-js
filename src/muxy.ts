@@ -2,12 +2,16 @@ import Analytics from './analytics';
 import StateClient from './state-client';
 import Ext from './twitch-ext';
 import TwitchClient from './twitch-client';
-import Messenger from './messenger';
+import Messenger, { IMessenger } from './messenger';
 import SDK from './sdk';
 import User from './user';
 import Util from './util';
 
 import * as PackageConfig from '../package.json';
+
+interface SDKMap {
+  [key: string]: SDK
+};
 
 /**
  * The main extension entry interface, available as the global `Muxy` object.
@@ -19,6 +23,27 @@ import * as PackageConfig from '../package.json';
  * as `Muxy`.
  */
 class Muxy {
+  Util: Util;
+  SDKClients: SDKMap;
+
+  setupCalled: boolean;
+  twitchClientID: string;
+  client: StateClient;
+  messenger: IMessenger;
+  cachedTwitchClient: TwitchClient;
+  analytics: Analytics;
+  context: object;
+  user: User;
+  loadPromise: Promise<void>;
+  loadResolve: () => void;
+  loadReject: (string) => void;
+  SKUs: object[];
+  watchingAuth: boolean;
+
+  // Test variables.
+  testChannelID: string;
+  testJWTRole: string;
+
   /**
    * Private constructor for singleton use only.
    * @ignore
@@ -94,7 +119,7 @@ class Muxy {
      * @ignore
      * @type {Messenger}
      */
-    this.messenger = new Messenger();
+    this.messenger = Messenger();
 
     /**
      * Internal {@link TwitchClient}.
@@ -150,6 +175,14 @@ class Muxy {
      */
     this.SKUs = [];
 
+    /**
+     * Internal variable to handle setup functionality.
+     *
+     * @ignore
+     * @type {boolean}
+     */
+    this.watchingAuth = false;
+
     StateClient.setEnvironment(Util.currentEnvironment());
   }
 
@@ -175,8 +208,8 @@ class Muxy {
   static printInfo() {
     const SDKInfoText = [
       'Muxy Extensions SDK',
-      `v${PackageConfig.version} © ${new Date().getFullYear()} ${PackageConfig.author}`,
-      PackageConfig.repository,
+      `v${(<any>PackageConfig).version} © ${new Date().getFullYear()} ${(<any>PackageConfig).author}`,
+      (<any>PackageConfig).repository,
       ''
     ];
 

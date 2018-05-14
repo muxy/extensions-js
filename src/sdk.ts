@@ -1,4 +1,8 @@
-import {eventPatternMatch, CurrentEnvironment, forceType, consolePrint, errorPromise} from './util';
+import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
+import { IMessenger } from './messenger';
+import User from './user';
+import Analytics from './analytics';
+import StateClient from './state-client';
 import Ext from './twitch-ext';
 
 /**
@@ -19,8 +23,16 @@ import Ext from './twitch-ext';
  * methods.
  */
 export default class SDK {
+  loadPromise: Promise<void>
+  identifier: string;
+  client: StateClient;
+  analytics: Analytics;
+  messenger: IMessenger;
+  user: User;
+  SKUs: object[];
+
   /** @ignore */
-  constructor(identifier, client, user, messenger, analytics, loadPromise, SKUs) {
+  constructor(identifier: string, client: StateClient, user: User, messenger: IMessenger, analytics: Analytics, loadPromise: Promise<void>, SKUs: object[]) {
     /** @ignore */
     this.loadPromise = loadPromise;
 

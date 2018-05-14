@@ -1,8 +1,25 @@
+import { JWT, TwitchAuth } from './twitch';
+
 /**
  * Stores fields related to the current extension user, either a viewer or the broadcaster.
  * These fields are automatically updated by the SDK.
  */
 export default class User {
+  public channelID : string;
+  public twitchJWT : string;
+  public twitchOpaqueID : string;
+  public twitchID : string;
+  public muxyID : string;
+  public registeredWithMuxy : boolean;
+  public visualizationID : string;
+  public role : string;
+  public ip : string;
+  public game : string;
+  public videoMode : string;
+  public bitrate : Number;
+  public latency : Number;
+  public buffer : Number;
+
   /**
    * Defines the current user's role on Twitch relative to the current channel being
    * viewed. May be "viewer" if the user is simply viewing the channel, "moderator"
@@ -38,7 +55,7 @@ export default class User {
    * @since 1.0.0
    * @param {Object} auth - An auth token usable by this user for backend requests.
    */
-  constructor(auth) {
+  constructor(auth : TwitchAuth) {
     /**
      * channelID holds the numeric id of the channel the user is currently watching.
      *
@@ -169,11 +186,11 @@ export default class User {
    *
    * @param {Object} jwt - The auth JWT token as returned from the auth harness.
    */
-  extractJWTInfo(jwt) {
+  extractJWTInfo(jwt : string) {
     try {
       const splitToken = jwt.split('.');
       if (splitToken.length === 3) {
-        const token = JSON.parse(window.atob(splitToken[1]));
+        const token = (<JWT>JSON.parse(window.atob(splitToken[1])));
         this.role = token.role;
         if (token.user_id) {
           this.twitchID = token.user_id;
@@ -204,7 +221,7 @@ export default class User {
    *
    * @param {Object} auth - An auth JWT with updated user information.
    */
-  updateAuth(auth) {
+  updateAuth(auth : TwitchAuth) {
     this.twitchJWT = auth.token;
     this.extractJWTInfo(auth.token);
   }

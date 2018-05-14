@@ -1,4 +1,7 @@
-import gumshoeFactory from '../libs/gumshoe';
+import { gumshoeFactoryType, gumshoe } from 'gumshoe';
+import User from './user';
+
+var gumshoeFactory: gumshoeFactoryType = require('../libs/gumshoe');
 
 /**
  * The analytics collection endpoint.
@@ -11,6 +14,12 @@ const ANALYTICS_ENDPOINT = 'https://info.muxy.io';
  * with a given UA_STRING.
  */
 export default class Analytics {
+  gumshoe: gumshoe
+  ready: boolean;
+  uaString: string;
+  loadPromise: Promise<any>;
+  user: User;
+
   constructor(uaString, loadPromise) {
     this.ready = false;
     this.uaString = uaString;
@@ -109,7 +118,12 @@ export default class Analytics {
       cd3: game,
       cd4: videoMode,
       cm2: latency,
-      cm3: bitrate
+      cm3: bitrate,
+
+      ec: undefined,
+      ea: undefined,
+      el: undefined,
+      ev: undefined
     };
 
     if (data.eventName === 'page.view') {
@@ -132,7 +146,7 @@ export default class Analytics {
    * @param {*} value - (optional) A value to associate with this event (defaults to 1).
    * @param {string} label - (optional) A human-readable label for this event.
    */
-  sendEvent(category, name, value = 1, label = '') {
+  sendEvent(category: string, name: string, value: any = 1, label: string = '') {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }

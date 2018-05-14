@@ -52,10 +52,13 @@
     "mocha": "^3.5.3",
     "prettier": "^1.6.1",
     "sinon": "^3.2.1",
+    "ts-loader": "^3.5.0",
+    "typescript": "^2.8.3",
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.7.1"
   },
   "dependencies": {
+    "@types/pusher-js": "^4.2.0",
     "base-64": "^0.1.0",
     "parse-headers": "^2.0.1",
     "pusher-js": "^4.1.0"

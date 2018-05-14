@@ -4,11 +4,15 @@
  *
  * @since 1.0.3
  */
-/** @ignore */ const ProductionEnvironment = { environment: 'production' };
-/** @ignore */ const SandboxDevEnvironment = { environment: 'sandbox' };
-/** @ignore */ const SandboxTwitchEnvironment = { environment: 'sandbox' };
-/** @ignore */ const ServerEnvironment = { environment: 'server' };
-/** @ignore */ const TestingEnvironment = { environment: 'testing' };
+class Environment {
+  environment: string;
+}
+
+/** @ignore */ const ProductionEnvironment: Environment = { environment: 'production' };
+/** @ignore */ const SandboxDevEnvironment: Environment = { environment: 'sandbox' };
+/** @ignore */ const SandboxTwitchEnvironment: Environment = { environment: 'sandbox' };
+/** @ignore */ const ServerEnvironment: Environment = { environment: 'server' };
+/** @ignore */ const TestingEnvironment: Environment = { environment: 'testing' };
 
 /**
  * Possible runtime environments for the SDK.
@@ -21,6 +25,12 @@
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
   TESTING: TestingEnvironment
+};
+
+interface consolePrintOptions {
+  type?: string;
+  boxed?: boolean;
+  style?: string;
 };
 
 /**
@@ -56,7 +66,7 @@ export default class Util {
    *
    * @returns {Promise<string>} Immediately rejects the returned Promise.
    */
-  static errorPromise(err) {
+  static errorPromise(err: string) {
     return Promise.reject(err);
   }
 
@@ -68,7 +78,7 @@ export default class Util {
    *
    * @param {string[]} lines - An array of strings.
    */
-  static widestLine(lines) {
+  static widestLine(lines : string[]) : number {
     return Math.max.apply(null, lines.map(x => x.length));
   }
 
@@ -83,7 +93,7 @@ export default class Util {
    * @returns {string} A string containing all `lines` of text surrounded
    * in an ASCII box art.
    */
-  static asciiBox(lines) {
+  static asciiBox(lines : string[]) : string[] {
     const contentWidth = Util.widestLine(lines);
 
     const intro = `${' '.repeat(contentWidth / 2)}🦊`;
@@ -106,7 +116,7 @@ export default class Util {
    * @since 1.0.0
    * @ignore
    */
-  static isWindowFramed() {
+  static isWindowFramed() : boolean {
     const isNotChildWindow = !window.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
@@ -125,7 +135,7 @@ export default class Util {
    * @returns {string} Returns a string representation of the current
    * execution environment.
    */
-  static currentEnvironment(overrideWindow) {
+  static currentEnvironment(overrideWindow?: Window): Environment {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -155,7 +165,7 @@ export default class Util {
       }
 
       // Explicity set testing variable, assume testing.
-      if (vWindow.testing) {
+      if ((<any>vWindow).testing) {
         return ENVIRONMENTS.TESTING;
       }
     } catch (err) {
@@ -196,7 +206,7 @@ export default class Util {
    *  | This is a box |
    *  └───────────────┘
    */
-  static consolePrint(lines, options = {}) {
+  static consolePrint(lines : (string[] | string), options : consolePrintOptions = {}) {
     if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
     }
@@ -214,9 +224,9 @@ export default class Util {
     }
 
     if (Util.currentEnvironment() === Util.Environments.Server) {
-      console[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
+      (<any>console)[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
     } else {
-      console[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+      (<any>console)[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
     }
   }
 
@@ -235,7 +245,7 @@ export default class Util {
    *
    * @return Returns true if the pattern matches the input, false otherwise.
    */
-  static eventPatternMatch(input, pattern) {
+  static eventPatternMatch(input : string, pattern : string) {
     const inputParts = input.split(':');
     const patternParts = pattern.split(':');
 
@@ -269,7 +279,7 @@ export default class Util {
    *
    * @throws {TypeError} Throws if typeof value is not in the type list.
    */
-  static forceType(value, type) {
+  static forceType(value : any, type : string) {
     const types = [].concat(type);
     const typeString = typeof value;
 

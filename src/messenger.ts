@@ -1,17 +1,39 @@
 /* globals Twitch */
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
+import { Pusher } from '../node_modules/@types/pusher-js/index';
+import SDK from './sdk';
 
 let Pusher = null;
 if (CurrentEnvironment() !== ENVIRONMENTS.SERVER) {
   Pusher = require('pusher-js'); // eslint-disable-line global-require
 }
 
+// CallbackHandle is what is returned from a call to listen from the Messenger, and should be
+// passed to unlisten.
+class CallbackHandle {
+  target: string;
+  cb: (t: any, datatype: string, message: string) => void;
+}
+
+export interface IMessenger {
+  channelID: string;
+  extensionID: string;
+
+  send(id, event, target, body, client): void;
+  listen(id, topic, callback: (parsedObject: object) => void): CallbackHandle
+  unlisten(id, CallbackHandle): void;
+}
+
 // TwitchMessenger implements the basic 'messenger' interface, which should be implemented
 // for all pubsub implementations. This is used by SDK to provide low-level access
 // to a pubsub implementation.
-class TwitchMessenger {
+class TwitchMessenger implements IMessenger {
+  channelID: string;
+  extensionID: string;
+
   constructor() {
     this.channelID = '';
+    this.extensionID = '';
   }
 
   /**
@@ -27,7 +49,7 @@ class TwitchMessenger {
   /* eslint-disable class-methods-use-this */
   send(id, event, target, body) {
     const data = body || {};
-    Twitch.ext.send(target, 'application/json', {
+    window.Twitch.ext.send(target, 'application/json', {
       event: `${CurrentEnvironment().environment}:${id}:${event}`,
       data
     });
@@ -42,7 +64,7 @@ class TwitchMessenger {
    * @return a handle that can be passed into unlisten to unbind the callback.
    */
   /* eslint-disable class-methods-use-this */
-  listen(id, topic, callback) {
+  listen(id, topic: string, callback): CallbackHandle {
     const cb = (t, datatype, message) => {
       try {
         const parsed = JSON.parse(message);
@@ -52,7 +74,7 @@ class TwitchMessenger {
       }
     };
 
-    Twitch.ext.listen(topic, cb);
+    window.Twitch.ext.listen(topic, cb);
 
     return {
       target: topic,
@@ -67,22 +89,27 @@ class TwitchMessenger {
    * @param h the handle returned from listen
    */
   /* eslint-disable class-methods-use-this */
-  unlisten(id, h) {
-    Twitch.ext.unlisten(h.target, h.cb);
+  unlisten(id, h: CallbackHandle) {
+    window.Twitch.ext.unlisten(h.target, h.cb);
   }
   /* eslint-enable class-methods-use-this */
 }
 
 // PusherMessenger adheres to the 'messenger' interface, but uses https://pusher.com
 // as a pubsub notification provider.
-class PusherMessenger {
-  constructor(ch, muxy) {
+class PusherMessenger implements IMessenger {
+  channelID: string;
+  extensionID: string;
+
+  client: Pusher;
+  channel: Pusher.Channel;
+
+  constructor() {
     this.client = new Pusher('18c26c0d1c7fafb78ba2', {
       cluster: 'us2',
       encrypted: true
     });
 
-    this.muxy = muxy;
     this.channelID = '';
   }
 
@@ -132,10 +159,12 @@ class PusherMessenger {
 
 // ServerMessenger implements a 'messenger' that is broadcast-only. It cannot
 // listen for messages, but is able to send with a backend-signed JWT.
-class ServerMessenger {
-  constructor(ch, muxy) {
+class ServerMessenger implements IMessenger {
+  channelID: string;
+  extensionID: string;
+
+  constructor(ch?) {
     this.channelID = ch;
-    this.muxy = muxy;
   }
 
   send(id, event, target, body, client) {
@@ -153,17 +182,22 @@ class ServerMessenger {
   }
 
   /* eslint-disable class-methods-use-this,no-console */
-  listen() {
+  listen(id, topic, callback): CallbackHandle {
     console.error('Server-side message receiving is not implemented.');
+
+    return {
+      target: '',
+      cb: () => {}
+    };
   }
 
-  unlisten() {
+  unlisten(id, handle: CallbackHandle): void {
     console.error('Server-side message receiving is not implemented.');
   }
   /* eslint-enable class-methods-use-this,no-console */
 }
 
-export default function Messenger() {
+export default function Messenger() : IMessenger {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.SANDBOX_DEV:
       return new PusherMessenger();

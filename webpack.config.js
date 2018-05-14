@@ -9,8 +9,8 @@ module.exports = {
   devtool: 'inline-source-map',
 
   entry: {
-    'muxy-extensions': './src/index.js',
-    'muxy-extensions.min': './src/index.js'
+    'muxy-extensions': './src/index.ts',
+    'muxy-extensions.min': './src/index.ts'
   },
 
   target: 'web',
@@ -25,13 +25,18 @@ module.exports = {
         options: { formatter }
       },
       {
-        test: /\.js$/,
+        test: /(\.js$|\.ts(x?)$)/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader'
-        }
+        use: [
+          { loader: 'babel-loader' },
+          { loader: 'ts-loader' }
+        ]
       }
     ]
+  },
+
+  resolve: {
+    extensions: ['.ts', '.js', '.json']
   },
 
   node: false,

@@ -1,4 +1,5 @@
 import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
+import { TwitchAuth, TwitchContext } from './twitch';
 import Client from './state-client';
 
 // 25 minutes between updates of the testing auth token.
@@ -9,15 +10,19 @@ const CONTEXT_CALLBACK_TIMEOUT = 30 * 1000;
 
 // Wrapper around global Twitch extension object.
 export default class Ext {
-  static fetchTestAuth(cb) {
+  static extensionID: string;
+  static testChannelID: string;
+  static testJWTRole: string;
+
+  static fetchTestAuth(cb : (auth : TwitchAuth) => void ) {
     Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
-      .then(auth => {
+      .then((auth: TwitchAuth) => {
         cb(auth);
       })
       .catch(cb);
   }
 
-  static onAuthorized(cb) {
+  static onAuthorized(cb : (auth : TwitchAuth) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(cb);
@@ -42,7 +47,7 @@ export default class Ext {
     }
   }
 
-  static onContext(cb) {
+  static onContext(cb : (ctx : TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -70,7 +75,7 @@ export default class Ext {
     }
   }
 
-  static beginPurchase(sku) {
+  static beginPurchase(sku : string) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -84,7 +89,7 @@ export default class Ext {
     }
   }
 
-  static getPrices(cb) {
+  static getPrices(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -102,7 +107,7 @@ export default class Ext {
     }
   }
 
-  static onReloadEntitlements(cb) {
+  static onReloadEntitlements(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:

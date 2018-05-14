@@ -1,5 +1,6 @@
-import XMLHttpRequestPromise from '../libs/xhr-promise';
+var XMLHttpRequestPromise = require('../libs/xhr-promise');
 import { forceType } from './util';
+import { JWT } from './twitch';
 
 /**
  * A single user object as from {@link getTwitchUsers}.
@@ -80,6 +81,9 @@ import { forceType } from './util';
  * });
  */
 export default class TwitchClient {
+  extensionId: string;
+  promise: Promise<any>;
+
   /**
    * Create an instance of TwitchClient bound to the provided client ID.
    *
@@ -90,11 +94,11 @@ export default class TwitchClient {
    *
    * @param {string} clientID - A valid Twitch Extension Client ID.
    */
-  constructor(clientID) {
+  constructor(clientID: string) {
     /** @ignore */
     this.extensionId = clientID;
     /** @ignore */
-    this.promise = Promise.resolve();
+    this.promise = (<any>Promise).resolve();
   }
 
   /**
@@ -105,7 +109,7 @@ export default class TwitchClient {
    *
    * @return {Promise} Will resolve when the TwitchClient is ready for use.
    */
-  loaded() {
+  loaded(): Promise<any> {
     return this.promise;
   }
 
@@ -125,10 +129,12 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchRequest(method, endpoint, data, JWT) {
+  signedTwitchRequest(method: string, endpoint: string, data?: string, JWT? : string) {
     const headers = {
       Accept: 'application/vnd.twitchtv.v5+json',
-      'Client-ID': this.extensionId
+      'Client-ID': this.extensionId,
+
+      Authorization: undefined
     };
 
     if (JWT) {
@@ -170,9 +176,10 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchHelixRequest(method, endpoint, data, JWT) {
+  signedTwitchHelixRequest(method: string, endpoint: string, data?: string, JWT?: string) {
     const headers = {
-      'Client-ID': this.extensionId
+      'Client-ID': this.extensionId,
+      Authorization: undefined
     };
 
     if (JWT) {
@@ -265,7 +272,7 @@ export default class TwitchClient {
    * each of the goods the user is entitled to.
    */
   getUserGoods(JWT) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods', {}, JWT);
+    return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', JWT);
   }
 
   /**

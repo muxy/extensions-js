@@ -1,7 +1,7 @@
 import base64 from 'base-64';
-import XMLHttpRequestPromise from '../libs/xhr-promise';
 
 import { ENVIRONMENTS, errorPromise } from './util';
+var XMLHttpRequestPromise = require('../libs/xhr-promise');
 
 /**
  * Muxy production API URL.
@@ -52,6 +52,8 @@ const ServerState = {
  * });
  */
 class StateClient {
+  token: string;
+
   /** @ignore */
   constructor() {
     /** @ignore */
@@ -59,7 +61,7 @@ class StateClient {
   }
 
   /** @ignore */
-  static fetchTestAuth(testExtensionID, channelID, role) {
+  static fetchTestAuth(testExtensionID: string, channelID: string, role: string) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       xhrPromise
@@ -108,7 +110,7 @@ class StateClient {
    * request to the EBS with valid auth credentials.s
    * @ignore
    */
-  signedRequest(extensionID, method, endpoint, data) {
+  signedRequest(extensionID, method, endpoint, data?) : Promise<any> {
     if (!this.validateJWT()) {
       return errorPromise('Your authentication token has expired.');
     }
@@ -173,7 +175,7 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  getState = (identifier, substate) =>
+  getState = (identifier, substate?) =>
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**
@@ -244,7 +246,8 @@ class StateClient {
     this.signedRequest(identifier, 'GET', `rank?id=${id || 'default'}`);
 
   /** @ignore */
-  deleteRank = identifier => this.signedRequest(identifier, 'DELETE', 'rank');
+  deleteRank = (identifier, id) =>
+    this.signedRequest(identifier, 'DELETE', `rank?id=${id || 'default'}`);
 
   /** @ignore */
   getJSONStore = (identifier, id) =>

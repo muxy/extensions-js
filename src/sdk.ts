@@ -1,5 +1,11 @@
-import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
-import { IMessenger } from './messenger';
+import {
+  eventPatternMatch,
+  CurrentEnvironment,
+  forceType,
+  consolePrint
+} from './util';
+
+import { CallbackHandle, IMessenger } from './messenger';
 import User from './user';
 import Analytics from './analytics';
 import StateClient from './state-client';
@@ -23,7 +29,7 @@ import Ext from './twitch-ext';
  * methods.
  */
 export default class SDK {
-  loadPromise: Promise<void>
+  loadPromise: Promise<void>;
   identifier: string;
   client: StateClient;
   analytics: Analytics;
@@ -32,7 +38,15 @@ export default class SDK {
   SKUs: object[];
 
   /** @ignore */
-  constructor(identifier: string, client: StateClient, user: User, messenger: IMessenger, analytics: Analytics, loadPromise: Promise<void>, SKUs: object[]) {
+  constructor(
+    identifier: string,
+    client: StateClient,
+    user: User,
+    messenger: IMessenger,
+    analytics: Analytics,
+    loadPromise: Promise<void>,
+    SKUs: object[]
+  ) {
     /** @ignore */
     this.loadPromise = loadPromise;
 
@@ -407,26 +421,26 @@ export default class SDK {
   }
 
   /**
- * Sets the extension wide state to a JS object, this may only be called in a broadcaster context
- * for the extension owner. Extension owner may be configured through the development portal.
- * Future calls to {@link getAllState} by all users will have a clone of this object in the
- * `extension` field.
- * @async
- * @since 1.1.0
- *
- * @param {Object} state - A complete JS object representing the current viewer state.
- *
- * @return {Promise} Will resolve on successful server-send. Rejects on failure.
- *
- * @example
- * sdk.setExtensionViewerState({
- *   favorite_movie: 'Jaws: The Revenge'
- * }).then(() => {
- *   console.log('Viewer state saved!');
- * }).catch((err) => {
- *   console.error(`Failed saving viewer state: ${err}`);
- * });
- */
+   * Sets the extension wide state to a JS object, this may only be called in a broadcaster context
+   * for the extension owner. Extension owner may be configured through the development portal.
+   * Future calls to {@link getAllState} by all users will have a clone of this object in the
+   * `extension` field.
+   * @async
+   * @since 1.1.0
+   *
+   * @param {Object} state - A complete JS object representing the current viewer state.
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionViewerState({
+   *   favorite_movie: 'Jaws: The Revenge'
+   * }).then(() => {
+   *   console.log('Viewer state saved!');
+   * }).catch((err) => {
+   *   console.error(`Failed saving viewer state: ${err}`);
+   * });
+   */
   setExtensionState(state) {
     return this.client.setExtensionState(this.identifier, state);
   }
@@ -685,7 +699,9 @@ export default class SDK {
    * });
    */
   listen(inEvent, inUserID, inCallback) {
-    const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
+    const realEvent = `${CurrentEnvironment().environment}:${
+      this.identifier
+    }:${inEvent}`;
 
     let l = 'broadcast';
     let callback = inCallback;
@@ -767,7 +783,9 @@ export default class SDK {
    */
   beginPurchase(sku) {
     if (this.SKUs.length === 0) {
-      throw new Error('beginPurchase() cannot be used unless SKUs are provided.');
+      throw new Error(
+        'beginPurchase() cannot be used unless SKUs are provided.'
+      );
     }
     forceType(sku, 'string');
     return Ext.beginPurchase(sku);
@@ -799,7 +817,9 @@ export default class SDK {
    */
   onReloadEntitlements(cb) {
     if (this.SKUs.length === 0) {
-      throw new Error('onReloadEntitlements() cannot be used unless SKUs are provided.');
+      throw new Error(
+        'onReloadEntitlements() cannot be used unless SKUs are provided.'
+      );
     }
     return Ext.onReloadEntitlements(cb);
   }

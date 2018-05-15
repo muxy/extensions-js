@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
-const formatter = require('eslint-friendly-formatter');
 
 const port = process.env.PORT || 9000;
 
 module.exports = {
+  mode: 'production',
   devtool: 'inline-source-map',
 
   entry: {
@@ -16,21 +16,29 @@ module.exports = {
   target: 'web',
 
   module: {
-    rules: [
-      {
-        test: /\.(js|vue)$/,
-        loader: 'eslint-loader',
+    rules: [{
+        test: /\.ts(x?)$/,
         enforce: 'pre',
-        exclude: /node_modules/,
-        options: { formatter }
+        loader: 'tslint-loader',
+        options: {
+          configuration: {
+            rules: {
+              quotemark: [true, 'double']
+            }
+          },
+
+          emitErrors: true,
+          failOnHint: true,
+          typeCheck: false,
+          fix: false
+        }
       },
       {
         test: /(\.js$|\.ts(x?)$)/,
         exclude: /node_modules/,
-        use: [
-          { loader: 'babel-loader' },
-          { loader: 'ts-loader' }
-        ]
+        use: [{
+          loader: 'ts-loader'
+        }]
       }
     ]
   },

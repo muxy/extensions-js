@@ -10,7 +10,7 @@ if (CurrentEnvironment() !== ENVIRONMENTS.SERVER) {
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
-class CallbackHandle {
+export class CallbackHandle {
   target: string;
   cb: (t: any, datatype: string, message: string) => void;
 }
@@ -20,7 +20,7 @@ export interface IMessenger {
   extensionID: string;
 
   send(id, event, target, body, client): void;
-  listen(id, topic, callback: (parsedObject: object) => void): CallbackHandle
+  listen(id, topic, callback: (parsedObject: object) => void): CallbackHandle;
   unlisten(id, CallbackHandle): void;
 }
 
@@ -197,7 +197,7 @@ class ServerMessenger implements IMessenger {
   /* eslint-enable class-methods-use-this,no-console */
 }
 
-export default function Messenger() : IMessenger {
+export default function Messenger(): IMessenger {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.SANDBOX_DEV:
       return new PusherMessenger();

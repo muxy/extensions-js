@@ -4,15 +4,23 @@
  *
  * @since 1.0.3
  */
-class Environment {
+export class Environment {
   environment: string;
 }
 
-/** @ignore */ const ProductionEnvironment: Environment = { environment: 'production' };
-/** @ignore */ const SandboxDevEnvironment: Environment = { environment: 'sandbox' };
-/** @ignore */ const SandboxTwitchEnvironment: Environment = { environment: 'sandbox' };
+/** @ignore */ const ProductionEnvironment: Environment = {
+  environment: 'production'
+};
+/** @ignore */ const SandboxDevEnvironment: Environment = {
+  environment: 'sandbox'
+};
+/** @ignore */ const SandboxTwitchEnvironment: Environment = {
+  environment: 'sandbox'
+};
 /** @ignore */ const ServerEnvironment: Environment = { environment: 'server' };
-/** @ignore */ const TestingEnvironment: Environment = { environment: 'testing' };
+/** @ignore */ const TestingEnvironment: Environment = {
+  environment: 'testing'
+};
 
 /**
  * Possible runtime environments for the SDK.
@@ -27,11 +35,11 @@ class Environment {
   TESTING: TestingEnvironment
 };
 
-interface consolePrintOptions {
+export interface consolePrintOptions {
   type?: string;
   boxed?: boolean;
   style?: string;
-};
+}
 
 /**
  * A collection of static utility functions, available at {@link Muxy.Util}.
@@ -78,7 +86,7 @@ export default class Util {
    *
    * @param {string[]} lines - An array of strings.
    */
-  static widestLine(lines : string[]) : number {
+  static widestLine(lines: string[]): number {
     return Math.max.apply(null, lines.map(x => x.length));
   }
 
@@ -93,7 +101,7 @@ export default class Util {
    * @returns {string} A string containing all `lines` of text surrounded
    * in an ASCII box art.
    */
-  static asciiBox(lines : string[]) : string[] {
+  static asciiBox(lines: string[]): string[] {
     const contentWidth = Util.widestLine(lines);
 
     const intro = `${' '.repeat(contentWidth / 2)}🦊`;
@@ -116,7 +124,7 @@ export default class Util {
    * @since 1.0.0
    * @ignore
    */
-  static isWindowFramed() : boolean {
+  static isWindowFramed(): boolean {
     const isNotChildWindow = !window.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
@@ -145,7 +153,11 @@ export default class Util {
     }
     try {
       // NodeJS module system, assume server.
-      if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
+      if (
+        typeof module !== 'undefined' &&
+        module.exports &&
+        typeof vWindow === 'undefined'
+      ) {
         return ENVIRONMENTS.SERVER;
       }
 
@@ -160,7 +172,10 @@ export default class Util {
       }
 
       // Not on Twitch but with their referrer, assume sandbox twitch.
-      if (vWindow.document.referrer && vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
+      if (
+        vWindow.document.referrer &&
+        vWindow.document.referrer.indexOf('twitch.tv') !== -1
+      ) {
         return ENVIRONMENTS.SANDBOX_TWITCH;
       }
 
@@ -206,7 +221,10 @@ export default class Util {
    *  | This is a box |
    *  └───────────────┘
    */
-  static consolePrint(lines : (string[] | string), options : consolePrintOptions = {}) {
+  static consolePrint(
+    lines: string[] | string,
+    options: consolePrintOptions = {}
+  ) {
     if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
     }
@@ -245,7 +263,7 @@ export default class Util {
    *
    * @return Returns true if the pattern matches the input, false otherwise.
    */
-  static eventPatternMatch(input : string, pattern : string) {
+  static eventPatternMatch(input: string, pattern: string) {
     const inputParts = input.split(':');
     const patternParts = pattern.split(':');
 
@@ -279,7 +297,7 @@ export default class Util {
    *
    * @throws {TypeError} Throws if typeof value is not in the type list.
    */
-  static forceType(value : any, type : string) {
+  static forceType(value: any, type: string) {
     const types = [].concat(type);
     const typeString = typeof value;
 

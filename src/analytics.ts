@@ -1,7 +1,6 @@
-import { gumshoeFactoryType, gumshoe } from 'gumshoe';
+//import { gumshoeFactoryType, gumshoe } from 'gumshoe';
 import User from './user';
-
-var gumshoeFactory: gumshoeFactoryType = require('../libs/gumshoe');
+import gumshoeFactory from '../libs/gumshoe';
 
 /**
  * The analytics collection endpoint.
@@ -14,7 +13,7 @@ const ANALYTICS_ENDPOINT = 'https://info.muxy.io';
  * with a given UA_STRING.
  */
 export default class Analytics {
-  gumshoe: gumshoe
+  gumshoe: any;
   ready: boolean;
   uaString: string;
   loadPromise: Promise<any>;
@@ -97,7 +96,10 @@ export default class Analytics {
       aid: appName,
       an: appName,
       cid:
-        opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
+        opaqueID ||
+        data.clientUuid ||
+        data.sessionUuid ||
+        '00000000-0000-0000-0000-000000000000',
       dh: pd.hostName,
       dl: pd.url,
       dp: pd.path,
@@ -146,7 +148,12 @@ export default class Analytics {
    * @param {*} value - (optional) A value to associate with this event (defaults to 1).
    * @param {string} label - (optional) A human-readable label for this event.
    */
-  sendEvent(category: string, name: string, value: any = 1, label: string = '') {
+  sendEvent(
+    category: string,
+    name: string,
+    value: any = 1,
+    label: string = ''
+  ) {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }

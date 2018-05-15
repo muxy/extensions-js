@@ -9,9 +9,9 @@ import Util from './util';
 
 import * as PackageConfig from '../package.json';
 
-interface SDKMap {
-  [key: string]: SDK
-};
+export interface SDKMap {
+  [key: string]: SDK;
+}
 
 /**
  * The main extension entry interface, available as the global `Muxy` object.
@@ -22,7 +22,7 @@ interface SDKMap {
  * On import or inclusion in an HTML file, a singleton object will be globally accessible
  * as `Muxy`.
  */
-class Muxy {
+export class Muxy {
   Util: Util;
   SDKClients: SDKMap;
 
@@ -208,7 +208,9 @@ class Muxy {
   static printInfo() {
     const SDKInfoText = [
       'Muxy Extensions SDK',
-      `v${(<any>PackageConfig).version} © ${new Date().getFullYear()} ${(<any>PackageConfig).author}`,
+      `v${(<any>PackageConfig).version} © ${new Date().getFullYear()} ${
+        (<any>PackageConfig).author
+      }`,
       (<any>PackageConfig).repository,
       ''
     ];
@@ -278,7 +280,8 @@ class Muxy {
       };
 
       const onFirstAuth = () => {
-        this.client.getUserInfo(extensionID)
+        this.client
+          .getUserInfo(extensionID)
           .then(userinfo => {
             const user = new User(auth);
             user.ip = userinfo.ip_address;
@@ -410,7 +413,7 @@ class Muxy {
    *   console.error(err);
    * });
    */
-  SDK(id) { } // eslint-disable-line
+  SDK(id) {} // eslint-disable-line
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -422,7 +425,7 @@ class Muxy {
    *
    * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
    */
-  TwitchClient() { } // eslint-disable-line
+  TwitchClient() {} // eslint-disable-line
 }
 
 /**
@@ -438,7 +441,9 @@ const mxy = new Muxy();
 /** @ignore */
 mxy.SDK = function NewSDK(id) {
   if (!mxy.setupCalled) {
-    throw new Error('Muxy.setup() must be called before creating a new SDK instance');
+    throw new Error(
+      'Muxy.setup() must be called before creating a new SDK instance'
+    );
   }
 
   const identifier = id || mxy.twitchClientID;
@@ -469,7 +474,9 @@ mxy.SDK = function NewSDK(id) {
 /** @ignore */
 mxy.TwitchClient = function NewTwitchClient() {
   if (!mxy.setupCalled) {
-    throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
+    throw new Error(
+      'Muxy.setup() must be called before creating a new TwitchClient instance'
+    );
   }
 
   return mxy.cachedTwitchClient;

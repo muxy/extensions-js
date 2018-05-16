@@ -124,12 +124,20 @@ export default class Util {
    * @since 1.0.0
    * @ignore
    */
-  static isWindowFramed(): boolean {
-    const isNotChildWindow = !window.opener;
+  static isWindowFramed(overrideWindow?: Window): boolean {
+    let vWindow;
+    if (typeof window !== 'undefined') {
+      vWindow = window;
+    }
+    if (overrideWindow) {
+      vWindow = overrideWindow;
+    }
+
+    const isNotChildWindow = !vWindow.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
-    const windowTop = window.top && window != window.top; // eslint-disable-line eqeqeq
-    const windowParent = window.parent && window != window.parent; // eslint-disable-line eqeqeq
+    const windowTop = vWindow.top && vWindow != vWindow.top; // eslint-disable-line eqeqeq
+    const windowParent = vWindow.parent && vWindow != vWindow.parent; // eslint-disable-line eqeqeq
     const hasWindowAncestors = !!(windowTop || windowParent);
 
     return isNotChildWindow && hasWindowAncestors;
@@ -162,7 +170,7 @@ export default class Util {
       }
 
       // Not in an iframe, assume sandbox dev.
-      if (!Util.isWindowFramed()) {
+      if (!Util.isWindowFramed(overrideWindow)) {
         return ENVIRONMENTS.SANDBOX_DEV;
       }
 

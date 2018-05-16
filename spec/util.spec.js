@@ -1,8 +1,4 @@
-import chai from 'chai';
 import Util from '../src/util';
-
-const assert = chai.assert;
-const should = chai.should();
 
 // Convenience test harness for forceType.
 function testForceType(value, expected) {
@@ -15,19 +11,13 @@ function testForceType(value, expected) {
 describe('Util', () => {
   /** @test {Util.errorPromise} */
   describe('errorPromise', () => {
-    it('rejects immediately', () =>
-      Util.errorPromise('error string')
-        .then(() => {
-          throw new Error('fail');
-        })
-        .catch(data => {
-          assert(true);
-        }));
+    it('rejects immediately', () => {
+      return expect(Util.errorPromise('error string')).rejects.toEqual('error string')
+    });
 
-    it('passes error string', () =>
-      Util.errorPromise('error string').catch(data => {
-        data.should.equal('error string');
-      }));
+    it('passes error string', () => {
+      return expect(Util.errorPromise('error string')).rejects.toEqual('error string')
+    });
   });
 
   /** @test {Util.currentEnvironment} */
@@ -42,7 +32,7 @@ describe('Util', () => {
           referrer: ''
         }
       };
-      Util.currentEnvironment(sandboxWindow).should.equal(Util.Environments.SandboxDev);
+      expect(Util.currentEnvironment(sandboxWindow)).toEqual(Util.Environments.SandboxDev);
     });
 
     /** @test {Util.currentEnvironment#SANDBOX_TWITCH} */
@@ -55,7 +45,7 @@ describe('Util', () => {
           referrer: 'https://www.twitch.tv/test/dashboard'
         }
       };
-      Util.currentEnvironment(stagingWindow).should.equal(Util.Environments.SandboxTwitch);
+      expect(Util.currentEnvironment(stagingWindow)).toEqual(Util.Environments.SandboxTwitch);
     });
 
     /** @test {Util.currentEnvironment#PRODUCTION} */
@@ -66,32 +56,35 @@ describe('Util', () => {
         },
         document: {
           referrer: 'https://www.twitch.tv/test/dashboard'
-        }
+        },
+        top: {},
+        parent: {},
+        opener: null
       };
-      Util.currentEnvironment(productionWindow).should.equal(Util.Environments.Production);
+      expect(Util.currentEnvironment(productionWindow)).toEqual(Util.Environments.Production);
     });
   });
 
   /** @test {eventPatternMatch} */
   describe('eventPatternMatch', () => {
     it('correctly matches valid patterns', () => {
-      Util.eventPatternMatch('a:b:c', 'a:b:c').should.be.true;
-      Util.eventPatternMatch('a:b:c', 'a:b:*').should.be.true;
-      Util.eventPatternMatch('a:b:c', 'a:*:c').should.be.true;
-      Util.eventPatternMatch('a:b:c', '*:b:c').should.be.true;
-      Util.eventPatternMatch('a:b:c', '*:*:c').should.be.true;
-      Util.eventPatternMatch('a:b:c', '*:b:*').should.be.true;
-      Util.eventPatternMatch('a:b:c', '*:*:*').should.be.true;
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:c')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:*')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', 'a:*:c')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', '*:b:c')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', '*:*:c')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', '*:b:*')).toBe(true);
+      expect(Util.eventPatternMatch('a:b:c', '*:*:*')).toBe(true);
     });
 
     it('does not match invalid patterns', () => {
-      Util.eventPatternMatch('a:b:c', 'a:b').should.be.false;
-      Util.eventPatternMatch('a:b:c', 'a:b:**').should.be.false;
-      Util.eventPatternMatch('a:b:c', 'a:b:d').should.be.false;
-      Util.eventPatternMatch('a:b:c', '*:*').should.be.false;
-      Util.eventPatternMatch('a:b:c', 'a:b:c*').should.be.false;
-      Util.eventPatternMatch('a:b:c', 'a:b:c:d').should.be.false;
-      Util.eventPatternMatch('a:b:c', 'a:b:c:*').should.be.false;
+      expect(Util.eventPatternMatch('a:b:c', 'a:b')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:**')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:d')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', '*:*')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:c*')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:c:d')).toBe(false);
+      expect(Util.eventPatternMatch('a:b:c', 'a:b:c:*')).toBe(false);
     });
   });
 
@@ -105,12 +98,12 @@ describe('Util', () => {
       const testFunction = new Function();
       const testObject = {};
 
-      should.not.throw(testForceType(testUndefined, 'undefined'));
-      should.not.throw(testForceType(testBoolean, 'boolean'));
-      should.not.throw(testForceType(testNumber, 'number'));
-      should.not.throw(testForceType(testString, 'string'));
-      should.not.throw(testForceType(testFunction, 'function'));
-      should.not.throw(testForceType(testObject, 'object'));
+      expect(testForceType(testUndefined, 'undefined')).not.toThrow();
+      expect(testForceType(testBoolean, 'boolean')).not.toThrow();
+      expect(testForceType(testNumber, 'number')).not.toThrow();
+      expect(testForceType(testString, 'string')).not.toThrow();
+      expect(testForceType(testFunction, 'function')).not.toThrow();
+      expect(testForceType(testObject, 'object')).not.toThrow();
     });
 
     it('correctly detects incorrect types', () => {
@@ -121,12 +114,12 @@ describe('Util', () => {
       const testFunction = new Function();
       const testObject = {};
 
-      should.throw(testForceType(testUndefined, 'boolean'), TypeError);
-      should.throw(testForceType(testBoolean, 'number'), TypeError);
-      should.throw(testForceType(testNumber, 'boolean'), TypeError);
-      should.throw(testForceType(testString, 'boolean'), TypeError);
-      should.throw(testForceType(testFunction, 'boolean'), TypeError);
-      should.throw(testForceType(testObject, 'boolean'), TypeError);
+      expect(testForceType(testUndefined, 'boolean')).toThrow(TypeError);
+      expect(testForceType(testBoolean, 'number')).toThrow(TypeError);
+      expect(testForceType(testNumber, 'boolean')).toThrow(TypeError);
+      expect(testForceType(testString, 'boolean')).toThrow(TypeError);
+      expect(testForceType(testFunction, 'boolean')).toThrow(TypeError);
+      expect(testForceType(testObject, 'boolean')).toThrow(TypeError);
     });
   });
 });

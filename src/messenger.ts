@@ -1,12 +1,7 @@
 /* globals Twitch */
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
-import { Pusher } from '../node_modules/@types/pusher-js/index';
+import * as Pusher from 'pusher-js';
 import SDK from './sdk';
-
-let Pusher = null;
-if (CurrentEnvironment() !== ENVIRONMENTS.SERVER) {
-  Pusher = require('pusher-js'); // eslint-disable-line global-require
-}
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -22,6 +17,7 @@ export interface IMessenger {
   send(id, event, target, body, client): void;
   listen(id, topic, callback: (parsedObject: object) => void): CallbackHandle;
   unlisten(id, CallbackHandle): void;
+  close(): void;
 }
 
 // TwitchMessenger implements the basic 'messenger' interface, which should be implemented
@@ -93,6 +89,8 @@ class TwitchMessenger implements IMessenger {
     window.Twitch.ext.unlisten(h.target, h.cb);
   }
   /* eslint-enable class-methods-use-this */
+
+  close() {}
 }
 
 // PusherMessenger adheres to the 'messenger' interface, but uses https://pusher.com
@@ -101,7 +99,7 @@ class PusherMessenger implements IMessenger {
   channelID: string;
   extensionID: string;
 
-  client: Pusher;
+  client: Pusher.Pusher;
   channel: Pusher.Channel;
 
   constructor() {
@@ -155,6 +153,10 @@ class PusherMessenger implements IMessenger {
   unlisten(id, h) {
     this.channel.unbind(h.target, h.cb);
   }
+
+  close() {
+    this.client.disconnect();
+  }
 }
 
 // ServerMessenger implements a 'messenger' that is broadcast-only. It cannot
@@ -195,6 +197,8 @@ class ServerMessenger implements IMessenger {
     console.error('Server-side message receiving is not implemented.');
   }
   /* eslint-enable class-methods-use-this,no-console */
+
+  close() {}
 }
 
 export default function Messenger(): IMessenger {

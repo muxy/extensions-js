@@ -1,4 +1,4 @@
-import base64 from 'base-64';
+import * as base64 from 'base-64';
 
 import { ENVIRONMENTS, errorPromise } from './util';
 var XMLHttpRequestPromise = require('../libs/xhr-promise');
@@ -61,7 +61,11 @@ class StateClient {
   }
 
   /** @ignore */
-  static fetchTestAuth(testExtensionID: string, channelID: string, role: string) {
+  static fetchTestAuth(
+    testExtensionID: string,
+    channelID: string,
+    role: string
+  ) {
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise();
       xhrPromise
@@ -95,7 +99,10 @@ class StateClient {
 
   /** @ignore */
   static setEnvironment(env) {
-    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
+    if (
+      env === ENVIRONMENTS.SANDBOX_DEV ||
+      env === ENVIRONMENTS.SANDBOX_TWITCH
+    ) {
       SERVER_URL = SANDBOX_URL;
     }
   }
@@ -110,7 +117,7 @@ class StateClient {
    * request to the EBS with valid auth credentials.s
    * @ignore
    */
-  signedRequest(extensionID, method, endpoint, data?) : Promise<any> {
+  signedRequest(extensionID, method, endpoint, data?): Promise<any> {
     if (!this.validateJWT()) {
       return errorPromise('Your authentication token has expired.');
     }
@@ -192,13 +199,16 @@ class StateClient {
   getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  getExtensionViewerState = identifier => this.getState(identifier, ServerState.EXTENSION_VIEWER);
+  getExtensionViewerState = identifier =>
+    this.getState(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
+  getChannelState = identifier =>
+    this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
-  getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION);
+  getExtensionState = identifier =>
+    this.getState(identifier, ServerState.EXTENSION);
 
   /** @ignore */
   setViewerState = (identifier, state) =>
@@ -206,7 +216,11 @@ class StateClient {
 
   /** @ignore */
   setExtensionViewerState = (identifier, state) =>
-    this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
+    this.postState(
+      identifier,
+      ServerState.EXTENSION_VIEWER,
+      JSON.stringify(state)
+    );
 
   /** @ignore */
   setChannelState = (identifier, state) =>
@@ -218,7 +232,11 @@ class StateClient {
 
   /** @ignore */
   getAccumulation = (identifier, id, start) =>
-    this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
+    this.signedRequest(
+      identifier,
+      'GET',
+      `accumulate?id=${id || 'default'}&start=${start}`
+    );
 
   /** @ignore */
   accumulate = (identifier, id, data) =>
@@ -231,7 +249,12 @@ class StateClient {
 
   /** @ignore */
   vote = (identifier, id, data) =>
-    this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data));
+    this.signedRequest(
+      identifier,
+      'POST',
+      `vote?id=${id || 'default'}`,
+      JSON.stringify(data)
+    );
 
   /** @ignore */
   getVotes = (identifier, id) =>
@@ -239,7 +262,12 @@ class StateClient {
 
   /** @ignore */
   rank = (identifier, id, data) =>
-    this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
+    this.signedRequest(
+      identifier,
+      'POST',
+      `rank?id=${id || 'default'}`,
+      JSON.stringify(data)
+    );
 
   /** @ignore */
   getRank = (identifier, id) =>
@@ -255,13 +283,20 @@ class StateClient {
 
   /** @ignore */
   validateCode = (identifier, code) =>
-    this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }));
+    this.signedRequest(
+      identifier,
+      'POST',
+      'validate_pin',
+      JSON.stringify({ pin: code })
+    );
 
   /** @ignore */
-  pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
+  pinTokenExists = identifier =>
+    this.signedRequest(identifier, 'GET', 'pin_token_exists');
 
   /** @ignore */
-  revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
+  revokeAllPINCodes = identifier =>
+    this.signedRequest(identifier, 'DELETE', 'pin');
 }
 
 export default StateClient;

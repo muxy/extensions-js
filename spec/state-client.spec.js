@@ -50,7 +50,7 @@ describe('StateClient', () => {
 
   /** @test {StateClient#getRank} */
   it('should make a request', function() {
-    this.server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', rankOK({ data: [] }));
+    this.server.respondWith('GET', 'https://api.muxy.io/v1/e/rank?id=default', rankOK({ data: [] }));
 
     const client = new StateClient();
     client.updateAuth(someJWT);
@@ -70,7 +70,7 @@ describe('StateClient', () => {
 
   /** @test {StateClient#getRank} */
   it('should fail on invalid json', function() {
-    this.server.respondWith('GET', 'https://api.muxy.io/v1/e/rank', [
+    this.server.respondWith('GET', 'https://api.muxy.io/v1/e/rank?id=default', [
       200,
       {
         'Content-Type': 'application/json'

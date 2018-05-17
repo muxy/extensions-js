@@ -16,11 +16,18 @@ const API_URL = 'https://api.muxy.io';
 const SANDBOX_URL = 'https://sandbox.api.muxy.io';
 
 /**
+ * Localhost for testing purposes.
+ * @ignore
+ */
+const LOCALHOST_URL = 'http://localhost:5000';
+
+/**
  * API URL to use for backend requests. Uses production API be default, but
  * can be updated using {@link setEnvironment}.
  * @ignore
  */
 let SERVER_URL = API_URL;
+let FAKEAUTH_URL = SANDBOX_URL;
 
 /**
  * ServerState enum maps the subsets of state persisted to the server to
@@ -71,7 +78,7 @@ class StateClient {
       xhrPromise
         .send({
           method: 'POST',
-          url: `${SANDBOX_URL}/v1/e/authtoken`,
+          url: `${FAKEAUTH_URL}/v1/e/authtoken`,
           data: JSON.stringify({
             app_id: testExtensionID,
             channel_id: channelID,
@@ -82,7 +89,7 @@ class StateClient {
         .then(resp => {
           if (resp && resp.status < 400) {
             // Update the API Server variable to point to test
-            SERVER_URL = SANDBOX_URL;
+            SERVER_URL = FAKEAUTH_URL;
 
             const auth = resp.responseText;
             // twitch uses lowercase d
@@ -105,10 +112,15 @@ class StateClient {
     ) {
       SERVER_URL = SANDBOX_URL;
     }
+
+    if (env === ENVIRONMENTS.TESTING) {
+      SERVER_URL = LOCALHOST_URL;
+      FAKEAUTH_URL = LOCALHOST_URL;
+    }
   }
 
   /** @ignore */
-  updateAuth(token) {
+  updateAuth(token: string) {
     this.token = token;
   }
 

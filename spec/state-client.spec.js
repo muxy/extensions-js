@@ -1,5 +1,4 @@
 import sinon from 'sinon';
-
 import StateClient from '../src/state-client';
 
 // Expiration is set to end of unix epoch time

@@ -1,4 +1,4 @@
-import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
+import {eventPatternMatch, CurrentEnvironment, forceType, consolePrint, errorPromise} from './util';
 import Ext from './twitch-ext';
 
 /**
@@ -367,7 +367,8 @@ export default class SDK {
   }
 
   /**
-   * Sets the extension wide viewer-specific state to a JS object, this can be called by any viewer.
+   * Sets the extension wide viewer-specific state to a JS object, this is only a valid call for a
+   * user that has shared their identity.
    * Future calls to {@link getAllState} by **this** user will have a clone of this object in the
    * `extension_viewer` field.
    * @async
@@ -387,6 +388,9 @@ export default class SDK {
    * });
    */
   setExtensionViewerState(state) {
+    if (this.user.twitchID == null) {
+      return errorPromise('User has not shared ID with Twitch');
+    }
     return this.client.setExtensionViewerState(this.identifier, state);
   }
 

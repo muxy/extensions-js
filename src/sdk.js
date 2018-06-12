@@ -391,6 +391,31 @@ export default class SDK {
   }
 
   /**
+ * Sets the extension wide state to a JS object, this may only be called in a broadcaster context
+ * for the extension owner. Extension owner may be configured through the development portal.
+ * Future calls to {@link getAllState} by all users will have a clone of this object in the
+ * `extension` field.
+ * @async
+ * @since 1.1.0
+ *
+ * @param {Object} state - A complete JS object representing the current viewer state.
+ *
+ * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+ *
+ * @example
+ * sdk.setExtensionViewerState({
+ *   favorite_movie: 'Jaws: The Revenge'
+ * }).then(() => {
+ *   console.log('Viewer state saved!');
+ * }).catch((err) => {
+ *   console.error(`Failed saving viewer state: ${err}`);
+ * });
+ */
+  setExtensionState(state) {
+    return this.client.setExtensionState(this.identifier, state);
+  }
+
+  /**
    * Sets the channel-specific state to a JS object. Future calls to {@link getAllState} by **any**
    * user on this channel will have a clone of this object in the `channel` field.
    *

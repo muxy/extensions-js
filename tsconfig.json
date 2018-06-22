@@ -11,7 +11,8 @@
     "allowJs": false,
     "traceResolution": true,
     "baseUrl": ".",
-    "typeRoots": ["node_modules/@types", "types"]
+    "typeRoots": ["node_modules/@types", "types"],
+    "esModuleInterop": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "src/@types"]

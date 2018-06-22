@@ -413,7 +413,7 @@ export class Muxy {
    *   console.error(err);
    * });
    */
-  SDK(id) {} // eslint-disable-line
+  SDK(id?: string) {} // eslint-disable-line
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -432,14 +432,14 @@ export class Muxy {
  * Global Muxy singleton object.
  * @ignore
  */
-const mxy = new Muxy();
+const mxy: Muxy = new Muxy();
 
 // Constructors for sub-objects are added to the singleton so that using the `new`
 // operator doesn't mess with the mxy singleton scope. Only applies to SDK, TwitchClient
 // and Analytics if we ever add that functionality.
 
 /** @ignore */
-mxy.SDK = function NewSDK(id) {
+mxy.SDK = function NewSDK(id?: string) {
   if (!mxy.setupCalled) {
     throw new Error(
       'Muxy.setup() must be called before creating a new SDK instance'

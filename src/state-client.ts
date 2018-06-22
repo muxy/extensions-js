@@ -1,7 +1,6 @@
-import * as base64 from 'base-64';
-
-import { ENVIRONMENTS, errorPromise } from './util';
-var XMLHttpRequestPromise = require('../libs/xhr-promise');
+import { ENVIRONMENTS } from './util';
+import { TwitchAuth } from './twitch';
+import XHRPromise from '../libs/xhr-promise';
 
 /**
  * Muxy production API URL.
@@ -72,35 +71,32 @@ class StateClient {
     testExtensionID: string,
     channelID: string,
     role: string
-  ) {
-    return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
-      xhrPromise
-        .send({
-          method: 'POST',
-          url: `${FAKEAUTH_URL}/v1/e/authtoken`,
-          data: JSON.stringify({
-            app_id: testExtensionID,
-            channel_id: channelID,
-            role
-          })
-        })
-        .catch(reject)
-        .then(resp => {
-          if (resp && resp.status < 400) {
-            // Update the API Server variable to point to test
-            SERVER_URL = FAKEAUTH_URL;
+  ) : Promise<TwitchAuth>{
+    const xhr = new XHRPromise({
+      method: 'POST',
+      url: `${SANDBOX_URL}/v1/e/authtoken?role=${role}`,
+      data: JSON.stringify({
+        app_id: testExtensionID,
+        channel_id: channelID,
+        role
+      })
+    });
 
-            const auth = resp.responseText;
-            // twitch uses lowercase d
-            auth.clientId = testExtensionID;
-            auth.channelId = channelID;
-            auth.userId = 'T12345678';
-            resolve(auth);
-          } else {
-            reject();
-          }
+    return xhr.send().then(resp => {
+      if (resp && resp.status < 400) {
+        // Update the API Server variable to point to test
+        SERVER_URL = SANDBOX_URL;
+
+        const auth = Object.assign(new TwitchAuth(), resp.responseText, {
+          clientId: testExtensionID,
+          channelId: channelID,
+          userId: 'T12345678'
         });
+
+        return Promise.resolve(auth);
+      } else {
+        return Promise.reject(resp.statusText);
+      }
     });
   }
 
@@ -131,34 +127,30 @@ class StateClient {
    */
   signedRequest(extensionID, method, endpoint, data?): Promise<any> {
     if (!this.validateJWT()) {
-      return errorPromise('Your authentication token has expired.');
+      return Promise.reject('Your authentication token has expired.');
     }
 
-    return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
-      xhrPromise
-        .send({
-          method,
-          url: `${SERVER_URL}/v1/e/${endpoint}`,
-          headers: {
-            Authorization: `${extensionID} ${this.token}`
-          },
-          data
-        })
-        .catch(reject)
-        .then(resp => {
-          try {
-            if (resp.status < 400) {
-              resolve(resp.responseText);
-            } else if (resp.responseText) {
-              reject(resp.responseText);
-            } else {
-              reject(`Server returned status ${resp.status}`);
-            }
-          } catch (err) {
-            reject(err);
-          }
-        });
+    const xhrPromise = new XHRPromise({
+      method,
+      url: `${SERVER_URL}/v1/e/${endpoint}`,
+      headers: {
+        Authorization: `${extensionID} ${this.token}`
+      },
+      data
+    });
+
+    return xhrPromise.send().then(resp => {
+      try {
+        if (resp.status < 400) {
+          return Promise.resolve(resp.responseText);
+        } else if (resp.responseText) {
+          return Promise.reject(resp.responseText);
+        } else {
+          return Promise.reject(`Server returned status ${resp.status}`);
+        }
+      } catch (err) {
+        return Promise.reject(err);
+      }
     });
   }
 
@@ -173,7 +165,7 @@ class StateClient {
         return false;
       }
 
-      const tk = JSON.parse(base64.decode(splitToken[1]));
+      const tk = JSON.parse(atob(splitToken[1]));
       if (!tk.exp) {
         return false;
       }
@@ -282,8 +274,8 @@ class StateClient {
     );
 
   /** @ignore */
-  getRank = (identifier, id) =>
-    this.signedRequest(identifier, 'GET', `rank?id=${id || 'default'}`);
+  getRank = (identifier: string, id: string = 'default') =>
+    this.signedRequest(identifier, 'GET', `rank?id=${id}`);
 
   /** @ignore */
   deleteRank = (identifier, id) =>

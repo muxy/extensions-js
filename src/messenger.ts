@@ -1,7 +1,6 @@
 /* globals Twitch */
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
-import * as Pusher from 'pusher-js';
-import SDK from './sdk';
+import Pusher from 'pusher-js';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -211,6 +210,6 @@ export default function Messenger(): IMessenger {
     case ENVIRONMENTS.SERVER:
       return new ServerMessenger();
     default:
-      console.error('Could not determine execution environment.'); // eslint-disable-line no-console
+      throw new Error('Could not determine execution environment.');
   }
 }

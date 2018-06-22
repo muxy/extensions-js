@@ -1,26 +1,23 @@
+import { TwitchAuth } from '../src/twitch';
 import User from '../src/user';
 
-const anonymousUserAuth = {
+const anonymousUserAuth = Object.assign(new TwitchAuth(), {
   twitchOpaqueID: 'A1234567'
-};
-
-let user = null;
+});
 
 /** @test {User} */
 describe('User', function() {
   describe('anonymous', function() {
-    beforeEach(function() {
-      user = new User(anonymousUserAuth);
-    });
-
     /** @test {User#anonymous} */
     it('should be detectable', function() {
+      const user = new User(anonymousUserAuth);
       expect(user.anonymous()).toBe(true);
     });
 
     /** @test {User#twitchID} */
     it('should not have a twitch id', function() {
-      expect(user.twitchID).toBeNull();
+      const user = new User(anonymousUserAuth);
+      expect(user.twitchID).toBe(null);
     });
   });
 });

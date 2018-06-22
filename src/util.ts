@@ -151,7 +151,7 @@ export default class Util {
    * @returns {string} Returns a string representation of the current
    * execution environment.
    */
-  static currentEnvironment(overrideWindow?: Window): Environment {
+  static currentEnvironment(overrideWindow?: Object): Environment {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -159,8 +159,10 @@ export default class Util {
     if (overrideWindow) {
       vWindow = overrideWindow;
     }
+
     try {
       // NodeJS module system, assume server.
+      // istanbul ignore if
       if (
         typeof module !== 'undefined' &&
         module.exports &&
@@ -170,7 +172,7 @@ export default class Util {
       }
 
       // Not in an iframe, assume sandbox dev.
-      if (!Util.isWindowFramed(overrideWindow)) {
+      if (!Util.isWindowFramed(vWindow)) {
         return ENVIRONMENTS.SANDBOX_DEV;
       }
 

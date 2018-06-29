@@ -18,9 +18,15 @@ export interface XHRResponse {
   xhr: XMLHttpRequest
 }
 
+let __responseQueue: string[] = [];
+
+export const __queueResponseMock = (response: string) => {
+  __responseQueue.push(response);
+};
+
 export default class XHRPromise {
   options: XHROptions;
-  xhr: XMLHttpRequest
+  xhr: XMLHttpRequest;
 
   constructor(options: XHROptions = {}) {
     this.options = {
@@ -41,6 +47,18 @@ export default class XHRPromise {
 
       if (self.options.data !== null && !self.options.headers['Content-Type']) {
         self.options.headers['Content-Type'] = DEFAULT_CONTENT_TYPE;
+      }
+
+      const resp = __responseQueue.pop();
+      if (resp) {
+        return resolve({
+          url: self.options.url,
+          status: 200,
+          statusText: 'success',
+          responseText: JSON.parse(resp),
+          headers: null,
+          xhr: null
+        });
       }
 
       const url = new URL(self.options.url);

@@ -1,9 +1,8 @@
 import StateClient from '../src/state-client';
 import { ENVIRONMENTS } from '../src/util';
 
-import mockXHR from '../libs/__mocks__/xhr-promise';
-
 jest.mock('../libs/xhr-promise');
+import * as mockXHR from '../libs/xhr-promise';
 
 const clientId = 'fake-id';
 const expiredJWT =
@@ -25,7 +24,7 @@ describe('StateClient', () => {
   });
 
   beforeEach(() => {
-    mockXHR.reset();
+    //mockXHR.reset();
   });
 
   /** @test {StateClient#validateJWT} */
@@ -55,7 +54,10 @@ describe('StateClient', () => {
   it('sets and gets viewer state', async () => {
     await expect(viewerClient.getViewerState(clientId)).resolves.toEqual({});
     await expect(viewerClient.setViewerState(clientId, { state: 'hello' })).resolves;
+
+    mockXHR.__queueResponseMock('{"state":"hello"}');
+
     await expect(viewerClient.getViewerState(clientId)).resolves.toEqual({ state: 'hello' });
-    await expect(viewerClient.getState(clientId)).resolves.toEqual({ viewer: { state: 'hello' } });
+    await expect(viewerClient.getState(clientId)).resolves.toMatchObject({ viewer: { state: 'hello' } });
   });
 });

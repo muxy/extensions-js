@@ -1,6 +1,7 @@
 import { ENVIRONMENTS } from './util';
 import { TwitchAuth } from './twitch';
 import XHRPromise from '../libs/xhr-promise';
+import { AllState } from './sdk';
 
 /**
  * Muxy production API URL.
@@ -71,7 +72,7 @@ class StateClient {
     testExtensionID: string,
     channelID: string,
     role: string
-  ) : Promise<TwitchAuth>{
+  ): Promise<TwitchAuth> {
     const xhr = new XHRPromise({
       method: 'POST',
       url: `${SANDBOX_URL}/v1/e/authtoken?role=${role}`,
@@ -186,7 +187,7 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  getState = (identifier, substate?) =>
+  getState = (identifier, substate?): Promise<AllState> =>
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**

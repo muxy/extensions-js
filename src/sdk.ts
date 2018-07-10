@@ -12,6 +12,27 @@ import StateClient from './state-client';
 import Ext from './twitch-ext';
 
 /**
+ * The response from {@link getAllState}.
+ *
+ * @typedef {Object} AllState
+ *
+ * @property {Object} extension - A state object only settable by the extension itself.
+ * Universal for all channels.
+ * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
+ * viewers of the same channel.
+ * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
+ * a given channel.
+ * @property {Object} extension_viewer - A state object settable by each viewer. Specific to the viewer but
+ * extension wide.
+ */
+export interface AllState {
+  extension: Object;
+  channel: Object;
+  viewer: Object;
+  extension_viewer: Object;
+}
+
+/**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
  *
  * Instances of this class created through the global `Muxy` object can be used to easily
@@ -473,19 +494,6 @@ export default class SDK {
   }
 
   /**
-   * The response from {@link getAllState}.
-   *
-   * @typedef {Object} AllState
-   *
-   * @property {Object} extension - A state object only settable by the extension itself.
-   * Universal for all channels.
-   * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
-   * viewers of the same channel.
-   * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
-   * a given channel.
-   */
-
-  /**
    * Returns the current state object as set for the current extension, channel and
    * viewer combination.
    * @async
@@ -504,8 +512,48 @@ export default class SDK {
    *   }
    * });
    */
-  getAllState() {
+  getAllState(): Promise<AllState> {
     return this.client.getState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension state object.
+   */
+  getExtensionState(): Promise<Object> {
+    return this.client.getExtensionState(this.identifier);
+  }
+
+  /**
+   * Returns the current channel state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated channel state object.
+   */
+  getChannelState(): Promise<Object> {
+    return this.client.getChannelState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension viewer state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension viewer state object.
+   */
+  getExtensionViewerState(): Promise<Object> {
+    return this.client.getExtensionViewerState(this.identifier);
+  }
+
+  /**
+   * Returns the current viewer state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated viewer state object.
+   */
+  getViewerState(): Promise<Object> {
+    return this.client.getViewerState(this.identifier);
   }
 
   /**

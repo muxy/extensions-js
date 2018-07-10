@@ -325,6 +325,8 @@ export class Muxy {
       this.user.bitrate = Math.round(this.context.bitrate || 0);
       this.user.latency = this.context.hlsLatencyBroadcaster;
       this.user.buffer = this.context.bufferSize;
+      this.user.theme = this.context.theme;
+      this.user.volume = this.context.volume;
 
       // If buffer size goes to 0, send an analytics event that
       // this user's video is buffering.

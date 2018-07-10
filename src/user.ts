@@ -5,20 +5,22 @@ import { JWT, TwitchAuth } from './twitch';
  * These fields are automatically updated by the SDK.
  */
 export default class User {
-  public channelID : string;
-  public twitchJWT : string;
-  public twitchOpaqueID : string;
-  public twitchID : string;
-  public muxyID : string;
-  public registeredWithMuxy : boolean;
-  public visualizationID : string;
-  public role : string;
-  public ip : string;
-  public game : string;
-  public videoMode : string;
-  public bitrate : Number;
-  public latency : Number;
-  public buffer : Number;
+  public channelID: string;
+  public twitchJWT: string;
+  public twitchOpaqueID: string;
+  public twitchID: string;
+  public muxyID: string;
+  public registeredWithMuxy: boolean;
+  public visualizationID: string;
+  public role: string;
+  public ip: string;
+  public game: string;
+  public videoMode: string;
+  public bitrate: Number;
+  public latency: Number;
+  public buffer: Number;
+  public theme: string;
+  public volume: Number;
 
   /**
    * Defines the current user's role on Twitch relative to the current channel being
@@ -55,7 +57,7 @@ export default class User {
    * @since 1.0.0
    * @param {Object} auth - An auth token usable by this user for backend requests.
    */
-  constructor(auth : TwitchAuth) {
+  constructor(auth: TwitchAuth) {
     /**
      * channelID holds the numeric id of the channel the user is currently watching.
      *
@@ -175,6 +177,18 @@ export default class User {
      */
     this.buffer = null;
 
+    /**
+     * Current theme the user has selected on twitch. Null if unknown.
+     * @type {null|string}
+     */
+    this.theme = null;
+
+    /**
+     * Current volume level of the Twitch video player. Values between 0 and 1.
+     * @type {number}
+     */
+    this.volume = 0;
+
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.
     this.extractJWTInfo(auth.token);
@@ -186,11 +200,11 @@ export default class User {
    *
    * @param {Object} jwt - The auth JWT token as returned from the auth harness.
    */
-  extractJWTInfo(jwt : string) {
+  extractJWTInfo(jwt: string) {
     try {
       const splitToken = jwt.split('.');
       if (splitToken.length === 3) {
-        const token = (<JWT>JSON.parse(window.atob(splitToken[1])));
+        const token = <JWT>JSON.parse(window.atob(splitToken[1]));
         this.role = token.role;
         if (token.user_id) {
           this.twitchID = token.user_id;
@@ -221,7 +235,7 @@ export default class User {
    *
    * @param {Object} auth - An auth JWT with updated user information.
    */
-  updateAuth(auth : TwitchAuth) {
+  updateAuth(auth: TwitchAuth) {
     this.twitchJWT = auth.token;
     this.extractJWTInfo(auth.token);
   }

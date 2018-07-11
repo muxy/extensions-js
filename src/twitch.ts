@@ -19,9 +19,18 @@ export interface TwitchPurchasesSDK {
   onReloadEntitlements(cb: (arg: any) => void): void;
 }
 
+export interface Position {
+  x: Number;
+  y: Number;
+}
+
 export interface TwitchSDK {
   onAuthorized(cb: (auth: TwitchAuth) => void): void;
   onContext(cb: (auth: TwitchContext) => void): void;
+  onVisibilityChanged(
+    callback: (isVisible: boolean, ctx: TwitchContext) => void
+  ): void;
+  onPositionChanged(callback: (position: Position) => void): void;
 
   send(
     target: string,

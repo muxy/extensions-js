@@ -10,6 +10,7 @@ import User from './user';
 import Analytics from './analytics';
 import StateClient from './state-client';
 import Ext from './twitch-ext';
+import { Position, TwitchContext } from './twitch';
 
 /**
  * The response from {@link getAllState}.
@@ -827,7 +828,7 @@ export default class SDK {
   /**
    * Begins the purchase flow for a given product's SKU.
    *
-   * @param {string} The SKU of the digital good that the user has indicated they want to buy.
+   * @param {string} sku - The SKU of the digital good that the user has indicated they want to buy.
    */
   beginPurchase(sku) {
     if (this.SKUs.length === 0) {
@@ -861,14 +862,36 @@ export default class SDK {
    * Sets a function to be used as a callback when entitlements need to be reloaded, i.e. after a
    * purchase has been made.
    *
-   * @param {function} The function to be called to update user entitlements.
+   * @param {function} callback - A function to be called to update user entitlements.
    */
-  onReloadEntitlements(cb) {
+  onReloadEntitlements(callback) {
     if (this.SKUs.length === 0) {
       throw new Error(
         'onReloadEntitlements() cannot be used unless SKUs are provided.'
       );
     }
-    return Ext.onReloadEntitlements(cb);
+    return Ext.onReloadEntitlements(callback);
+  }
+
+  /**
+   * Sets a function to be used as a callback that is triggered when the extension visibility changes
+   * (This occurs only for mobile or component extensions.)
+   *
+   * @param {function} callback
+   */
+  onVisibilityChanged(
+    callback: (isVisible: boolean, ctx: TwitchContext) => void
+  ): void {
+    return Ext.onVisibilityChanged(callback);
+  }
+
+  /**
+   * Sets a function to be used as a callback that is triggered when the extension changes position in the player
+   * This occurs only for video-component extensions.
+   *
+   * @param {function} callback
+   */
+  onPositionChanged(callback: (position: Position) => void): void {
+    return Ext.onPositionChanged(callback);
   }
 }

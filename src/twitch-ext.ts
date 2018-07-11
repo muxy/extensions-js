@@ -1,5 +1,5 @@
 import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
-import { TwitchAuth, TwitchContext } from './twitch';
+import { TwitchAuth, TwitchContext, Position } from './twitch';
 import Client from './state-client';
 
 // 25 minutes between updates of the testing auth token.
@@ -14,7 +14,7 @@ export default class Ext {
   static testChannelID: string;
   static testJWTRole: string;
 
-  static fetchTestAuth(cb : (auth : TwitchAuth) => void ) {
+  static fetchTestAuth(cb: (auth: TwitchAuth) => void) {
     Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
       .then((auth: TwitchAuth) => {
         cb(auth);
@@ -22,7 +22,7 @@ export default class Ext {
       .catch(cb);
   }
 
-  static onAuthorized(cb : (auth : TwitchAuth) => void) {
+  static onAuthorized(cb: (auth: TwitchAuth) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(cb);
@@ -47,7 +47,7 @@ export default class Ext {
     }
   }
 
-  static onContext(cb : (ctx : TwitchContext) => void) {
+  static onContext(cb: (ctx: TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -75,7 +75,7 @@ export default class Ext {
     }
   }
 
-  static beginPurchase(sku : string) {
+  static beginPurchase(sku: string) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -83,9 +83,12 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(`beginPurchase not supported for ${CurrentEnvironment()}`, {
-          type: 'error'
-        });
+        consolePrint(
+          `beginPurchase not supported for ${CurrentEnvironment()}`,
+          {
+            type: 'error'
+          }
+        );
     }
   }
 
@@ -93,7 +96,8 @@ export default class Ext {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
-        window.Twitch.ext.purchases.getPrices()
+        window.Twitch.ext.purchases
+          .getPrices()
           .then(prices => {
             cb(prices);
           })
@@ -115,9 +119,48 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(`onReloadEntitlements not supported for ${CurrentEnvironment()}`, {
-          type: 'error'
-        });
+        consolePrint(
+          `onReloadEntitlements not supported for ${CurrentEnvironment()}`,
+          {
+            type: 'error'
+          }
+        );
+    }
+  }
+
+  static onVisibilityChanged(
+    callback: (isVisible: boolean, ctx: TwitchContext) => void
+  ) {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        window.Twitch.ext.onVisibilityChanged(callback);
+        break;
+
+      default:
+        consolePrint(
+          `onVisibilityChanged not supported for ${CurrentEnvironment()}`,
+          {
+            type: 'error'
+          }
+        );
+    }
+  }
+
+  static onPositionChanged(callback: (position: Position) => void) {
+    switch (CurrentEnvironment()) {
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        window.Twitch.ext.onPositionChanged(callback);
+        break;
+
+      default:
+        consolePrint(
+          `onVisibilityChanged not supported for ${CurrentEnvironment()}`,
+          {
+            type: 'error'
+          }
+        );
     }
   }
 }

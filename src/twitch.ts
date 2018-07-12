@@ -20,8 +20,8 @@ export interface TwitchPurchasesSDK {
 }
 
 export interface Position {
-  x: Number;
-  y: Number;
+  x: number;
+  y: number;
 }
 
 export interface TwitchSDK {

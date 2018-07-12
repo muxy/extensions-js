@@ -187,7 +187,7 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  getState = (identifier, substate?): Promise<AllState> =>
+  getState = (identifier, substate?): Promise<any> =>
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**

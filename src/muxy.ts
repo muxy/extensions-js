@@ -288,6 +288,13 @@ export class Muxy {
             user.registeredWithMuxy = userinfo.registered || false;
             user.visualizationID = userinfo.visualization_id || '';
 
+            const offset = userinfo.server_time - new Date().getTime();
+
+            const keys = Object.keys(this.SDKClients);
+            for (let i = 0; i < keys.length; i += 1) {
+              this.SDKClients[keys[i]].timeOffset = offset;
+            }
+
             updateUserContextSettings.call(this);
 
             resolvePromise(user);

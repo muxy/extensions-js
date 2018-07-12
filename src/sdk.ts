@@ -27,10 +27,10 @@ import { Position, TwitchContext } from './twitch';
  * extension wide.
  */
 export interface AllState {
-  extension: Object;
-  channel: Object;
-  viewer: Object;
-  extension_viewer: Object;
+  extension: object;
+  channel: object;
+  viewer: object;
+  extension_viewer: object;
 }
 
 /**
@@ -58,6 +58,7 @@ export default class SDK {
   messenger: IMessenger;
   user: User;
   SKUs: object[];
+  timeOffset: number;
 
   /** @ignore */
   constructor(
@@ -135,6 +136,15 @@ export default class SDK {
    */
   loaded() {
     return this.loadPromise;
+  }
+
+  /**
+   * Returns a date object that is based on the Muxy server time.
+   *
+   * @return {Date}
+   */
+  getOffsetDate() {
+    return new Date(new Date().getTime() + this.timeOffset);
   }
 
   /**
@@ -523,7 +533,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated extension state object.
    */
-  getExtensionState(): Promise<Object> {
+  getExtensionState(): Promise<object> {
     return this.client.getExtensionState(this.identifier);
   }
 
@@ -533,7 +543,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated channel state object.
    */
-  getChannelState(): Promise<Object> {
+  getChannelState(): Promise<object> {
     return this.client.getChannelState(this.identifier);
   }
 
@@ -543,7 +553,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated extension viewer state object.
    */
-  getExtensionViewerState(): Promise<Object> {
+  getExtensionViewerState(): Promise<object> {
     return this.client.getExtensionViewerState(this.identifier);
   }
 
@@ -553,7 +563,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated viewer state object.
    */
-  getViewerState(): Promise<Object> {
+  getViewerState(): Promise<object> {
     return this.client.getViewerState(this.identifier);
   }
 

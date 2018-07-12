@@ -16,11 +16,11 @@ export default class User {
   public ip: string;
   public game: string;
   public videoMode: string;
-  public bitrate: Number;
-  public latency: Number;
-  public buffer: Number;
+  public bitrate: number;
+  public latency: number;
+  public buffer: number;
   public theme: string;
-  public volume: Number;
+  public volume: number;
 
   /**
    * Defines the current user's role on Twitch relative to the current channel being

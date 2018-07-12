@@ -32,4 +32,14 @@ describe('SDK', () => {
   it('can be created', () => {
     const sdk = new SDK('test', client, user, messenger, analytics, prom, []);
   });
+
+  it( 'should generate a offset date object', () => {
+    const sdk = new SDK('test', client, user, messenger, analytics, prom, []);
+    sdk.timeOffset = 10;
+
+    const newDate = sdk.getOffsetDate();
+    const curDate = new Date();
+
+    expect(newDate.getTime() - curDate.getTime()).toEqual(10);
+  });
 });

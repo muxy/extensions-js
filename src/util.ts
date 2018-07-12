@@ -151,7 +151,7 @@ export default class Util {
    * @returns {string} Returns a string representation of the current
    * execution environment.
    */
-  static currentEnvironment(overrideWindow?: Object): Environment {
+  static currentEnvironment(overrideWindow?: object): Environment {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;

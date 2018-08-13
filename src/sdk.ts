@@ -6,6 +6,7 @@ import {
 } from './util';
 
 import { CallbackHandle, IMessenger } from './messenger';
+import { DebugOptions } from './debug';
 import User from './user';
 import Analytics from './analytics';
 import StateClient from './state-client';
@@ -59,6 +60,7 @@ export default class SDK {
   user: User;
   SKUs: object[];
   timeOffset: number;
+  debug: DebugOptions;
 
   /** @ignore */
   constructor(
@@ -68,7 +70,8 @@ export default class SDK {
     messenger: IMessenger,
     analytics: Analytics,
     loadPromise: Promise<void>,
-    SKUs: object[]
+    SKUs: object[],
+    debug: DebugOptions
   ) {
     /** @ignore */
     this.loadPromise = loadPromise;
@@ -117,6 +120,9 @@ export default class SDK {
      * @type {Object}
      */
     this.SKUs = SKUs;
+
+    /** @ignore */
+    this.debug = debug;
   }
 
   /**
@@ -145,6 +151,13 @@ export default class SDK {
    */
   getOffsetDate() {
     return new Date(new Date().getTime() + this.timeOffset);
+  }
+
+  /**
+   * Invokes a request to the backend.
+   */
+  signedRequest(method, endpoint, data) {
+    return this.client.signedRequest(this.identifier, method, endpoint, data);
   }
 
   /**

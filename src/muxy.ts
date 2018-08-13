@@ -6,6 +6,7 @@ import Messenger, { IMessenger } from './messenger';
 import SDK from './sdk';
 import User from './user';
 import Util from './util';
+import { DebuggingOptions, DebugOptions } from './debug';
 
 import * as PackageConfig from '../package.json';
 
@@ -24,6 +25,7 @@ export interface SDKMap {
  */
 export class Muxy {
   Util: Util;
+  DebuggingOptions: typeof DebuggingOptions;
   SDKClients: SDKMap;
 
   setupCalled: boolean;
@@ -43,6 +45,7 @@ export class Muxy {
   // Test variables.
   testChannelID: string;
   testJWTRole: string;
+  debugOptions: DebugOptions;
 
   /**
    * Private constructor for singleton use only.
@@ -111,7 +114,7 @@ export class Muxy {
      * @ignore
      * @type {StateClient}
      */
-    this.client = new StateClient();
+    this.client = null;
 
     /**
      * Internal {@link Messenger}.
@@ -119,7 +122,7 @@ export class Muxy {
      * @ignore
      * @type {Messenger}
      */
-    this.messenger = Messenger();
+    this.messenger = null;
 
     /**
      * Internal {@link TwitchClient}.
@@ -174,6 +177,13 @@ export class Muxy {
      * @type {Object}
      */
     this.SKUs = [];
+
+    /**
+     * Debugging options. Should only be set by a call to .debug()
+     * @private
+     * @type {object}
+     */
+    this.debugOptions = null;
 
     /**
      * Internal variable to handle setup functionality.
@@ -251,11 +261,9 @@ export class Muxy {
    */
   watchAuth(extensionID) {
     Ext.extensionID = extensionID;
-    Ext.testChannelID = this.testChannelID;
-    Ext.testJWTRole = this.testJWTRole;
 
     // Auth callback handler
-    Ext.onAuthorized(auth => {
+    Ext.onAuthorized(this.debugOptions, auth => {
       if (!auth) {
         this.loadReject('Received invalid authorization from Twitch');
         return;
@@ -388,6 +396,20 @@ export class Muxy {
       throw new Error('Muxy.setup() was called without an Extension Client ID');
     }
 
+    if (!this.debugOptions) {
+      this.debugOptions = {
+        channelID: this.testChannelID,
+        role: this.testJWTRole,
+
+        onPubsubListen: () => {},
+        onPubsubReceive: () => {},
+        onPubsubSend: () => {}
+      };
+    }
+
+    this.client = new StateClient(this.debugOptions);
+    this.messenger = Messenger(this.debugOptions);
+
     this.twitchClientID = options.clientID || options.extensionID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
 
@@ -400,6 +422,25 @@ export class Muxy {
     }
 
     this.setupCalled = true;
+  }
+
+  /**
+   * Setup debugging options for the application. This allows the application to fake
+   * what user they are running as, the channel the extension is running on, pubsub debug
+   * message frequency, and even the backend URL that the extension uses.
+   *
+   * This should be called before setup().
+   *
+   * @param {*} options - an instance of DebuggingOptions
+   */
+  debug(options) {
+    this.debugOptions = {
+      channelID: this.testChannelID,
+      role: this.testJWTRole,
+
+      ...this.debugOptions,
+      ...options.options
+    };
   }
 
   /**
@@ -473,7 +514,8 @@ mxy.SDK = function NewSDK(id?: string) {
       mxy.messenger,
       mxy.analytics,
       mxy.loadPromise,
-      mxy.SKUs
+      mxy.SKUs,
+      this.debugOptions
     );
   }
 
@@ -490,6 +532,8 @@ mxy.TwitchClient = function NewTwitchClient() {
 
   return mxy.cachedTwitchClient;
 };
+
+mxy.DebuggingOptions = DebuggingOptions;
 
 /**
  * Only export the Muxy singleton to avoid creation of competing/conflicting instances.

@@ -1,7 +1,7 @@
 import { ENVIRONMENTS } from './util';
 import { TwitchAuth } from './twitch';
 import XHRPromise from '../libs/xhr-promise';
-import { AllState } from './sdk';
+import { DebugOptions } from './debug';
 
 /**
  * Muxy production API URL.
@@ -60,38 +60,40 @@ const ServerState = {
  */
 class StateClient {
   token: string;
+  debug: DebugOptions;
 
   /** @ignore */
-  constructor() {
+  constructor(debug: DebugOptions) {
     /** @ignore */
     this.token = null;
+    this.debug = debug;
   }
 
   /** @ignore */
   static fetchTestAuth(
-    testExtensionID: string,
-    channelID: string,
-    role: string
+    extensionID: string,
+    debug: DebugOptions
   ): Promise<TwitchAuth> {
     const xhr = new XHRPromise({
       method: 'POST',
-      url: `${SANDBOX_URL}/v1/e/authtoken?role=${role}`,
+      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken`,
       data: JSON.stringify({
-        app_id: testExtensionID,
-        channel_id: channelID,
-        role
+        app_id: extensionID,
+        channel_id: debug.channelID,
+        role: debug.role,
+        user_id: debug.userID
       })
     });
 
     return xhr.send().then(resp => {
       if (resp && resp.status < 400) {
         // Update the API Server variable to point to test
-        SERVER_URL = SANDBOX_URL;
+        SERVER_URL = debug.url || SANDBOX_URL;
 
         const auth = Object.assign(new TwitchAuth(), resp.responseText, {
-          clientId: testExtensionID,
-          channelId: channelID,
-          userId: 'T12345678'
+          clientId: extensionID,
+          channelId: debug.channelID,
+          userId: debug.userID || 'T12345678'
         });
 
         return Promise.resolve(auth);

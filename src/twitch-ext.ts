@@ -1,5 +1,6 @@
 import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
 import { TwitchAuth, TwitchContext, Position } from './twitch';
+import { DebugOptions } from './debug';
 import Client from './state-client';
 
 // 25 minutes between updates of the testing auth token.
@@ -11,22 +12,20 @@ const CONTEXT_CALLBACK_TIMEOUT = 30 * 1000;
 // Wrapper around global Twitch extension object.
 export default class Ext {
   static extensionID: string;
-  static testChannelID: string;
-  static testJWTRole: string;
 
-  static fetchTestAuth(cb: (auth: TwitchAuth) => void) {
-    Client.fetchTestAuth(Ext.extensionID, Ext.testChannelID, Ext.testJWTRole)
+  static fetchTestAuth(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
+    Client.fetchTestAuth(this.extensionID, opts)
       .then((auth: TwitchAuth) => {
         cb(auth);
       })
       .catch(cb);
   }
 
-  static onAuthorized(cb: (auth: TwitchAuth) => void) {
+  static onAuthorized(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
-        Ext.fetchTestAuth(cb);
-        setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, cb);
+        Ext.fetchTestAuth(opts, cb);
+        setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, opts, cb);
         break;
 
       case ENVIRONMENTS.SANDBOX_TWITCH:

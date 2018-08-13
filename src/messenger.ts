@@ -1,6 +1,7 @@
 /* globals Twitch */
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
-import Pusher from 'pusher-js';
+import { DebugOptions } from './debug';
+import * as Pusher from 'pusher-js';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -25,10 +26,12 @@ export interface IMessenger {
 class TwitchMessenger implements IMessenger {
   channelID: string;
   extensionID: string;
+  debug: DebugOptions;
 
-  constructor() {
+  constructor(debug: DebugOptions) {
     this.channelID = '';
     this.extensionID = '';
+    this.debug = debug;
   }
 
   /**
@@ -44,6 +47,8 @@ class TwitchMessenger implements IMessenger {
   /* eslint-disable class-methods-use-this */
   send(id, event, target, body) {
     const data = body || {};
+
+    this.debug.onPubsubSend(id, event, target, body);
     window.Twitch.ext.send(target, 'application/json', {
       event: `${CurrentEnvironment().environment}:${id}:${event}`,
       data
@@ -63,12 +68,15 @@ class TwitchMessenger implements IMessenger {
     const cb = (t, datatype, message) => {
       try {
         const parsed = JSON.parse(message);
+
+        this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);
       } catch (err) {
         // TODO: Silent failure?
       }
     };
 
+    this.debug.onPubsubListen(id, topic);
     window.Twitch.ext.listen(topic, cb);
 
     return {
@@ -97,21 +105,24 @@ class TwitchMessenger implements IMessenger {
 class PusherMessenger implements IMessenger {
   channelID: string;
   extensionID: string;
+  debug: DebugOptions;
 
   client: Pusher.Pusher;
   channel: Pusher.Channel;
 
-  constructor() {
+  constructor(debug: DebugOptions) {
     this.client = new Pusher('18c26c0d1c7fafb78ba2', {
       cluster: 'us2',
       encrypted: true
     });
 
     this.channelID = '';
+    this.debug = debug;
   }
 
   send(id, event, target, body, client) {
     const scopedEvent = `${CurrentEnvironment().environment}:${id}:${event}`;
+    this.debug.onPubsubSend(id, event, target, body);
 
     client.signedRequest(
       id,
@@ -135,12 +146,15 @@ class PusherMessenger implements IMessenger {
     const cb = message => {
       try {
         const parsed = JSON.parse(message.message);
+
+        this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);
       } catch (err) {
         // TODO: Silent failure?
       }
     };
 
+    this.debug.onPubsubListen(id, topic);
     this.channel.bind(topic, cb);
 
     return {
@@ -163,12 +177,16 @@ class PusherMessenger implements IMessenger {
 class ServerMessenger implements IMessenger {
   channelID: string;
   extensionID: string;
+  debug: DebugOptions;
 
-  constructor(ch?) {
+  constructor(debug: DebugOptions, ch?) {
     this.channelID = ch;
+    this.debug = debug;
   }
 
   send(id, event, target, body, client) {
+    this.debug.onPubsubSend(id, event, target, body);
+
     client.signedRequest(
       id,
       'POST',
@@ -200,15 +218,15 @@ class ServerMessenger implements IMessenger {
   close() {}
 }
 
-export default function Messenger(): IMessenger {
+export default function Messenger(debug: DebugOptions): IMessenger {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.SANDBOX_DEV:
-      return new PusherMessenger();
+      return new PusherMessenger(debug);
     case ENVIRONMENTS.SANDBOX_TWITCH:
     case ENVIRONMENTS.PRODUCTION:
-      return new TwitchMessenger();
+      return new TwitchMessenger(debug);
     case ENVIRONMENTS.SERVER:
-      return new ServerMessenger();
+      return new ServerMessenger(debug);
     default:
       throw new Error('Could not determine execution environment.');
   }

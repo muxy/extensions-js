@@ -1,6 +1,5 @@
-var XMLHttpRequestPromise = require('../libs/xhr-promise');
 import { forceType } from './util';
-import { JWT } from './twitch';
+import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
 
 /**
  * A single user object as from {@link getTwitchUsers}.
@@ -129,7 +128,12 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchRequest(method: string, endpoint: string, data?: string, JWT? : string) {
+  signedTwitchRequest(
+    method: string,
+    endpoint: string,
+    data?: string,
+    JWT?: string
+  ) {
     const headers = {
       Accept: 'application/vnd.twitchtv.v5+json',
       'Client-ID': this.extensionId,
@@ -142,16 +146,17 @@ export default class TwitchClient {
     }
 
     return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
+      const xhrPromise = new XMLHttpRequestPromise({
+        method,
+        url: `https://api.twitch.tv/kraken/${endpoint}`,
+        headers,
+        data
+      });
+
       return xhrPromise
-        .send({
-          method,
-          url: `https://api.twitch.tv/kraken/${endpoint}`,
-          headers,
-          data
-        })
+        .send()
         .catch(reject)
-        .then(resp => {
+        .then((resp: XHRResponse) => {
           if (resp.status < 400) {
             resolve(resp.responseText);
           }
@@ -176,7 +181,12 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchHelixRequest(method: string, endpoint: string, data?: string, JWT?: string) {
+  signedTwitchHelixRequest(
+    method: string,
+    endpoint: string,
+    data?: string,
+    JWT?: string
+  ) {
     const headers = {
       'Client-ID': this.extensionId,
       Authorization: undefined
@@ -187,18 +197,19 @@ export default class TwitchClient {
     }
 
     return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
+      const xhrPromise = new XMLHttpRequestPromise({
+        method,
+        url: `https://api.twitch.tv/helix/${endpoint}`,
+        headers,
+        data
+      });
+
       return xhrPromise
-        .send({
-          method,
-          url: `https://api.twitch.tv/helix/${endpoint}`,
-          headers,
-          data
-        })
+        .send()
         .catch(reject)
-        .then(resp => {
+        .then((resp: XHRResponse) => {
           if (resp.status < 400) {
-            resolve(resp.responseText.data);
+            resolve(resp.responseText['data']);
           }
 
           reject(resp.responseText);
@@ -230,7 +241,10 @@ export default class TwitchClient {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchRequest('GET', `users?login=${usernames.join(',')}`);
+    return this.signedTwitchRequest(
+      'GET',
+      `users?login=${usernames.join(',')}`
+    );
   }
 
   /**
@@ -256,7 +270,10 @@ export default class TwitchClient {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchHelixRequest('GET', `users?id=${userIDs.join(',')}`);
+    return this.signedTwitchHelixRequest(
+      'GET',
+      `users?id=${userIDs.join(',')}`
+    );
   }
 
   /**
@@ -286,6 +303,11 @@ export default class TwitchClient {
    * Receipts parameter.
    */
   updateFulfilledGoods(JWT, receipts) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, JWT);
+    return this.signedTwitchRequest(
+      'POST',
+      'commerce/user/goods/fulfill',
+      receipts,
+      JWT
+    );
   }
 }

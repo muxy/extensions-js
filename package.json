@@ -7,7 +7,7 @@
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "main": "dist/muxy-extensions.umd.js",
   "module": "dist/muxy-extensions.es5.js",
-  "typings": "dist/types/muxy-extensions.d.ts",
+  "typings": "dist/types/src/muxy.d.ts",
   "scripts": {
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "dev": "rollup -c rollup.config.ts -w",

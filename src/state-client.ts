@@ -74,15 +74,21 @@ class StateClient {
     extensionID: string,
     debug: DebugOptions
   ): Promise<TwitchAuth> {
+    const data = JSON.stringify({
+      app_id: extensionID,
+      channel_id: debug.channelID,
+      role: debug.role,
+      user_id: debug.userID || 'T12345678'
+    });
+
     const xhr = new XHRPromise({
       method: 'POST',
-      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken`,
-      data: JSON.stringify({
-        app_id: extensionID,
-        channel_id: debug.channelID,
-        role: debug.role,
-        user_id: debug.userID
-      })
+      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken?role=${debug.role}`, // pass roll as a param so that our fixtures
+      // get loaded correctly in jest
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      data: data
     });
 
     return xhr.send().then(resp => {

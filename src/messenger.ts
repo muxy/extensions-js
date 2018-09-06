@@ -1,7 +1,7 @@
 /* globals Twitch */
 import { ENVIRONMENTS, CurrentEnvironment } from './util';
 import { DebugOptions } from './debug';
-import * as Pusher from 'pusher-js';
+import 'pusher-js';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -111,6 +111,7 @@ class PusherMessenger implements IMessenger {
   channel: Pusher.Channel;
 
   constructor(debug: DebugOptions) {
+    // @ts-ignore
     this.client = new Pusher('18c26c0d1c7fafb78ba2', {
       cluster: 'us2',
       encrypted: true

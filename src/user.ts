@@ -178,7 +178,7 @@ export default class User {
     this.buffer = null;
 
     /**
-     * Current theme the user has selected on twitch. Null if unknown.
+     * Current theme the user has selected on twitch. Null if unknown, otherwise "light" or "dark"
      * @type {null|string}
      */
     this.theme = null;

@@ -310,6 +310,23 @@ class StateClient {
   /** @ignore */
   revokeAllPINCodes = identifier =>
     this.signedRequest(identifier, 'DELETE', 'pin');
+
+  /** @ignore */
+  getEligibleCodes = identifier =>
+    this.signedRequest(identifier, 'GET', 'codes/eligible');
+
+  /** @ignore */
+  getRedeemedCodes = identifier =>
+    this.signedRequest(identifier, 'GET', 'codes/redeemed');
+
+  /** @ignore */
+  redeemCode = (identifier, prize_idx) =>
+    this.signedRequest(
+      identifier,
+      'POST',
+      'codes/redeem',
+      JSON.stringify({ prize: prize_idx })
+    );
 }
 
 export default StateClient;

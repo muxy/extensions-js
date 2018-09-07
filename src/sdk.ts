@@ -35,6 +35,43 @@ export interface AllState {
 }
 
 /**
+ * The response from {@link getEligibleCodes}.
+ *
+ * @typedef {Object} EligibleCodes
+ *
+ * @property {Array<number>} eligible - Each integer is the array is how many codes the given user is eligible for.
+ * A zero entry in this array means that the user is not eligible for any codes for that prize.
+ */
+export interface EligibleCodes {
+  eligible: number[];
+}
+
+/**
+ * The response from {@link getRedeemedCodes}.
+ *
+ * @typedef {Object} RedeemedCodes
+ *
+ * @property {Array<Array<string>>} redeemed - Each array entry in redeemed represents a prize index.
+ * Strings in the sub arrays are the codes the user has redeemed.
+ */
+export interface RedeemedCodes {
+  redeemed: string[][];
+}
+
+/**
+ * The response from {@link redeemCode}.
+ *
+ * @typedef {Object} RedeemResult
+ *
+ * @property {string} code - The code that was redeemed if successful
+ * @property {Array<string>} all_prizes - list of all the codes that this user has redeemed for the prize index.
+ */
+export interface RedeemResult {
+  code?: string;
+  all_prizes: string[];
+}
+
+/**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
  *
  * Instances of this class created through the global `Muxy` object can be used to easily
@@ -916,5 +953,42 @@ export default class SDK {
    */
   onPositionChanged(callback: (position: Position) => void): void {
     return Ext.onPositionChanged(callback);
+  }
+
+  /**
+   * Attempt to exchange one eligibility status for a single prize code.
+   * If a code is redeemed, the returned body will have a `code` member, which is the code that was redeemed.
+   * @async
+   *
+   * @throws {TypeError} Will throw an error if prize_idx is not a valid number
+   *
+   * @param {number} prize_idx - The prize index
+   *
+   * @return {Promise<RedeemResult>}
+   */
+  redeemCode(prize_idx): Promise<RedeemResult> {
+    forceType(prize_idx, 'number');
+
+    return this.client.redeemCode(this.identifier, prize_idx);
+  }
+
+  /**
+   * Fetches all codes that the user has redeemed for this extension.
+   * @async
+   *
+   * @return {Promise<RedeemedCodes>} Will resolve on success. Rejects on failure.
+   */
+  getRedeemedCodes(): Promise<RedeemedCodes> {
+    return this.client.getRedeemedCodes(this.identifier);
+  }
+
+  /**
+   * Fetches information about which codes a user is eligible for
+   * @async
+   *
+   * @return {Promise<EligibleCodes>} Will resolve on success. Rejects on failure.
+   */
+  getEligibleCodes(): Promise<EligibleCodes> {
+    return this.client.getEligibleCodes(this.identifier);
   }
 }

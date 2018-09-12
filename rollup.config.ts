@@ -14,10 +14,6 @@ export default {
   ],
 
   sourcemap: true,
-  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-  external: [
-    'pusher-js'
-  ],
   watch: {
     include: 'src/**'
   },

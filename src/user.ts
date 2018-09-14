@@ -1,4 +1,13 @@
 import { JWT, TwitchAuth } from './twitch';
+import { IObserverHandler } from './observer';
+
+export class UserUpdateCallbackHandle extends IObserverHandler<User> {
+  cb: (user: User) => void;
+
+  public notify(user: User): void {
+    this.cb(user);
+  }
+}
 
 /**
  * Stores fields related to the current extension user, either a viewer or the broadcaster.

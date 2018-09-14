@@ -279,7 +279,7 @@ export class Muxy {
 
         const keys = Object.keys(this.SDKClients);
         for (let i = 0; i < keys.length; i += 1) {
-          this.SDKClients[keys[i]].user = this.user;
+          this.SDKClients[keys[i]].updateUser(this.user);
         }
 
         if (this.analytics) {
@@ -343,9 +343,15 @@ export class Muxy {
       this.user.theme = this.context.theme;
       this.user.volume = this.context.volume;
 
+      const keys = Object.keys(this.SDKClients);
+      for (let i = 0; i < keys.length; i += 1) {
+        this.SDKClients[keys[i]].updateUser(this.user);
+      }
+
       // If buffer size goes to 0, send an analytics event that
       // this user's video is buffering.
       if (this.context.bufferSize < 1 && this.analytics) {
+        this.analytics.user = this.user;
         this.analytics.sendEvent('video', 'buffer', 1);
       }
     }

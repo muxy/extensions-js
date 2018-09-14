@@ -7,7 +7,8 @@ import {
 
 import { CallbackHandle, IMessenger } from './messenger';
 import { DebugOptions } from './debug';
-import User from './user';
+import Observer from './observer';
+import User, { UserUpdateCallbackHandle } from './user';
 import Analytics from './analytics';
 import StateClient from './state-client';
 import Ext from './twitch-ext';
@@ -98,6 +99,7 @@ export default class SDK {
   SKUs: object[];
   timeOffset: number;
   debug: DebugOptions;
+  public userObservers: Observer<User>;
 
   /** @ignore */
   constructor(
@@ -179,6 +181,35 @@ export default class SDK {
    */
   loaded() {
     return this.loadPromise;
+  }
+
+  /** Updates the internally stored user object with the provided value.
+   * Also calls any stored user update callbacks with the new user object.
+   * @since 1.5
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.loaded().then(() => {
+   *   sdk.updateUser({<user object>});
+   * });
+   */
+  public updateUser(user: User) {
+    this.user = user;
+
+    this.userObservers.notify(user);
+  }
+
+  /**
+   * Registers a new callback for when the current user's info is updated.
+   */
+  public onUserUpdate(
+    callback: (user: User) => void
+  ): UserUpdateCallbackHandle {
+    const handler = <UserUpdateCallbackHandle>{
+      cb: callback
+    };
+    this.userObservers.register(handler);
+    return handler;
   }
 
   /**

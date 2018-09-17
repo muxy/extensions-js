@@ -5,55 +5,63 @@ export interface DebugOptions {
   userID?: string;
   role?: string;
 
-  onPubsubSend: Function;
-  onPubsubReceive: Function;
-  onPubsubListen: Function;
+  onPubsubListen: (...args: any[]) => void;
+  onPubsubReceive: (...args: any[]) => void;
+  onPubsubSend: (...args: any[]) => void;
+}
+
+export class DefaultDebugOptions implements DebugOptions {
+  public onPubsubListen: (...args: any[]) => void;
+  public onPubsubReceive: (...args: any[]) => void;
+  public onPubsubSend: (...args: any[]) => void;
 }
 
 export class DebuggingOptions {
-  options: DebugOptions;
+  public options: DebugOptions;
 
   constructor() {
-    const noop = () => {};
+    const noop = (...args: any[]) => {
+      /* Default to doing nothing on callback */
+    };
 
     this.options = {
       onPubsubListen: noop,
-      onPubsubSend: noop,
-      onPubsubReceive: noop
+      onPubsubReceive: noop,
+      onPubsubSend: noop
     };
   }
 
-  url(url) {
+  public url(url) {
     this.options.url = url;
     return this;
   }
 
-  channelID(cid) {
+  public channelID(cid) {
     this.options.channelID = cid;
     return this;
   }
 
-  userID(uid) {
+  public userID(uid) {
     this.options.userID = uid;
     return this;
   }
 
-  role(r) {
+  public role(r) {
     this.options.role = r;
     return this;
   }
 
-  onPubsubSend(cb) {
+  public onPubsubSend(cb) {
     this.options.onPubsubSend = cb;
     return this;
   }
 
-  onPubsubReceive(cb) {
+  public onPubsubReceive(cb) {
     this.options.onPubsubReceive = cb;
     return this;
   }
 
-  onPubsubListen(cb) {
+  public onPubsubListen(cb) {
     this.options.onPubsubListen = cb;
     return this;
   }

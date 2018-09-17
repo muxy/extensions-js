@@ -1,18 +1,18 @@
 import {
-  eventPatternMatch,
+  consolePrint,
   CurrentEnvironment,
-  forceType,
-  consolePrint
+  eventPatternMatch,
+  forceType
 } from './util';
 
-import { CallbackHandle, IMessenger } from './messenger';
-import { DebugOptions } from './debug';
-import Observer from './observer';
-import User, { UserUpdateCallbackHandle } from './user';
 import Analytics from './analytics';
+import { DebugOptions } from './debug';
+import { CallbackHandle, Messenger } from './messenger';
+import Observer from './observer';
 import StateClient from './state-client';
-import Ext from './twitch-ext';
 import { Position, TwitchContext } from './twitch';
+import Ext from './twitch-ext';
+import User, { UserUpdateCallbackHandle } from './user';
 
 /**
  * The response from {@link getAllState}.
@@ -179,15 +179,15 @@ export interface RedeemResult {
  * methods.
  */
 export default class SDK {
-  loadPromise: Promise<void>;
-  identifier: string;
-  client: StateClient;
-  analytics: Analytics;
-  messenger: IMessenger;
-  user: User;
-  SKUs: object[];
-  timeOffset: number;
-  debug: DebugOptions;
+  public loadPromise: Promise<void>;
+  public identifier: string;
+  public client: StateClient;
+  public analytics: Analytics;
+  public messenger: Messenger;
+  public user: User;
+  public SKUs: object[];
+  public timeOffset: number;
+  public debug: DebugOptions;
   public userObservers: Observer<User>;
 
   /** @ignore */
@@ -195,7 +195,7 @@ export default class SDK {
     identifier: string,
     client: StateClient,
     user: User,
-    messenger: IMessenger,
+    messenger: Messenger,
     analytics: Analytics,
     loadPromise: Promise<void>,
     SKUs: object[],
@@ -272,7 +272,8 @@ export default class SDK {
     return this.loadPromise;
   }
 
-  /** Updates the internally stored user object with the provided value.
+  /**
+   * Updates the internally stored user object with the provided value.
    * Also calls any stored user update callbacks with the new user object.
    * @since 1.5
    *
@@ -294,9 +295,7 @@ export default class SDK {
   public onUserUpdate(
     callback: (user: User) => void
   ): UserUpdateCallbackHandle {
-    const handler = <UserUpdateCallbackHandle>{
-      cb: callback
-    };
+    const handler = new UserUpdateCallbackHandle(callback);
     this.userObservers.register(handler);
     return handler;
   }
@@ -1044,16 +1043,16 @@ export default class SDK {
    * If a code is redeemed, the returned body will have a `code` member, which is the code that was redeemed.
    * @async
    *
-   * @throws {TypeError} Will throw an error if prize_idx is not a valid number
+   * @throws {TypeError} Will throw an error if prizeIndex is not a valid number
    *
    * @param {number} prize_idx - The prize index
    *
    * @return {Promise<RedeemResult>}
    */
-  public redeemCode(prize_idx: number): Promise<RedeemResult> {
-    forceType(prize_idx, 'number');
+  public redeemCode(prizeIndex: number): Promise<RedeemResult> {
+    forceType(prizeIndex, 'number');
 
-    return this.client.redeemCode(this.identifier, prize_idx);
+    return this.client.redeemCode(this.identifier, prizeIndex);
   }
 
   /**

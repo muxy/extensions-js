@@ -1,12 +1,12 @@
 import Analytics from './analytics';
-import StateClient from './state-client';
-import Ext from './twitch-ext';
-import TwitchClient from './twitch-client';
-import Messenger, { IMessenger } from './messenger';
+import { DebuggingOptions, DebugOptions } from './debug';
+import DefaultMessenger, { Messenger } from './messenger';
 import SDK from './sdk';
+import StateClient from './state-client';
+import TwitchClient from './twitch-client';
+import Ext from './twitch-ext';
 import User from './user';
 import Util from './util';
-import { DebuggingOptions, DebugOptions } from './debug';
 
 import * as PackageConfig from '../package.json';
 
@@ -24,28 +24,80 @@ export interface SDKMap {
  * as `Muxy`.
  */
 export class Muxy {
-  Util: Util;
-  DebuggingOptions: typeof DebuggingOptions;
-  SDKClients: SDKMap;
+  /**
+   * Prints to console a description of the library's current version and
+   * environment info. This is called automatically when the library is
+   * setup, unless the `quiet` parameter is passed to {@link setup}.
+   *
+   * @since 1.0.0
+   * @public
+   *
+   * @example
+   * Muxy.printInfo();
+   * ┌──────────────────────────────────────────────────┐
+   * | Muxy Extensions SDK                              |
+   * | v1.0.0 © 2017 Muxy, Inc.                         |
+   * | https://github.com/muxy/extensions-js            |
+   * |                                                  |
+   * | Running in sandbox environment outside of Twitch |
+   * └──────────────────────────────────────────────────┘
+   *
+   */
+  public static printInfo() {
+    const SDKInfoText = [
+      'Muxy Extensions SDK',
+      `v${(PackageConfig as any).version} © ${new Date().getFullYear()} ${
+        (PackageConfig as any).author
+      }`,
+      (PackageConfig as any).repository,
+      ''
+    ];
 
-  setupCalled: boolean;
-  twitchClientID: string;
-  client: StateClient;
-  messenger: IMessenger;
-  cachedTwitchClient: TwitchClient;
-  analytics: Analytics;
-  context: object;
-  user: User;
-  loadPromise: Promise<void>;
-  loadResolve: () => void;
-  loadReject: (string) => void;
-  SKUs: object[];
-  watchingAuth: boolean;
+    switch (Util.currentEnvironment().environment) {
+      case Util.Environments.Testing.environment:
+        SDKInfoText.push('Running in testing environment outside of Twitch');
+        break;
+      case Util.Environments.SandboxDev.environment:
+        SDKInfoText.push('Running in sandbox environment outside of Twitch');
+        break;
+      case Util.Environments.SandboxTwitch.environment:
+        SDKInfoText.push('Running in sandbox environment on Twitch');
+        break;
+      case Util.Environments.Production.environment:
+        SDKInfoText.push('Running on production');
+        break;
+      case Util.Environments.Server.environment:
+        SDKInfoText.push('Running on a NodeJS server');
+        break;
+      default:
+        SDKInfoText.push('Could not determine execution environment.');
+    }
+
+    Util.consolePrint(SDKInfoText, { boxed: true });
+  }
+
+  public Util: Util;
+  public DebuggingOptions: typeof DebuggingOptions;
+  public SDKClients: SDKMap;
+
+  public setupCalled: boolean;
+  public twitchClientID: string;
+  public client: StateClient;
+  public messenger: Messenger;
+  public cachedTwitchClient: TwitchClient;
+  public analytics: Analytics;
+  public context: object;
+  public user: User;
+  public loadPromise: Promise<void>;
+  public loadResolve: () => void;
+  public loadReject: (err: string) => void;
+  public SKUs: object[];
+  public watchingAuth: boolean;
 
   // Test variables.
-  testChannelID: string;
-  testJWTRole: string;
-  debugOptions: DebugOptions;
+  public testChannelID: string;
+  public testJWTRole: string;
+  public debugOptions: DebugOptions;
 
   /**
    * Private constructor for singleton use only.
@@ -197,58 +249,6 @@ export class Muxy {
   }
 
   /**
-   * Prints to console a description of the library's current version and
-   * environment info. This is called automatically when the library is
-   * setup, unless the `quiet` parameter is passed to {@link setup}.
-   *
-   * @since 1.0.0
-   * @public
-   *
-   * @example
-   * Muxy.printInfo();
-   * ┌──────────────────────────────────────────────────┐
-   * | Muxy Extensions SDK                              |
-   * | v1.0.0 © 2017 Muxy, Inc.                         |
-   * | https://github.com/muxy/extensions-js            |
-   * |                                                  |
-   * | Running in sandbox environment outside of Twitch |
-   * └──────────────────────────────────────────────────┘
-   *
-   */
-  static printInfo() {
-    const SDKInfoText = [
-      'Muxy Extensions SDK',
-      `v${(<any>PackageConfig).version} © ${new Date().getFullYear()} ${
-        (<any>PackageConfig).author
-      }`,
-      (<any>PackageConfig).repository,
-      ''
-    ];
-
-    switch (Util.currentEnvironment().environment) {
-      case Util.Environments.Testing.environment:
-        SDKInfoText.push('Running in testing environment outside of Twitch');
-        break;
-      case Util.Environments.SandboxDev.environment:
-        SDKInfoText.push('Running in sandbox environment outside of Twitch');
-        break;
-      case Util.Environments.SandboxTwitch.environment:
-        SDKInfoText.push('Running in sandbox environment on Twitch');
-        break;
-      case Util.Environments.Production.environment:
-        SDKInfoText.push('Running on production');
-        break;
-      case Util.Environments.Server.environment:
-        SDKInfoText.push('Running on a NodeJS server');
-        break;
-      default:
-        SDKInfoText.push('Could not determine execution environment.');
-    }
-
-    Util.consolePrint(SDKInfoText, { boxed: true });
-  }
-
-  /**
    * Called the first time the {@link setup} is called to start watching the auth
    * and context callbacks and updating values automatically. This method should
    * not normally be called directly.
@@ -259,7 +259,7 @@ export class Muxy {
    * @param {string} extensionID - The Twitch Extension Client ID to use for all
    * Twitch API requests.
    */
-  watchAuth(extensionID) {
+  public watchAuth(extensionID: string) {
     Ext.extensionID = extensionID;
 
     // Auth callback handler
@@ -278,8 +278,8 @@ export class Muxy {
         this.user = user;
 
         const keys = Object.keys(this.SDKClients);
-        for (let i = 0; i < keys.length; i += 1) {
-          this.SDKClients[keys[i]].updateUser(this.user);
+        for (const key of keys) {
+          this.SDKClients[key].updateUser(this.user);
         }
 
         if (this.analytics) {
@@ -299,8 +299,8 @@ export class Muxy {
             const offset = userinfo.server_time - new Date().getTime();
 
             const keys = Object.keys(this.SDKClients);
-            for (let i = 0; i < keys.length; i += 1) {
-              this.SDKClients[keys[i]].timeOffset = offset;
+            for (const key of keys) {
+              this.SDKClients[key].timeOffset = offset;
             }
 
             updateUserContextSettings.call(this);
@@ -344,8 +344,8 @@ export class Muxy {
       this.user.volume = this.context.volume;
 
       const keys = Object.keys(this.SDKClients);
-      for (let i = 0; i < keys.length; i += 1) {
-        this.SDKClients[keys[i]].updateUser(this.user);
+      for (const key of keys) {
+        this.SDKClients[key].updateUser(this.user);
       }
 
       // If buffer size goes to 0, send an analytics event that
@@ -393,7 +393,7 @@ export class Muxy {
    *   clientID: <your extension client id>
    * });
    */
-  setup(options) {
+  public setup(options) {
     if (this.setupCalled) {
       throw new Error('Muxy.setup() can only be called once.');
     }
@@ -403,18 +403,22 @@ export class Muxy {
     }
 
     if (!this.debugOptions) {
+      const noop = (...args: any[]) => {
+        /* Default to doing nothing on callback */
+      };
+
       this.debugOptions = {
         channelID: this.testChannelID,
         role: this.testJWTRole,
 
-        onPubsubListen: () => {},
-        onPubsubReceive: () => {},
-        onPubsubSend: () => {}
+        onPubsubListen: noop,
+        onPubsubReceive: noop,
+        onPubsubSend: noop
       };
     }
 
     this.client = new StateClient(this.debugOptions);
-    this.messenger = Messenger(this.debugOptions);
+    this.messenger = DefaultMessenger(this.debugOptions);
 
     this.twitchClientID = options.clientID || options.extensionID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
@@ -439,7 +443,7 @@ export class Muxy {
    *
    * @param {*} options - an instance of DebuggingOptions
    */
-  debug(options) {
+  public debug(options) {
     this.debugOptions = {
       channelID: this.testChannelID,
       role: this.testJWTRole,
@@ -469,7 +473,9 @@ export class Muxy {
    *   console.error(err);
    * });
    */
-  SDK(id?: string) {} // eslint-disable-line
+  public SDK(id?: string) {
+    /* Implemented below to deal with scoping issues. */
+  }
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -481,7 +487,9 @@ export class Muxy {
    *
    * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
    */
-  TwitchClient() {} // eslint-disable-line
+  public TwitchClient() {
+    /* Implemented below to deal with scoping issues. */
+  }
 }
 
 /**

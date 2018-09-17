@@ -1,16 +1,18 @@
 // TwitchAuth is the object that you get back from the onAuth callback
 export class TwitchAuth {
-  clientId: string;
-  token: string;
-  channelId: string;
-  userId: string;
+  public clientId: string;
+  public token: string;
+  public channelId: string;
+  public userId: string;
 }
 
 export class JWT {
-  channel_id: string;
-  user_id: string;
-  token: string;
-  role: string;
+  // tslint:disable:variable-name
+  public channel_id: string;
+  public user_id: string;
+  public token: string;
+  public role: string;
+  // tslint:enable:variable-name
 }
 
 export interface TwitchPurchasesSDK {
@@ -25,6 +27,8 @@ export interface Position {
 }
 
 export interface TwitchSDK {
+  purchases: TwitchPurchasesSDK;
+
   onAuthorized(cb: (auth: TwitchAuth) => void): void;
   onContext(cb: (auth: TwitchContext) => void): void;
   onVisibilityChanged(
@@ -49,8 +53,6 @@ export interface TwitchSDK {
     topic: string,
     callback: (t: any, datatype: string, message: string) => void
   );
-
-  purchases: TwitchPurchasesSDK;
 }
 
 export interface TwitchWrapper {

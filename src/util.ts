@@ -5,7 +5,7 @@
  * @since 1.0.3
  */
 export class Environment {
-  environment: string;
+  public environment: string;
 }
 
 /** @ignore */ const ProductionEnvironment: Environment = {
@@ -35,7 +35,7 @@ export class Environment {
   TESTING: TestingEnvironment
 };
 
-export interface consolePrintOptions {
+export interface ConsolePrintOptions {
   type?: string;
   boxed?: boolean;
   style?: string;
@@ -74,7 +74,7 @@ export default class Util {
    *
    * @returns {Promise<string>} Immediately rejects the returned Promise.
    */
-  static errorPromise(err: string): Promise<string> {
+  public static errorPromise(err: string): Promise<string> {
     return Promise.reject(err);
   }
 
@@ -86,7 +86,7 @@ export default class Util {
    *
    * @param {string[]} lines - An array of strings.
    */
-  static widestLine(lines: string[]): number {
+  public static widestLine(lines: string[]): number {
     return Math.max.apply(null, lines.map(x => x.length));
   }
 
@@ -101,7 +101,7 @@ export default class Util {
    * @returns {string} A string containing all `lines` of text surrounded
    * in an ASCII box art.
    */
-  static asciiBox(lines: string[]): string[] {
+  public static asciiBox(lines: string[]): string[] {
     const contentWidth = Util.widestLine(lines);
 
     const intro = `${' '.repeat(contentWidth / 2)}🦊`;
@@ -124,7 +124,7 @@ export default class Util {
    * @since 1.0.0
    * @ignore
    */
-  static isWindowFramed(overrideWindow?: Window): boolean {
+  public static isWindowFramed(overrideWindow?: Window): boolean {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -136,8 +136,8 @@ export default class Util {
     const isNotChildWindow = !vWindow.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
-    const windowTop = vWindow.top && vWindow != vWindow.top; // eslint-disable-line eqeqeq
-    const windowParent = vWindow.parent && vWindow != vWindow.parent; // eslint-disable-line eqeqeq
+    const windowTop = vWindow.top && vWindow != vWindow.top; // tslint:disable-line:triple-equals
+    const windowParent = vWindow.parent && vWindow != vWindow.parent; // tslint:disable-line:triple-equals
     const hasWindowAncestors = !!(windowTop || windowParent);
 
     return isNotChildWindow && hasWindowAncestors;
@@ -151,7 +151,7 @@ export default class Util {
    * @returns {string} Returns a string representation of the current
    * execution environment.
    */
-  static currentEnvironment(overrideWindow?: object): Environment {
+  public static currentEnvironment(overrideWindow?: object): Environment {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -190,7 +190,7 @@ export default class Util {
       }
 
       // Explicity set testing variable, assume testing.
-      if ((<any>vWindow).testing) {
+      if ((vWindow as any).testing) {
         return ENVIRONMENTS.TESTING;
       }
     } catch (err) {
@@ -231,9 +231,9 @@ export default class Util {
    *  | This is a box |
    *  └───────────────┘
    */
-  static consolePrint(
+  public static consolePrint(
     lines: string[] | string,
-    options: consolePrintOptions = {}
+    options: ConsolePrintOptions = {}
   ) {
     if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
@@ -252,9 +252,9 @@ export default class Util {
     }
 
     if (Util.currentEnvironment() === Util.Environments.Server) {
-      (<any>console)[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
+      (console as any)[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
     } else {
-      (<any>console)[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+      (console as any)[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
     }
   }
 
@@ -273,7 +273,7 @@ export default class Util {
    *
    * @return Returns true if the pattern matches the input, false otherwise.
    */
-  static eventPatternMatch(input: string, pattern: string): boolean {
+  public static eventPatternMatch(input: string, pattern: string): boolean {
     const inputParts = input.split(':');
     const patternParts = pattern.split(':');
 
@@ -307,7 +307,7 @@ export default class Util {
    *
    * @throws {TypeError} Throws if typeof value is not in the type list.
    */
-  static forceType(value: any, type: string) {
+  public static forceType(value: any, type: string) {
     const types = [].concat(type);
     const typeString = typeof value;
 
@@ -323,7 +323,7 @@ export default class Util {
    *
    * @return {TwitchEnvironment}
    */
-  static getTwitchEnvironment(): TwitchEnvironment {
+  public static getTwitchEnvironment(): TwitchEnvironment {
     const urlParams = new URLSearchParams(window.location.search);
 
     const env: TwitchEnvironment = {

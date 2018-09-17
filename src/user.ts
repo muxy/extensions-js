@@ -1,8 +1,13 @@
-import { JWT, TwitchAuth } from './twitch';
 import { ObserverHandler } from './observer';
+import { JWT, TwitchAuth } from './twitch';
 
 export class UserUpdateCallbackHandle extends ObserverHandler<User> {
-  cb: (user: User) => void;
+  private cb: (user: User) => void;
+
+  constructor(cb) {
+    super();
+    this.cb = cb;
+  }
 
   public notify(user: User): void {
     this.cb(user);
@@ -41,9 +46,9 @@ export default class User {
    */
   static get Roles() {
     return {
-      Viewer: 'viewer',
       Broadcaster: 'broadcaster',
-      Moderator: 'moderator'
+      Moderator: 'moderator',
+      Viewer: 'viewer'
     };
   }
 
@@ -209,11 +214,11 @@ export default class User {
    *
    * @param {Object} jwt - The auth JWT token as returned from the auth harness.
    */
-  extractJWTInfo(jwt: string) {
+  public extractJWTInfo(jwt: string) {
     try {
       const splitToken = jwt.split('.');
       if (splitToken.length === 3) {
-        const token = <JWT>JSON.parse(window.atob(splitToken[1]));
+        const token = JSON.parse(window.atob(splitToken[1])) as JWT;
         this.role = token.role;
         if (token.user_id) {
           this.twitchID = token.user_id;
@@ -234,7 +239,7 @@ export default class User {
    * @return {boolean} True if the user is not logged in to Twitch or has not granted
    * access to their Twitch ID.
    */
-  anonymous(): boolean {
+  public anonymous(): boolean {
     return !this.twitchOpaqueID || this.twitchOpaqueID[0] !== 'U';
   }
 
@@ -244,7 +249,7 @@ export default class User {
    *
    * @param {Object} auth - An auth JWT with updated user information.
    */
-  updateAuth(auth: TwitchAuth) {
+  public updateAuth(auth: TwitchAuth) {
     this.twitchJWT = auth.token;
     this.extractJWTInfo(auth.token);
   }

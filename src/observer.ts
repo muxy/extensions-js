@@ -11,9 +11,10 @@ export default class Observer<Observable> {
   }
 
   public notify(obj: Observable): void {
-    let i: number, max: number;
+    let i: number = 0;
+    const max: number = this.observers.length;
 
-    for (i = 0, max = this.observers.length; i < max; i += 1) {
+    for (; i < max; i += 1) {
       this.observers[i].notify(obj);
     }
   }

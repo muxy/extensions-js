@@ -1,105 +1,113 @@
 const DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8';
 
 export interface XHROptions {
-  url?: string,
-  method?: string
-  data?: string,
-  headers?: Object,
+  url?: string;
+  method?: string;
+  data?: string;
+  headers?: object;
 }
 
 export interface XHRResponse {
-  url: string,
-  status: Number,
-  statusText: string,
-  responseText: Object,
-  headers: Object,
-  xhr: XMLHttpRequest
+  url: string;
+  status: number;
+  statusText: string;
+  responseText: object;
+  headers: object;
+  xhr: XMLHttpRequest;
 }
 
 export default class XHRPromise {
-  options: XHROptions;
-  xhr: XMLHttpRequest
+  public options: XHROptions;
+  public xhr: XMLHttpRequest;
 
   constructor(options: XHROptions = {}) {
     this.options = {
-      method: 'GET',
       data: null,
-      headers: {}
+      headers: {},
+      method: 'GET'
     };
     Object.assign(this.options, options);
   }
 
-  send() : Promise<XHRResponse> {
-    const self = this;
+  public send(): Promise<XHRResponse> {
     return new Promise((resolve, reject) => {
       if (!XMLHttpRequest) {
-        self.handleResponse('browser', reject, null, "browser doesn't support XMLHttpRequest");
+        this.handleResponse(
+          'browser',
+          reject,
+          null,
+          "browser doesn't support XMLHttpRequest"
+        );
         return;
       }
 
-      if (typeof self.options.url !== 'string' || self.options.url.length === 0) {
-        self.handleResponse('url', reject, null, 'URL is a required parameter');
+      if (
+        typeof this.options.url !== 'string' ||
+        this.options.url.length === 0
+      ) {
+        this.handleResponse('url', reject, null, 'URL is a required parameter');
         return;
       }
 
-      self.xhr = new XMLHttpRequest();
+      this.xhr = new XMLHttpRequest();
 
-      self.xhr.onload = function() {
+      this.xhr.onload = () => {
         let responseText;
         try {
-          responseText = self.getResponseText();
-        } catch (_err) {
-          self.handleResponse('parse', reject, null, 'invalid JSON response');
+          responseText = this.getResponseText();
+        } catch (err) {
+          this.handleResponse('parse', reject, null, 'invalid JSON response');
           return;
         }
 
         return resolve({
-          url: self.getResponseURL(),
-          status: self.xhr.status,
-          statusText: self.xhr.statusText,
-          responseText: responseText,
-          headers: self.getAllResponseHeaders(),
-          xhr: self.xhr
+          headers: this.getAllResponseHeaders(),
+          responseText,
+          status: this.xhr.status,
+          statusText: this.xhr.statusText,
+          url: this.getResponseURL(),
+          xhr: this.xhr
         });
       };
 
-      self.xhr.onerror = function() {
-        return self.handleResponse('error', reject);
+      this.xhr.onerror = () => {
+        return this.handleResponse('error', reject);
       };
-      self.xhr.ontimeout = function() {
-        return self.handleResponse('timeout', reject);
+      this.xhr.ontimeout = () => {
+        return this.handleResponse('timeout', reject);
       };
-      self.xhr.onabort = function() {
-        return self.handleResponse('abort', reject);
+      this.xhr.onabort = () => {
+        return this.handleResponse('abort', reject);
       };
 
-      self.xhr.open(self.options.method, self.options.url);
+      this.xhr.open(this.options.method, this.options.url);
 
-      if (self.options.data !== null && !self.options.headers['Content-Type']) {
-        self.options.headers['Content-Type'] = DEFAULT_CONTENT_TYPE;
+      if (this.options.data !== null && !this.options.headers['Content-Type']) {
+        this.options.headers['Content-Type'] = DEFAULT_CONTENT_TYPE;
       }
 
-      const ref = self.options.headers;
+      const ref = this.options.headers;
       for (const header in ref) {
-        const value = ref[header];
-        self.xhr.setRequestHeader(header, value);
+        if (ref.hasOwnProperty(header)) {
+          const value = ref[header];
+          this.xhr.setRequestHeader(header, value);
+        }
       }
 
       try {
-        return self.xhr.send(self.options.data);
+        return this.xhr.send(this.options.data);
       } catch (err) {
-        return self.handleResponse('send', reject, null, err.toString());
+        return this.handleResponse('send', reject, null, err.toString());
       }
-    }
-    );
-  };
+    });
+  }
 
-  getXHR(): XMLHttpRequest {
+  public getXHR(): XMLHttpRequest {
     return this.xhr;
-  };
+  }
 
   // Converts response headers to map.
-  getAllResponseHeaders(): Object {
+  public getAllResponseHeaders(): object {
     const map = {};
 
     if (this.xhr.readyState !== this.xhr.HEADERS_RECEIVED) {
@@ -117,21 +125,24 @@ export default class XHRPromise {
     });
 
     return map;
-  };
+  }
 
   // Returns the XHR response, parsing as json if applicable.
-  getResponseText(): string | Object {
-    const type = (this.xhr.getResponseHeader('Content-Type') || '').split(';')[0];
-    let text = typeof this.xhr.responseText === 'string' ? this.xhr.responseText : '';
+  public getResponseText(): string | object {
+    const type = (this.xhr.getResponseHeader('Content-Type') || '').split(
+      ';'
+    )[0];
+    let text =
+      typeof this.xhr.responseText === 'string' ? this.xhr.responseText : '';
 
     if (type === 'application/json' || type === 'text/javascript') {
       text = JSON.parse(`${text}`);
     }
 
     return text;
-  };
+  }
 
-  getResponseURL(): string {
+  public getResponseURL(): string {
     if (this.xhr.responseURL !== null) {
       return this.xhr.responseURL;
     }
@@ -141,14 +152,19 @@ export default class XHRPromise {
     }
 
     return '';
-  };
+  }
 
-  handleResponse(reason: string, response: Function, status?: Number | null, statusText?: string) {
+  public handleResponse(
+    reason: string,
+    response: (reason?: any) => void,
+    status?: number | null,
+    statusText?: string
+  ) {
     return response({
-      reason: reason,
+      reason,
       status: status || this.xhr.status,
       statusText: statusText || this.xhr.statusText,
       xhr: this.xhr
     });
-  };
+  }
 }

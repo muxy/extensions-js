@@ -1,7 +1,8 @@
-import { ENVIRONMENTS } from './util';
-import { TwitchAuth } from './twitch';
 import XHRPromise from '../libs/xhr-promise';
+
 import { DebugOptions } from './debug';
+import { TwitchAuth } from './twitch';
+import { ENVIRONMENTS } from './util';
 
 /**
  * Muxy production API URL.
@@ -35,13 +36,13 @@ let FAKEAUTH_URL = SANDBOX_URL;
  * @ignore
  */
 const ServerState = {
+  ALL: 'all_state',
   AUTHENTICATION: 'authentication',
-  USER: 'user_info',
-  VIEWER: 'viewer_state',
-  EXTENSION_VIEWER: 'extension_viewer_state',
   CHANNEL: 'channel_state',
   EXTENSION: 'extension_state',
-  ALL: 'all_state'
+  EXTENSION_VIEWER: 'extension_viewer_state',
+  USER: 'user_info',
+  VIEWER: 'viewer_state'
 };
 
 /**
@@ -59,18 +60,8 @@ const ServerState = {
  * });
  */
 class StateClient {
-  token: string;
-  debug: DebugOptions;
-
   /** @ignore */
-  constructor(debug: DebugOptions) {
-    /** @ignore */
-    this.token = null;
-    this.debug = debug;
-  }
-
-  /** @ignore */
-  static fetchTestAuth(
+  public static fetchTestAuth(
     extensionID: string,
     debug: DebugOptions
   ): Promise<TwitchAuth> {
@@ -82,13 +73,12 @@ class StateClient {
     });
 
     const xhr = new XHRPromise({
-      method: 'POST',
-      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken?role=${debug.role}`, // pass roll as a param so that our fixtures
-      // get loaded correctly in jest
+      data,
       headers: {
         'Content-Type': 'application/json'
       },
-      data: data
+      method: 'POST',
+      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken?role=${debug.role}` // pass roll as a param for fixtures
     });
 
     return xhr.send().then(resp => {
@@ -97,8 +87,8 @@ class StateClient {
         SERVER_URL = debug.url || SANDBOX_URL;
 
         const auth = Object.assign(new TwitchAuth(), resp.responseText, {
-          clientId: extensionID,
           channelId: debug.channelID,
+          clientId: extensionID,
           userId: debug.userID || 'T12345678'
         });
 
@@ -110,7 +100,7 @@ class StateClient {
   }
 
   /** @ignore */
-  static setEnvironment(env) {
+  public static setEnvironment(env) {
     if (
       env === ENVIRONMENTS.SANDBOX_DEV ||
       env === ENVIRONMENTS.SANDBOX_TWITCH
@@ -124,8 +114,18 @@ class StateClient {
     }
   }
 
+  public token: string;
+  public debug: DebugOptions;
+
   /** @ignore */
-  updateAuth(token: string) {
+  constructor(debug: DebugOptions) {
+    /** @ignore */
+    this.token = null;
+    this.debug = debug;
+  }
+
+  /** @ignore */
+  public updateAuth(token: string) {
     this.token = token;
   }
 
@@ -134,18 +134,18 @@ class StateClient {
    * request to the EBS with valid auth credentials.s
    * @ignore
    */
-  signedRequest(extensionID, method, endpoint, data?): Promise<any> {
+  public signedRequest(extensionID, method, endpoint, data?): Promise<any> {
     if (!this.validateJWT()) {
       return Promise.reject('Your authentication token has expired.');
     }
 
     const xhrPromise = new XHRPromise({
-      method,
-      url: `${SERVER_URL}/v1/e/${endpoint}`,
+      data,
       headers: {
         Authorization: `${extensionID} ${this.token}`
       },
-      data
+      method,
+      url: `${SERVER_URL}/v1/e/${endpoint}`
     });
 
     return xhrPromise.send().then(resp => {
@@ -167,7 +167,7 @@ class StateClient {
    * validateJWT ensures that the current JWT is valid and not expired.
    * @ignore
    */
-  validateJWT() {
+  public validateJWT() {
     try {
       const splitToken = this.token.split('.');
       if (splitToken.length !== 3) {
@@ -195,40 +195,42 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  getState = (identifier, substate?): Promise<any> =>
+  public getState = (identifier, substate?): Promise<any> =>
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**
-   * postState sends data to the corrent EBS substate endpoint for persistence.
+   * postState sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  postState = (identifier, substate, data) =>
+  public postState = (identifier, substate, data) =>
     this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
   /** @ignore */
-  getUserInfo = identifier => this.getState(identifier, ServerState.USER);
+  public getUserInfo = identifier =>
+    this.getState(identifier, ServerState.USER);
 
   /** @ignore */
-  getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
+  public getViewerState = identifier =>
+    this.getState(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  getExtensionViewerState = identifier =>
+  public getExtensionViewerState = identifier =>
     this.getState(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  getChannelState = identifier =>
+  public getChannelState = identifier =>
     this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
-  getExtensionState = identifier =>
+  public getExtensionState = identifier =>
     this.getState(identifier, ServerState.EXTENSION);
 
   /** @ignore */
-  setViewerState = (identifier, state) =>
+  public setViewerState = (identifier, state) =>
     this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
 
   /** @ignore */
-  setExtensionViewerState = (identifier, state) =>
+  public setExtensionViewerState = (identifier, state) =>
     this.postState(
       identifier,
       ServerState.EXTENSION_VIEWER,
@@ -236,15 +238,15 @@ class StateClient {
     );
 
   /** @ignore */
-  setChannelState = (identifier, state) =>
+  public setChannelState = (identifier, state) =>
     this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
 
   /** @ignore */
-  setExtensionState = (identifier, state) =>
+  public setExtensionState = (identifier, state) =>
     this.postState(identifier, ServerState.EXTENSION, JSON.stringify(state));
 
   /** @ignore */
-  getAccumulation = (identifier, id, start) =>
+  public getAccumulation = (identifier, id, start) =>
     this.signedRequest(
       identifier,
       'GET',
@@ -252,7 +254,7 @@ class StateClient {
     );
 
   /** @ignore */
-  accumulate = (identifier, id, data) =>
+  public accumulate = (identifier, id, data) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -261,7 +263,7 @@ class StateClient {
     );
 
   /** @ignore */
-  vote = (identifier, id, data) =>
+  public vote = (identifier, id, data) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -270,11 +272,11 @@ class StateClient {
     );
 
   /** @ignore */
-  getVotes = (identifier, id) =>
+  public getVotes = (identifier, id) =>
     this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
 
   /** @ignore */
-  rank = (identifier, id, data) =>
+  public rank = (identifier, id, data) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -283,19 +285,19 @@ class StateClient {
     );
 
   /** @ignore */
-  getRank = (identifier: string, id: string = 'default') =>
+  public getRank = (identifier: string, id: string = 'default') =>
     this.signedRequest(identifier, 'GET', `rank?id=${id}`);
 
   /** @ignore */
-  deleteRank = (identifier, id) =>
+  public deleteRank = (identifier, id) =>
     this.signedRequest(identifier, 'DELETE', `rank?id=${id || 'default'}`);
 
   /** @ignore */
-  getJSONStore = (identifier, id) =>
+  public getJSONStore = (identifier, id) =>
     this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
 
   /** @ignore */
-  validateCode = (identifier, code) =>
+  public validateCode = (identifier, code) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -304,28 +306,28 @@ class StateClient {
     );
 
   /** @ignore */
-  pinTokenExists = identifier =>
+  public pinTokenExists = identifier =>
     this.signedRequest(identifier, 'GET', 'pin_token_exists');
 
   /** @ignore */
-  revokeAllPINCodes = identifier =>
+  public revokeAllPINCodes = identifier =>
     this.signedRequest(identifier, 'DELETE', 'pin');
 
   /** @ignore */
-  getEligibleCodes = identifier =>
+  public getEligibleCodes = identifier =>
     this.signedRequest(identifier, 'GET', 'codes/eligible');
 
   /** @ignore */
-  getRedeemedCodes = identifier =>
+  public getRedeemedCodes = identifier =>
     this.signedRequest(identifier, 'GET', 'codes/redeemed');
 
   /** @ignore */
-  redeemCode = (identifier, prize_idx) =>
+  public redeemCode = (identifier, prizeIndex) =>
     this.signedRequest(
       identifier,
       'POST',
       'codes/redeem',
-      JSON.stringify({ prize: prize_idx })
+      JSON.stringify({ prize: prizeIndex })
     );
 }
 

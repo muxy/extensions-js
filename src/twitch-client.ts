@@ -1,11 +1,14 @@
-import { forceType } from './util';
+import { resolveCname } from 'dns';
+
 import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
+
+import { forceType } from './util';
 
 /**
  * A single user object as from {@link getTwitchUsers}.
  *
  * @typedef {Object} TwitchUser
-
+ *
  * @property {string} _id - The Twitch ID of the user. Universally unique.
  * @property {string} bio - A description of the user provided by the user. May be empty.
  * @property {string} created_at - A timestamp of the user account creation time in ISO 8601
@@ -33,7 +36,7 @@ export interface TwitchUser {
  * A single user object as from {@link getTwitchUsersByID}.
  *
  * @typedef {Object} HelixTwitchUser
-
+ *
  * @property {string} id - The Twitch ID of the user. Universally unique.
  * @property {string} login - The user's login name
  * @property {string} description - The user's channel description
@@ -63,7 +66,7 @@ export interface HelixTwitchUser {
  * A single good object as from {@link getUserGoods}.
  *
  * @typedef {Object} ExtensionGood
-
+ *
  * @property {string} next_instruction - The next instruction (action) for the purchase. Can be:
  *   - "NOOP" - No action is needed, the good was fullfilled.
  *   - "FULFILL" - Fulfill the purchase, then call the Twitch entitlement system to indicate
@@ -78,7 +81,7 @@ export interface HelixTwitchUser {
  * {@link updateFulfilledGoods}.
  *
  * @typedef {Object} Receipt
-
+ *
  * @property {string} fulfillment_address - Twitch User ID
  * @property {string} receipt_id - Receipt ID for the digital good, returned by {@link getUserGoods}
  * @property {string} last_instruction - The last thing you did. Corresponds to the "next
@@ -101,8 +104,8 @@ export interface HelixTwitchUser {
  * });
  */
 export default class TwitchClient {
-  extensionId: string;
-  promise: Promise<any>;
+  public extensionId: string;
+  public promise: Promise<any>;
 
   /**
    * Create an instance of TwitchClient bound to the provided client ID.
@@ -118,7 +121,7 @@ export default class TwitchClient {
     /** @ignore */
     this.extensionId = clientID;
     /** @ignore */
-    this.promise = (<any>Promise).resolve();
+    this.promise = (Promise as any).resolve();
   }
 
   /**
@@ -129,7 +132,7 @@ export default class TwitchClient {
    *
    * @return {Promise} Will resolve when the TwitchClient is ready for use.
    */
-  loaded(): Promise<any> {
+  public loaded(): Promise<any> {
     return this.promise;
   }
 
@@ -149,7 +152,7 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchRequest(
+  public signedTwitchRequest(
     method: string,
     endpoint: string,
     data?: string,
@@ -168,10 +171,10 @@ export default class TwitchClient {
 
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise({
-        method,
-        url: `https://api.twitch.tv/kraken/${endpoint}`,
+        data,
         headers,
-        data
+        method,
+        url: `https://api.twitch.tv/kraken/${endpoint}`
       });
 
       return xhrPromise
@@ -202,15 +205,15 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchHelixRequest(
+  public signedTwitchHelixRequest(
     method: string,
     endpoint: string,
     data?: string,
     JWT?: string
   ): Promise<any> {
     const headers = {
-      'Client-ID': this.extensionId,
-      Authorization: undefined
+      Authorization: undefined,
+      'Client-ID': this.extensionId
     };
 
     if (JWT) {
@@ -219,22 +222,31 @@ export default class TwitchClient {
 
     return new Promise((resolve, reject) => {
       const xhrPromise = new XMLHttpRequestPromise({
-        method,
-        url: `https://api.twitch.tv/helix/${endpoint}`,
+        data,
         headers,
-        data
+        method,
+        url: `https://api.twitch.tv/helix/${endpoint}`
       });
 
       return xhrPromise
         .send()
-        .catch(reject)
         .then((resp: XHRResponse) => {
           if (resp.status < 400) {
-            resolve(resp.responseText['data']);
+            try {
+              if (resp.responseText.hasOwnProperty('data')) {
+                const r = resp.responseText.data;
+                resolve(r);
+              } else {
+                resolve(resp.responseText);
+              }
+            } catch (err) {
+              reject('Unexpected response from Twitch');
+            }
           }
 
           reject(resp.responseText);
-        });
+        })
+        .catch(reject);
     });
   }
 
@@ -256,7 +268,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
+  public getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
     forceType(usernames, 'array');
     if (usernames.length === 0) {
       return Promise.resolve([]);
@@ -285,7 +297,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
+  public getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
     forceType(userIDs, 'array');
     if (userIDs.length === 0) {
       return Promise.resolve([]);
@@ -309,7 +321,7 @@ export default class TwitchClient {
    * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
    * each of the goods the user is entitled to.
    */
-  getUserGoods(JWT) {
+  public getUserGoods(JWT) {
     return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', JWT);
   }
 
@@ -323,7 +335,7 @@ export default class TwitchClient {
    * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
    * Receipts parameter.
    */
-  updateFulfilledGoods(JWT, receipts) {
+  public updateFulfilledGoods(JWT, receipts) {
     return this.signedTwitchRequest(
       'POST',
       'commerce/user/goods/fulfill',

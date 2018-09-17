@@ -1,7 +1,7 @@
-import { ENVIRONMENTS, CurrentEnvironment, consolePrint } from './util';
-import { TwitchAuth, TwitchContext, Position } from './twitch';
 import { DebugOptions } from './debug';
 import Client from './state-client';
+import { Position, TwitchAuth, TwitchContext } from './twitch';
+import { consolePrint, CurrentEnvironment, ENVIRONMENTS } from './util';
 
 // 25 minutes between updates of the testing auth token.
 const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
@@ -11,9 +11,12 @@ const CONTEXT_CALLBACK_TIMEOUT = 30 * 1000;
 
 // Wrapper around global Twitch extension object.
 export default class Ext {
-  static extensionID: string;
+  public static extensionID: string;
 
-  static fetchTestAuth(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
+  public static fetchTestAuth(
+    opts: DebugOptions,
+    cb: (auth: TwitchAuth) => void
+  ) {
     Client.fetchTestAuth(this.extensionID, opts)
       .then((auth: TwitchAuth) => {
         cb(auth);
@@ -21,7 +24,10 @@ export default class Ext {
       .catch(cb);
   }
 
-  static onAuthorized(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
+  public static onAuthorized(
+    opts: DebugOptions,
+    cb: (auth: TwitchAuth) => void
+  ) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(opts, cb);
@@ -46,7 +52,7 @@ export default class Ext {
     }
   }
 
-  static onContext(cb: (ctx: TwitchContext) => void) {
+  public static onContext(cb: (ctx: TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -74,7 +80,7 @@ export default class Ext {
     }
   }
 
-  static beginPurchase(sku: string) {
+  public static beginPurchase(sku: string) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -91,7 +97,7 @@ export default class Ext {
     }
   }
 
-  static getPrices(cb: (a: any) => void) {
+  public static getPrices(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -110,7 +116,7 @@ export default class Ext {
     }
   }
 
-  static onReloadEntitlements(cb: (a: any) => void) {
+  public static onReloadEntitlements(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -127,7 +133,7 @@ export default class Ext {
     }
   }
 
-  static onVisibilityChanged(
+  public static onVisibilityChanged(
     callback: (isVisible: boolean, ctx: TwitchContext) => void
   ) {
     switch (CurrentEnvironment()) {
@@ -146,7 +152,7 @@ export default class Ext {
     }
   }
 
-  static onPositionChanged(callback: (position: Position) => void) {
+  public static onPositionChanged(callback: (position: Position) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:

@@ -7,9 +7,7 @@ declare module 'gumshoe' {
     send(category: string, data: object): void;
   }
 
-  export interface gumshoeFactoryType {
-    (): gumshoe;
-  }
+  export type gumshoeFactoryType = () => gumshoe;
 }
 
 declare module '*.json' {

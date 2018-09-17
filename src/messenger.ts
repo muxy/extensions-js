@@ -1,16 +1,16 @@
-/* globals Twitch */
-import { ENVIRONMENTS, CurrentEnvironment } from './util';
+import Pusher from 'pusher-js';
+
 import { DebugOptions } from './debug';
-import 'pusher-js';
+import { CurrentEnvironment, ENVIRONMENTS } from './util';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
 export class CallbackHandle {
-  target: string;
-  cb: (t: any, datatype: string, message: string) => void;
+  public target: string;
+  public cb: (t: any, datatype: string, message: string) => void;
 }
 
-export interface IMessenger {
+export interface Messenger {
   channelID: string;
   extensionID: string;
 
@@ -23,10 +23,10 @@ export interface IMessenger {
 // TwitchMessenger implements the basic 'messenger' interface, which should be implemented
 // for all pubsub implementations. This is used by SDK to provide low-level access
 // to a pubsub implementation.
-class TwitchMessenger implements IMessenger {
-  channelID: string;
-  extensionID: string;
-  debug: DebugOptions;
+class TwitchMessenger implements Messenger {
+  public channelID: string;
+  public extensionID: string;
+  public debug: DebugOptions;
 
   constructor(debug: DebugOptions) {
     this.channelID = '';
@@ -45,13 +45,13 @@ class TwitchMessenger implements IMessenger {
    * below.
    */
   /* eslint-disable class-methods-use-this */
-  send(id, event, target, body) {
+  public send(id, event, target, body) {
     const data = body || {};
 
     this.debug.onPubsubSend(id, event, target, body);
     window.Twitch.ext.send(target, 'application/json', {
-      event: `${CurrentEnvironment().environment}:${id}:${event}`,
-      data
+      data,
+      event: `${CurrentEnvironment().environment}:${id}:${event}`
     });
   }
   /* eslint-enable class-methods-use-this */
@@ -64,7 +64,7 @@ class TwitchMessenger implements IMessenger {
    * @return a handle that can be passed into unlisten to unbind the callback.
    */
   /* eslint-disable class-methods-use-this */
-  listen(id, topic: string, callback): CallbackHandle {
+  public listen(id, topic: string, callback): CallbackHandle {
     const cb = (t, datatype, message) => {
       try {
         const parsed = JSON.parse(message);
@@ -80,8 +80,8 @@ class TwitchMessenger implements IMessenger {
     window.Twitch.ext.listen(topic, cb);
 
     return {
-      target: topic,
-      cb
+      cb,
+      target: topic
     };
   }
   /* eslint-enable class-methods-use-this */
@@ -92,23 +92,25 @@ class TwitchMessenger implements IMessenger {
    * @param h the handle returned from listen
    */
   /* eslint-disable class-methods-use-this */
-  unlisten(id, h: CallbackHandle) {
+  public unlisten(id, h: CallbackHandle) {
     window.Twitch.ext.unlisten(h.target, h.cb);
   }
   /* eslint-enable class-methods-use-this */
 
-  close() {}
+  public close() {
+    /* Nothing to close on Twitch */
+  }
 }
 
 // PusherMessenger adheres to the 'messenger' interface, but uses https://pusher.com
 // as a pubsub notification provider.
-class PusherMessenger implements IMessenger {
-  channelID: string;
-  extensionID: string;
-  debug: DebugOptions;
+class PusherMessenger implements Messenger {
+  public channelID: string;
+  public extensionID: string;
+  public debug: DebugOptions;
 
-  client: Pusher.Pusher;
-  channel: Pusher.Channel;
+  public client: Pusher.Pusher;
+  public channel: Pusher.Channel;
 
   constructor(debug: DebugOptions) {
     // @ts-ignore
@@ -121,7 +123,7 @@ class PusherMessenger implements IMessenger {
     this.debug = debug;
   }
 
-  send(id, event, target, body, client) {
+  public send(id, event, target, body, client) {
     const scopedEvent = `${CurrentEnvironment().environment}:${id}:${event}`;
     this.debug.onPubsubSend(id, event, target, body);
 
@@ -130,15 +132,15 @@ class PusherMessenger implements IMessenger {
       'POST',
       'pusher_broadcast',
       JSON.stringify({
-        target,
+        data: body,
         event: scopedEvent,
-        user_id: this.channelID,
-        data: body
+        target,
+        user_id: this.channelID
       })
     );
   }
 
-  listen(id, topic, callback) {
+  public listen(id, topic, callback) {
     if (!this.channel) {
       const channelName = `twitch.pubsub.${this.extensionID}.${this.channelID}`;
       this.channel = this.client.subscribe(channelName);
@@ -159,33 +161,33 @@ class PusherMessenger implements IMessenger {
     this.channel.bind(topic, cb);
 
     return {
-      target: topic,
-      cb
+      cb,
+      target: topic
     };
   }
 
-  unlisten(id, h) {
+  public unlisten(id, h) {
     this.channel.unbind(h.target, h.cb);
   }
 
-  close() {
+  public close() {
     this.client.disconnect();
   }
 }
 
 // ServerMessenger implements a 'messenger' that is broadcast-only. It cannot
 // listen for messages, but is able to send with a backend-signed JWT.
-class ServerMessenger implements IMessenger {
-  channelID: string;
-  extensionID: string;
-  debug: DebugOptions;
+class ServerMessenger implements Messenger {
+  public channelID: string;
+  public extensionID: string;
+  public debug: DebugOptions;
 
   constructor(debug: DebugOptions, ch?) {
     this.channelID = ch;
     this.debug = debug;
   }
 
-  send(id, event, target, body, client) {
+  public send(id, event, target, body, client) {
     this.debug.onPubsubSend(id, event, target, body);
 
     client.signedRequest(
@@ -193,33 +195,37 @@ class ServerMessenger implements IMessenger {
       'POST',
       'broadcast',
       JSON.stringify({
-        target,
+        data: body,
         event,
-        user_id: this.channelID,
-        data: body
+        target,
+        user_id: this.channelID
       })
     );
   }
 
-  /* eslint-disable class-methods-use-this,no-console */
-  listen(id, topic, callback): CallbackHandle {
+  /* tslint:disable:no-console */
+  public listen(id, topic, callback): CallbackHandle {
     console.error('Server-side message receiving is not implemented.');
 
     return {
-      target: '',
-      cb: () => {}
+      cb: () => {
+        /* Not Implemented */
+      },
+      target: ''
     };
   }
 
-  unlisten(id, handle: CallbackHandle): void {
+  public unlisten(id, handle: CallbackHandle): void {
     console.error('Server-side message receiving is not implemented.');
   }
-  /* eslint-enable class-methods-use-this,no-console */
+  /* tslint:enable:no-console */
 
-  close() {}
+  public close() {
+    /* Nothing to close server-side. */
+  }
 }
 
-export default function Messenger(debug: DebugOptions): IMessenger {
+export default function DefaultMessenger(debug: DebugOptions): Messenger {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.SANDBOX_DEV:
       return new PusherMessenger(debug);

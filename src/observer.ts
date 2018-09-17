@@ -1,11 +1,11 @@
 export default class Observer<Observable> {
-  private observers: Array<IObserverHandler<Observable>> = [];
+  private observers: Array<ObserverHandler<Observable>> = [];
 
-  public register(observer: IObserverHandler<Observable>): void {
+  public register(observer: ObserverHandler<Observable>): void {
     this.observers.push(observer);
   }
 
-  public unregister(observer: IObserverHandler<Observable>): void {
+  public unregister(observer: ObserverHandler<Observable>): void {
     const n: number = this.observers.indexOf(observer);
     this.observers.splice(n, 1);
   }
@@ -19,7 +19,7 @@ export default class Observer<Observable> {
   }
 }
 
-export class IObserverHandler<Observable> {
+export class ObserverHandler<Observable> {
   public notify(obj: Observable): void {
     throw new Error('Abstract Method!');
   }

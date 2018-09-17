@@ -1,7 +1,7 @@
 import { JWT, TwitchAuth } from './twitch';
-import { IObserverHandler } from './observer';
+import { ObserverHandler } from './observer';
 
-export class UserUpdateCallbackHandle extends IObserverHandler<User> {
+export class UserUpdateCallbackHandle extends ObserverHandler<User> {
   cb: (user: User) => void;
 
   public notify(user: User): void {
@@ -234,7 +234,7 @@ export default class User {
    * @return {boolean} True if the user is not logged in to Twitch or has not granted
    * access to their Twitch ID.
    */
-  anonymous() {
+  anonymous(): boolean {
     return !this.twitchOpaqueID || this.twitchOpaqueID[0] !== 'U';
   }
 

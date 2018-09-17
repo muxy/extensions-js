@@ -74,7 +74,7 @@ export default class Util {
    *
    * @returns {Promise<string>} Immediately rejects the returned Promise.
    */
-  static errorPromise(err: string) {
+  static errorPromise(err: string): Promise<string> {
     return Promise.reject(err);
   }
 
@@ -273,7 +273,7 @@ export default class Util {
    *
    * @return Returns true if the pattern matches the input, false otherwise.
    */
-  static eventPatternMatch(input: string, pattern: string) {
+  static eventPatternMatch(input: string, pattern: string): boolean {
     const inputParts = input.split(':');
     const patternParts = pattern.split(':');
 

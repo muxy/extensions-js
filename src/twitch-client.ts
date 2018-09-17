@@ -18,6 +18,16 @@ import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
  * @property {string} updated_at - A timestamp of the last time the user information was
  * updated in ISO 8601 format.
  */
+export interface TwitchUser {
+  _id: string;
+  bio: string;
+  created_at: string;
+  display_name: string;
+  logo: string;
+  name: string;
+  type: string;
+  updated_at: string;
+}
 
 /**
  * A single user object as from {@link getTwitchUsersByID}.
@@ -37,6 +47,17 @@ import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
  * One of ["partner", "affiliate", ""].
  * @property {int} view_count - The user's total view count.
  */
+export interface HelixTwitchUser {
+  id: string;
+  login: string;
+  description: string;
+  display_name: string;
+  profile_image_url: string;
+  offline_image_url: string;
+  type: string;
+  broadcaster_type: string;
+  view_count: number;
+}
 
 /**
  * A single good object as from {@link getUserGoods}.
@@ -133,7 +154,7 @@ export default class TwitchClient {
     endpoint: string,
     data?: string,
     JWT?: string
-  ) {
+  ): Promise<any> {
     const headers = {
       Accept: 'application/vnd.twitchtv.v5+json',
       'Client-ID': this.extensionId,
@@ -186,7 +207,7 @@ export default class TwitchClient {
     endpoint: string,
     data?: string,
     JWT?: string
-  ) {
+  ): Promise<any> {
     const headers = {
       'Client-ID': this.extensionId,
       Authorization: undefined
@@ -235,7 +256,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsers(usernames) {
+  getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
     forceType(usernames, 'array');
     if (usernames.length === 0) {
       return Promise.resolve([]);
@@ -264,7 +285,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsersByID(userIDs) {
+  getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
     forceType(userIDs, 'array');
     if (userIDs.length === 0) {
       return Promise.resolve([]);

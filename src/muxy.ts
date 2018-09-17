@@ -362,6 +362,11 @@ export class Muxy {
       if (this.user) {
         updateUserContextSettings.call(this);
       }
+
+      const keys = Object.keys(this.SDKClients);
+      for (const key of keys) {
+        this.SDKClients[key].contextObservers.notify(context);
+      }
     });
   }
 

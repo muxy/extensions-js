@@ -10,7 +10,7 @@ import { DebugOptions } from './debug';
 import { CallbackHandle, Messenger } from './messenger';
 import Observer from './observer';
 import StateClient from './state-client';
-import { Position, TwitchContext } from './twitch';
+import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
 
@@ -189,6 +189,7 @@ export default class SDK {
   public timeOffset: number;
   public debug: DebugOptions;
   public userObservers: Observer<User>;
+  public contextObservers: Observer<TwitchContext>;
 
   /** @ignore */
   constructor(
@@ -297,6 +298,17 @@ export default class SDK {
   ): UserUpdateCallbackHandle {
     const handler = new UserUpdateCallbackHandle(callback);
     this.userObservers.register(handler);
+    return handler;
+  }
+
+  /**
+   * Registers a new callback for when the context is updated.
+   */
+  public onContextUpdate(
+    callback: (context: TwitchContext) => void
+  ): ContextUpdateCallbackHandle {
+    const handler = new ContextUpdateCallbackHandle(callback);
+    this.contextObservers.register(handler);
     return handler;
   }
 

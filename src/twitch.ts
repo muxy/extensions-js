@@ -1,4 +1,7 @@
 // TwitchAuth is the object that you get back from the onAuth callback
+import { ObserverHandler } from './observer';
+import User from './user';
+
 export class TwitchAuth {
   public clientId: string;
   public token: string;
@@ -31,9 +34,7 @@ export interface TwitchSDK {
 
   onAuthorized(cb: (auth: TwitchAuth) => void): void;
   onContext(cb: (auth: TwitchContext) => void): void;
-  onVisibilityChanged(
-    callback: (isVisible: boolean, ctx: TwitchContext) => void
-  ): void;
+  onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void): void;
   onPositionChanged(callback: (position: Position) => void): void;
 
   send(
@@ -45,18 +46,25 @@ export interface TwitchSDK {
     }
   );
 
-  listen(
-    topic: string,
-    callback: (t: any, datatype: string, message: string) => void
-  );
-  unlisten(
-    topic: string,
-    callback: (t: any, datatype: string, message: string) => void
-  );
+  listen(topic: string, callback: (t: any, datatype: string, message: string) => void);
+  unlisten(topic: string, callback: (t: any, datatype: string, message: string) => void);
 }
 
 export interface TwitchWrapper {
   ext: TwitchSDK;
+}
+
+export class ContextUpdateCallbackHandle extends ObserverHandler<TwitchContext> {
+  private cb: (context: TwitchContext) => void;
+
+  constructor(cb) {
+    super();
+    this.cb = cb;
+  }
+
+  public notify(context: TwitchContext): void {
+    this.cb(context);
+  }
 }
 
 export interface TwitchContext {

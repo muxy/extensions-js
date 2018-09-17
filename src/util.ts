@@ -355,7 +355,8 @@ export default class Util {
  * @property {string} mode - The extension’s mode. Valid values: "config", "dashboard", "viewer".
  * @property {string} platform - The platform on which the Twitch client is running. Valid values: "mobile", "web".
  * @property {string} state - The release state of the extension.
- * Valid values: "testing", "hosted_test", "approved", "released", "ready_for_review", "in_review", "pending_action", "uploading".
+ * Valid values: "testing", "hosted_test", "approved", "released",
+ * "ready_for_review", "in_review", "pending_action", "uploading".
  */
 export interface TwitchEnvironment {
   anchor: string;

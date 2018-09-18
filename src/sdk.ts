@@ -1,9 +1,4 @@
-import {
-  consolePrint,
-  CurrentEnvironment,
-  eventPatternMatch,
-  forceType
-} from './util';
+import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
 
 import Analytics from './analytics';
 import { DebugOptions } from './debug';
@@ -203,6 +198,12 @@ export default class SDK {
     debug: DebugOptions
   ) {
     /** @ignore */
+    this.userObservers = new Observer<User>();
+
+    /** @ignore */
+    this.contextObservers = new Observer<TwitchContext>();
+
+    /** @ignore */
     this.loadPromise = loadPromise;
 
     /**
@@ -293,9 +294,7 @@ export default class SDK {
   /**
    * Registers a new callback for when the current user's info is updated.
    */
-  public onUserUpdate(
-    callback: (user: User) => void
-  ): UserUpdateCallbackHandle {
+  public onUserUpdate(callback: (user: User) => void): UserUpdateCallbackHandle {
     const handler = new UserUpdateCallbackHandle(callback);
     this.userObservers.register(handler);
     return handler;
@@ -304,9 +303,7 @@ export default class SDK {
   /**
    * Registers a new callback for when the context is updated.
    */
-  public onContextUpdate(
-    callback: (context: TwitchContext) => void
-  ): ContextUpdateCallbackHandle {
+  public onContextUpdate(callback: (context: TwitchContext) => void): ContextUpdateCallbackHandle {
     const handler = new ContextUpdateCallbackHandle(callback);
     this.contextObservers.register(handler);
     return handler;
@@ -356,10 +353,7 @@ export default class SDK {
    *   console.log(resp.data); // A list of all accumulate values since oneMinuteAgo.
    * });
    */
-  public getAccumulateData(
-    accumulationID: string,
-    start: number
-  ): Promise<AccumulateData> {
+  public getAccumulateData(accumulationID: string, start: number): Promise<AccumulateData> {
     forceType(accumulationID, 'string');
     return this.client.getAccumulation(this.identifier, accumulationID, start);
   }
@@ -899,9 +893,7 @@ export default class SDK {
    * });
    */
   public listen(inEvent, inUserID, inCallback) {
-    const realEvent = `${CurrentEnvironment().environment}:${
-      this.identifier
-    }:${inEvent}`;
+    const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
 
     let l = 'broadcast';
     let callback = inCallback;
@@ -968,11 +960,7 @@ export default class SDK {
    * @param {number} [value=1] - A value to associate with this event.
    * @param {string} [label=''] - A human-readable label for this event.
    */
-  public sendAnalyticsEvent(
-    name: string,
-    value: number = 1,
-    label: string = ''
-  ) {
+  public sendAnalyticsEvent(name: string, value: number = 1, label: string = '') {
     this.analytics.sendEvent(this.identifier, name, value, label);
   }
 
@@ -987,9 +975,7 @@ export default class SDK {
    */
   public beginPurchase(sku) {
     if (this.SKUs.length === 0) {
-      throw new Error(
-        'beginPurchase() cannot be used unless SKUs are provided.'
-      );
+      throw new Error('beginPurchase() cannot be used unless SKUs are provided.');
     }
     forceType(sku, 'string');
     return Ext.beginPurchase(sku);
@@ -1021,9 +1007,7 @@ export default class SDK {
    */
   public onReloadEntitlements(callback) {
     if (this.SKUs.length === 0) {
-      throw new Error(
-        'onReloadEntitlements() cannot be used unless SKUs are provided.'
-      );
+      throw new Error('onReloadEntitlements() cannot be used unless SKUs are provided.');
     }
     return Ext.onReloadEntitlements(callback);
   }
@@ -1034,9 +1018,7 @@ export default class SDK {
    *
    * @param {function} callback
    */
-  public onVisibilityChanged(
-    callback: (isVisible: boolean, ctx: TwitchContext) => void
-  ): void {
+  public onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void): void {
     return Ext.onVisibilityChanged(callback);
   }
 

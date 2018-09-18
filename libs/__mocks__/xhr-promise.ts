@@ -62,7 +62,8 @@ export default class XHRPromise {
       }
 
       const url = new URL(self.options.url);
-      fs.readFile(`./fixtures${url.pathname}${url.search}.json`, 'utf8', (err, data) => {
+      const search = url.search.replace('?', '/');
+      fs.readFile(`./fixtures${url.pathname}${search}.json`, 'utf8', (err, data) => {
         if (err) {
           self.handleResponse('error', reject, 502, err.toString());
         } else {

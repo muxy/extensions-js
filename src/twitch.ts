@@ -68,14 +68,22 @@ export class ContextUpdateCallbackHandle extends ObserverHandler<TwitchContext> 
 }
 
 export interface TwitchContext {
-  ip: string;
-  channelID: string;
-  twitchOpaqueID: string;
-  role: string;
-  game: string;
-  videoMode: string;
-  latency: number;
+  arePlayerControlsVisible: boolean;
   bitrate: number;
+  bufferSize: number;
+  displayResolution: string;
+  game: string;
+  hlsLatencyBroadcaster: number;
+  isFullScreen: boolean;
+  isMuted: boolean;
+  isPaused: boolean;
+  isTheatreMode: boolean;
+  language: string;
+  mode: string;
+  playbackMode: string;
+  theme: string;
+  videoResolution: string;
+  volume: number;
 }
 
 declare global {

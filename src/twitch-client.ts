@@ -224,8 +224,8 @@ export default class TwitchClient {
           if (resp.status < 400) {
             try {
               if (resp.responseText.hasOwnProperty('data')) {
-                // @ts-ignore
-                const r = resp.responseText.data;
+                const anyResp = <any>resp.responseText;
+                const r = anyResp.data;
                 resolve(r);
               } else {
                 resolve(resp.responseText);

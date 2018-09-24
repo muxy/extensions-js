@@ -13,10 +13,7 @@ const CONTEXT_CALLBACK_TIMEOUT = 30 * 1000;
 export default class Ext {
   public static extensionID: string;
 
-  public static fetchTestAuth(
-    opts: DebugOptions,
-    cb: (auth: TwitchAuth) => void
-  ) {
+  public static fetchTestAuth(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
     Client.fetchTestAuth(this.extensionID, opts)
       .then((auth: TwitchAuth) => {
         cb(auth);
@@ -24,14 +21,61 @@ export default class Ext {
       .catch(cb);
   }
 
-  public static onAuthorized(
-    opts: DebugOptions,
-    cb: (auth: TwitchAuth) => void
-  ) {
+  public static fetchAdminAuth(debug: DebugOptions, cb: (auth: TwitchAuth) => void) {
+    const allowedOrigins = [
+      '^https://dev-portal\\.staging.muxy\\.io$',
+      '^https://dev-portal\\.muxy\\.io$',
+      '^https?://localhost'
+    ];
+
+    // Show that we're ready to receive.
+    let connectionAttempts = 0;
+    const connection = setInterval(() => {
+      window.parent.postMessage({ type: 'connect', id: this.extensionID }, '*');
+      connectionAttempts++;
+
+      if (connectionAttempts > 60) {
+        clearInterval(connection);
+      }
+    });
+
+    window.addEventListener('message', auth => {
+      let allowed = false;
+      allowedOrigins.forEach(origin => {
+        const r = new RegExp(origin);
+        if (r.test(auth.origin)) {
+          allowed = true;
+        }
+      });
+
+      if (!allowed) {
+        return;
+      }
+
+      if (auth.data.type === 'jwt') {
+        const resp = Object.assign(new TwitchAuth(), {
+          token: auth.data.jwt,
+          clientId: this.extensionID,
+          channelId: debug.channelID,
+          userId: debug.userID || 'T12345678'
+        });
+
+        clearInterval(connection);
+        return cb(resp);
+      }
+    });
+  }
+
+  public static onAuthorized(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(opts, cb);
         setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, opts, cb);
+        break;
+
+      case ENVIRONMENTS.SANDBOX_ADMIN:
+      case ENVIRONMENTS.ADMIN:
+        Ext.fetchAdminAuth(opts, cb);
         break;
 
       case ENVIRONMENTS.SANDBOX_TWITCH:
@@ -88,12 +132,9 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(
-          `beginPurchase not supported for ${CurrentEnvironment()}`,
-          {
-            type: 'error'
-          }
-        );
+        consolePrint(`beginPurchase not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
     }
   }
 
@@ -124,18 +165,13 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(
-          `onReloadEntitlements not supported for ${CurrentEnvironment()}`,
-          {
-            type: 'error'
-          }
-        );
+        consolePrint(`onReloadEntitlements not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
     }
   }
 
-  public static onVisibilityChanged(
-    callback: (isVisible: boolean, ctx: TwitchContext) => void
-  ) {
+  public static onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
@@ -143,12 +179,9 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(
-          `onVisibilityChanged not supported for ${CurrentEnvironment()}`,
-          {
-            type: 'error'
-          }
-        );
+        consolePrint(`onVisibilityChanged not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
     }
   }
 
@@ -160,12 +193,9 @@ export default class Ext {
         break;
 
       default:
-        consolePrint(
-          `onVisibilityChanged not supported for ${CurrentEnvironment()}`,
-          {
-            type: 'error'
-          }
-        );
+        consolePrint(`onVisibilityChanged not supported for ${CurrentEnvironment()}`, {
+          type: 'error'
+        });
     }
   }
 }

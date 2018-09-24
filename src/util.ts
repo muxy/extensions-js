@@ -11,9 +11,19 @@ export class Environment {
 /** @ignore */ const ProductionEnvironment: Environment = {
   environment: 'production'
 };
+
+/** @ignore */ const AdministrationEnvironment: Environment = {
+  environment: 'production'
+};
+
 /** @ignore */ const SandboxDevEnvironment: Environment = {
   environment: 'sandbox'
 };
+
+/** @ignore */ const SandboxAdministrationEnvironment: Environment = {
+  environment: 'sandbox'
+};
+
 /** @ignore */ const SandboxTwitchEnvironment: Environment = {
   environment: 'sandbox'
 };
@@ -29,6 +39,8 @@ export class Environment {
  */
 /** @ignore */ export const ENVIRONMENTS = {
   PRODUCTION: ProductionEnvironment,
+  ADMIN: AdministrationEnvironment,
+  SANDBOX_ADMIN: SandboxAdministrationEnvironment,
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
@@ -163,17 +175,33 @@ export default class Util {
     try {
       // NodeJS module system, assume server.
       // istanbul ignore if
-      if (
-        typeof module !== 'undefined' &&
-        module.exports &&
-        typeof vWindow === 'undefined'
-      ) {
+      if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
         return ENVIRONMENTS.SERVER;
       }
 
       // Not in an iframe, assume sandbox dev.
       if (!Util.isWindowFramed(vWindow)) {
+        // See if we're in the admin state.
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('muxyAdminInterface')) {
+          return ENVIRONMENTS.SANDBOX_ADMIN;
+        }
+
         return ENVIRONMENTS.SANDBOX_DEV;
+      }
+
+      // See if we're in the admin pane.
+      if (
+        vWindow.location.origin.indexOf('dev-portal.muxy.io') !== -1 ||
+        vWindow.location.origin.indexOf('dev-portal.staging.muxy.io') !== -1
+      ) {
+        return ENVIRONMENTS.ADMIN;
+      }
+
+      // See if we're in the admin state, but in an iframed context.
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('muxyAdminInterface')) {
+        return ENVIRONMENTS.SANDBOX_ADMIN;
       }
 
       // Loaded from Twitch's CDN, assume production.
@@ -182,10 +210,7 @@ export default class Util {
       }
 
       // Not on Twitch but with their referrer, assume sandbox twitch.
-      if (
-        vWindow.document.referrer &&
-        vWindow.document.referrer.indexOf('twitch.tv') !== -1
-      ) {
+      if (vWindow.document.referrer && vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
         return ENVIRONMENTS.SANDBOX_TWITCH;
       }
 
@@ -231,10 +256,7 @@ export default class Util {
    *  | This is a box |
    *  └───────────────┘
    */
-  public static consolePrint(
-    lines: string[] | string,
-    options: ConsolePrintOptions = {}
-  ) {
+  public static consolePrint(lines: string[] | string, options: ConsolePrintOptions = {}) {
     if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
     }

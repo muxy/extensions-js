@@ -3,7 +3,7 @@
 import Pusher from 'pusher-js';
 
 import { DebugOptions } from './debug';
-import { CurrentEnvironment, ENVIRONMENTS } from './util';
+import { CurrentEnvironment, ENVIRONMENTS, Environment } from './util';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -230,6 +230,8 @@ class ServerMessenger implements Messenger {
 export default function DefaultMessenger(debug: DebugOptions): Messenger {
   switch (CurrentEnvironment()) {
     case ENVIRONMENTS.SANDBOX_DEV:
+    case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
+    case ENVIRONMENTS.SANDBOX_ADMIN:
       return new PusherMessenger(debug);
     case ENVIRONMENTS.SANDBOX_TWITCH:
     case ENVIRONMENTS.PRODUCTION:

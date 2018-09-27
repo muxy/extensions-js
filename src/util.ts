@@ -192,7 +192,8 @@ export default class Util {
 
       // See if we're in the admin pane.
       if (
-        vWindow.location.origin.indexOf('dev-portal.muxy.io') !== -1 ||
+        vWindow.location.origin.indexOf('devportal.muxy.io') !== -1 ||
+        vWindow.location.origin.indexOf('dev.muxy.io') !== -1 ||
         vWindow.location.origin.indexOf('dev-portal.staging.muxy.io') !== -1
       ) {
         return ENVIRONMENTS.ADMIN;

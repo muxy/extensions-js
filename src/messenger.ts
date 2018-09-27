@@ -1,3 +1,5 @@
+// The pusher types have no default export, ignore that error since we are using the namespace
+// @ts-ignore
 import Pusher from 'pusher-js';
 
 import { DebugOptions } from './debug';

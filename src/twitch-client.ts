@@ -152,12 +152,7 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  public signedTwitchRequest(
-    method: string,
-    endpoint: string,
-    data?: string,
-    JWT?: string
-  ): Promise<any> {
+  public signedTwitchRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
     const headers = {
       Accept: 'application/vnd.twitchtv.v5+json',
       'Client-ID': this.extensionId,
@@ -205,12 +200,7 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  public signedTwitchHelixRequest(
-    method: string,
-    endpoint: string,
-    data?: string,
-    JWT?: string
-  ): Promise<any> {
+  public signedTwitchHelixRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
     const headers = {
       Authorization: undefined,
       'Client-ID': this.extensionId
@@ -234,6 +224,7 @@ export default class TwitchClient {
           if (resp.status < 400) {
             try {
               if (resp.responseText.hasOwnProperty('data')) {
+                // @ts-ignore
                 const r = resp.responseText.data;
                 resolve(r);
               } else {
@@ -274,10 +265,7 @@ export default class TwitchClient {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchRequest(
-      'GET',
-      `users?login=${usernames.join(',')}`
-    );
+    return this.signedTwitchRequest('GET', `users?login=${usernames.join(',')}`);
   }
 
   /**
@@ -303,10 +291,7 @@ export default class TwitchClient {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchHelixRequest(
-      'GET',
-      `users?id=${userIDs.join(',')}`
-    );
+    return this.signedTwitchHelixRequest('GET', `users?id=${userIDs.join(',')}`);
   }
 
   /**
@@ -336,11 +321,6 @@ export default class TwitchClient {
    * Receipts parameter.
    */
   public updateFulfilledGoods(JWT, receipts) {
-    return this.signedTwitchRequest(
-      'POST',
-      'commerce/user/goods/fulfill',
-      receipts,
-      JWT
-    );
+    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, JWT);
   }
 }

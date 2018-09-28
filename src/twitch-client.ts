@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import { resolveCname } from 'dns';
 
 import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';

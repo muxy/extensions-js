@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 export default class Observer<Observable> {
   private observers: Array<ObserverHandler<Observable>> = [];
 

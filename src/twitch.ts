@@ -1,3 +1,7 @@
+/**
+ * @module SDK
+ */
+
 // TwitchAuth is the object that you get back from the onAuth callback
 import { ObserverHandler } from './observer';
 import User from './user';

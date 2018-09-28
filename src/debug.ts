@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 export interface DebugOptions {
   url?: string;
 

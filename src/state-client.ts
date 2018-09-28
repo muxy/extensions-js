@@ -1,3 +1,7 @@
+/**
+ * @module SDK
+ */
+
 import XHRPromise from '../libs/xhr-promise';
 
 import { DebugOptions } from './debug';
@@ -61,10 +65,7 @@ const ServerState = {
  */
 class StateClient {
   /** @ignore */
-  public static fetchTestAuth(
-    extensionID: string,
-    debug: DebugOptions
-  ): Promise<TwitchAuth> {
+  public static fetchTestAuth(extensionID: string, debug: DebugOptions): Promise<TwitchAuth> {
     const data = JSON.stringify({
       app_id: extensionID,
       channel_id: debug.channelID,
@@ -101,10 +102,7 @@ class StateClient {
 
   /** @ignore */
   public static setEnvironment(env) {
-    if (
-      env === ENVIRONMENTS.SANDBOX_DEV ||
-      env === ENVIRONMENTS.SANDBOX_TWITCH
-    ) {
+    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
       SERVER_URL = SANDBOX_URL;
     }
 
@@ -206,36 +204,26 @@ class StateClient {
     this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
   /** @ignore */
-  public getUserInfo = identifier =>
-    this.getState(identifier, ServerState.USER);
+  public getUserInfo = identifier => this.getState(identifier, ServerState.USER);
 
   /** @ignore */
-  public getViewerState = identifier =>
-    this.getState(identifier, ServerState.VIEWER);
+  public getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  public getExtensionViewerState = identifier =>
-    this.getState(identifier, ServerState.EXTENSION_VIEWER);
+  public getExtensionViewerState = identifier => this.getState(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  public getChannelState = identifier =>
-    this.getState(identifier, ServerState.CHANNEL);
+  public getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
-  public getExtensionState = identifier =>
-    this.getState(identifier, ServerState.EXTENSION);
+  public getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION);
 
   /** @ignore */
-  public setViewerState = (identifier, state) =>
-    this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
+  public setViewerState = (identifier, state) => this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
 
   /** @ignore */
   public setExtensionViewerState = (identifier, state) =>
-    this.postState(
-      identifier,
-      ServerState.EXTENSION_VIEWER,
-      JSON.stringify(state)
-    );
+    this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
 
   /** @ignore */
   public setChannelState = (identifier, state) =>
@@ -247,88 +235,52 @@ class StateClient {
 
   /** @ignore */
   public getAccumulation = (identifier, id, start) =>
-    this.signedRequest(
-      identifier,
-      'GET',
-      `accumulate?id=${id || 'default'}&start=${start}`
-    );
+    this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
 
   /** @ignore */
   public accumulate = (identifier, id, data) =>
-    this.signedRequest(
-      identifier,
-      'POST',
-      `accumulate?id=${id || 'default'}`,
-      JSON.stringify(data)
-    );
+    this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
   public vote = (identifier, id, data) =>
-    this.signedRequest(
-      identifier,
-      'POST',
-      `vote?id=${id || 'default'}`,
-      JSON.stringify(data)
-    );
+    this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  public getVotes = (identifier, id) =>
-    this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
+  public getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
 
   /** @ignore */
   public rank = (identifier, id, data) =>
-    this.signedRequest(
-      identifier,
-      'POST',
-      `rank?id=${id || 'default'}`,
-      JSON.stringify(data)
-    );
+    this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
   public getRank = (identifier: string, id: string = 'default') =>
     this.signedRequest(identifier, 'GET', `rank?id=${id}`);
 
   /** @ignore */
-  public deleteRank = (identifier, id) =>
-    this.signedRequest(identifier, 'DELETE', `rank?id=${id || 'default'}`);
+  public deleteRank = (identifier, id) => this.signedRequest(identifier, 'DELETE', `rank?id=${id || 'default'}`);
 
   /** @ignore */
-  public getJSONStore = (identifier, id) =>
-    this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
+  public getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
 
   /** @ignore */
   public validateCode = (identifier, code) =>
-    this.signedRequest(
-      identifier,
-      'POST',
-      'validate_pin',
-      JSON.stringify({ pin: code })
-    );
+    this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }));
 
   /** @ignore */
-  public pinTokenExists = identifier =>
-    this.signedRequest(identifier, 'GET', 'pin_token_exists');
+  public pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
 
   /** @ignore */
-  public revokeAllPINCodes = identifier =>
-    this.signedRequest(identifier, 'DELETE', 'pin');
+  public revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
 
   /** @ignore */
-  public getEligibleCodes = identifier =>
-    this.signedRequest(identifier, 'GET', 'codes/eligible');
+  public getEligibleCodes = identifier => this.signedRequest(identifier, 'GET', 'codes/eligible');
 
   /** @ignore */
-  public getRedeemedCodes = identifier =>
-    this.signedRequest(identifier, 'GET', 'codes/redeemed');
+  public getRedeemedCodes = identifier => this.signedRequest(identifier, 'GET', 'codes/redeemed');
 
   /** @ignore */
   public redeemCode = (identifier, prizeIndex) =>
-    this.signedRequest(
-      identifier,
-      'POST',
-      'codes/redeem',
-      JSON.stringify({ prize: prizeIndex })
-    );
+    this.signedRequest(identifier, 'POST', 'codes/redeem', JSON.stringify({ prize: prizeIndex }));
 }
 
 export default StateClient;

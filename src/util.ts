@@ -1,4 +1,7 @@
 /**
+ * @module SDK
+ */
+/**
  * Global environment objects. This ensures that comparisons are true between
  * object pointers. For example: ENVIRONMENTS.TESTING === Util.Environments.Testing
  *

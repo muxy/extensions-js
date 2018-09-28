@@ -1,3 +1,7 @@
+/**
+ * @module Muxy
+ */
+
 import Analytics from './analytics';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';

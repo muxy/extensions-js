@@ -1,3 +1,7 @@
+/**
+ * @module SDK
+ */
+
 import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
 
 import Analytics from './analytics';

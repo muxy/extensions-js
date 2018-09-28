@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import { DebugOptions } from './debug';
 import Client from './state-client';
 import { Position, TwitchAuth, TwitchContext } from './twitch';

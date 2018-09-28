@@ -1,3 +1,6 @@
+/**
+ * @module SDK
+ */
 import { ObserverHandler } from './observer';
 import { JWT, TwitchAuth } from './twitch';
 

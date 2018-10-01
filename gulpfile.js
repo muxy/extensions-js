@@ -31,6 +31,7 @@ gulp.task('fixpath', function () {
 
       return `href="${final}"`
     }))
+    .pipe(replace('data-index="assets/js/search.js"', 'data-index="/sdk/assets/js/search.js"'))
     .pipe(gulp.dest('dist/docs'));
 });
 

@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "dev": "rollup -c rollup.config.ts -w",
-    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme default --mode modules --excludeExternals src",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme default --mode modules --entryPoint src --excludeExternals src",
     "test": "jest",
     "test:integration": "jest spec/*.js",
     "test:integration_server": "./run_integration_tests.sh",
@@ -69,6 +69,7 @@
     "coveralls": "^3.0.1",
     "cross-env": "^5.1.5",
     "cz-conventional-changelog": "^2.1.0",
+    "gulp-replace": "^1.0.0",
     "gumshoe": "^0.2.1",
     "husky": "^0.14.3",
     "jest": "^23.1.0",

@@ -5,5 +5,5 @@ gulp.task('fixpath', function () {
   return gulp.src('dist/docs/**/*.html')
     .pipe(replace(/src="([^"]*)"/g, 'src="/sdk/$1"'))
     .pipe(replace(/href="([^"]*)"/g, 'href="/sdk/$1"'))
-    .pipe(gulp.dest('dist/fixeddocs'));
+    .pipe(gulp.dest('dist/docs'));
 });

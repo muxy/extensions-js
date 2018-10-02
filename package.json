@@ -69,6 +69,7 @@
     "cross-env": "^5.1.5",
     "cz-conventional-changelog": "^2.1.0",
     "gulp": "^3.9.1",
+    "gulp-footer": "^2.0.1",
     "gulp-replace": "^1.0.0",
     "gumshoe": "^0.2.1",
     "husky": "^0.14.3",

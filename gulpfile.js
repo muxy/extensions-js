@@ -1,7 +1,7 @@
 const gulp = require('gulp');
 const replace = require('gulp-replace');
 const path = require('path');
-
+const footer = require('gulp-footer');
 
 gulp.task('fixpath', function () {
   return gulp.src('dist/docs/**/*.html')
@@ -36,4 +36,14 @@ gulp.task('fixpath', function () {
 });
 
 
+gulp.task('fixpath:search', function() {
+  const fix = `\ntypedoc.search.data.rows.forEach(function(row, index, array) {
+      row.url = '/sdk/' + row.url;
+      array[index] = row;
+    });
+    `;
 
+  return gulp.src('dist/docs/assets/js/search.js')
+    .pipe(footer(fix))
+    .pipe(gulp.dest('dist/docs/assets/js/'));
+});

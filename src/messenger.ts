@@ -6,7 +6,7 @@
 import Pusher from 'pusher-js';
 
 import { DebugOptions } from './debug';
-import { CurrentEnvironment, ENVIRONMENTS, Environment } from './util';
+import { CurrentEnvironment, Environment, ENVIRONMENTS } from './util';
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.

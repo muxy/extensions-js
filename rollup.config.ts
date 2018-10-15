@@ -7,7 +7,7 @@ import json from 'rollup-plugin-json';
 const pkg = require('./package.json');
 
 export default {
-  input: `src/muxy.ts`,
+  input: 'src/muxy.ts',
   output: [
     { file: pkg.main, name: 'Muxy', format: 'umd' },
     { file: pkg.module, format: 'es' }

@@ -70,7 +70,7 @@ class StateClient {
       app_id: extensionID,
       channel_id: debug.channelID,
       role: debug.role,
-      user_id: debug.userID || 'T12345678'
+      user_id: debug.userID || '12345678'
     });
 
     const xhr = new XHRPromise({
@@ -90,7 +90,7 @@ class StateClient {
         const auth = Object.assign(new TwitchAuth(), resp.responseText, {
           channelId: debug.channelID,
           clientId: extensionID,
-          userId: debug.userID || 'T12345678'
+          userId: debug.userID ? `U${debug.userID}` : 'U12345678'
         });
 
         return Promise.resolve(auth);

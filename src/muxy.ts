@@ -56,20 +56,20 @@ export class Muxy {
       ''
     ];
 
-    switch (Util.currentEnvironment().environment) {
-      case Util.Environments.Testing.environment:
+    switch (Util.currentEnvironment()) {
+      case Util.Environments.Testing:
         SDKInfoText.push('Running in testing environment outside of Twitch');
         break;
-      case Util.Environments.SandboxDev.environment:
+      case Util.Environments.SandboxDev:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
         break;
-      case Util.Environments.SandboxTwitch.environment:
+      case Util.Environments.SandboxTwitch:
         SDKInfoText.push('Running in sandbox environment on Twitch');
         break;
-      case Util.Environments.Production.environment:
+      case Util.Environments.Production:
         SDKInfoText.push('Running on production');
         break;
-      case Util.Environments.Server.environment:
+      case Util.Environments.Server:
         SDKInfoText.push('Running on a NodeJS server');
         break;
       default:

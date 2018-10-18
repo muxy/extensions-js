@@ -111,7 +111,7 @@ class StateClient {
       FAKEAUTH_URL = LOCALHOST_URL;
     }
 
-    if (debug.url) {
+    if (debug && debug.url) {
       SERVER_URL = debug.url;
     }
   }

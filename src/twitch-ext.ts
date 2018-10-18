@@ -42,7 +42,7 @@ export default class Ext {
       if (connectionAttempts > 60) {
         clearInterval(connection);
       }
-    });
+    }, 150);
 
     window.addEventListener('message', auth => {
       let allowed = false;

@@ -84,8 +84,8 @@ class StateClient {
 
     return xhr.send().then(resp => {
       if (resp && resp.status < 400) {
+        this.setEnvironment(null, debug);
         // Update the API Server variable to point to test
-        SERVER_URL = debug.url || SANDBOX_URL;
 
         const auth = Object.assign(new TwitchAuth(), resp.responseText, {
           channelId: debug.channelID,
@@ -101,7 +101,7 @@ class StateClient {
   }
 
   /** @ignore */
-  public static setEnvironment(env) {
+  public static setEnvironment(env, debug) {
     if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
       SERVER_URL = SANDBOX_URL;
     }
@@ -109,6 +109,10 @@ class StateClient {
     if (env === ENVIRONMENTS.TESTING) {
       SERVER_URL = LOCALHOST_URL;
       FAKEAUTH_URL = LOCALHOST_URL;
+    }
+
+    if (debug.url) {
+      SERVER_URL = debug.url;
     }
   }
 

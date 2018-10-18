@@ -5,6 +5,7 @@ import { DebugOptions } from './debug';
 import Client from './state-client';
 import { Position, TwitchAuth, TwitchContext } from './twitch';
 import { consolePrint, CurrentEnvironment, ENVIRONMENTS } from './util';
+import StateClient from './state-client';
 
 // 25 minutes between updates of the testing auth token.
 const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
@@ -57,6 +58,8 @@ export default class Ext {
       }
 
       if (auth.data.type === 'jwt') {
+        StateClient.setEnvironment(null, debug);
+
         const resp = Object.assign(new TwitchAuth(), {
           token: auth.data.jwt,
           clientId: this.extensionID,
@@ -87,6 +90,8 @@ export default class Ext {
         const timer = setTimeout(cb, 1000 * 15);
         window.Twitch.ext.onAuthorized(auth => {
           clearTimeout(timer);
+
+          StateClient.setEnvironment(null, opts);
           cb(auth);
         });
 

@@ -248,7 +248,7 @@ export class Muxy {
     this.debugOptions = null;
     this.watchingAuth = false;
 
-    StateClient.setEnvironment(Util.currentEnvironment());
+    StateClient.setEnvironment(Util.currentEnvironment(), null);
   }
 
   /**

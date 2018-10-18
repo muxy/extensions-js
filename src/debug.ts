@@ -8,7 +8,7 @@ export interface DebugOptions {
   userID?: string;
   role?: string;
 
-  overwriteJWT?: string;
+  jwt?: string;
 
   onPubsubListen: (...args: any[]) => void;
   onPubsubReceive: (...args: any[]) => void;
@@ -57,7 +57,7 @@ export class DebuggingOptions {
   }
 
   public jwt(j) {
-    this.options.overwriteJWT = j;
+    this.options.jwt = j;
     return this;
   }
 

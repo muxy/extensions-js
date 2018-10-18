@@ -73,7 +73,28 @@ export default class Ext {
     });
   }
 
+  private static authFromJWT(jwt: string): TwitchAuth {
+    const claims = JSON.parse(atob(jwt.split('.')[1]));
+    const res = new TwitchAuth();
+
+    res.token = jwt;
+    res.channelId = claims.channel_id;
+    res.userId = claims.user_id;
+    res.clientId = Ext.extensionID;
+
+    return res;
+  }
+
   public static onAuthorized(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
+    if (opts.jwt) {
+      const auth = this.authFromJWT(opts.jwt);
+
+      return setTimeout(() => {
+        StateClient.setEnvironment(null, opts);
+        cb(auth);
+      });
+    }
+
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
         Ext.fetchTestAuth(opts, cb);

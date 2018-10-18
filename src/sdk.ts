@@ -599,21 +599,44 @@ export default class SDK {
    * @async
    * @since 1.1.0
    *
-   * @param {Object} state - A complete JS object representing the current viewer state.
+   * @param {Object} state - A complete JS object representing the current extension's state.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
-   * sdk.setExtensionViewerState({
+   * sdk.setExtensionState({
    *   favorite_movie: 'Jaws: The Revenge'
    * }).then(() => {
-   *   console.log('Viewer state saved!');
+   *   console.log('Extension state saved!');
    * }).catch((err) => {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
   public setExtensionState(state: object): Promise<object> {
     return this.client.setExtensionState(this.identifier, state);
+  }
+
+  /**
+   * Sets the extension-wide secret state to a JS object, this may only be called by an extension
+   * owner. This state object will never be returned to the broadcaster or viewers.
+   * @async
+   * @since 2.0.0
+   *
+   * @param {Object} state - A complete JS object
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionSecretState({
+   *   favorite_movie: 'Twilight: New Moon'
+   * }).then(() => {
+   *   console.log('Extension secrets saved!');
+   * }).catch((err) => {
+   *   console.error(`Failed saving secret state: ${err}`);
+   * });
+   */
+  public setExtensionSecretState(state: object): Promise<object> {
+    return this.client.setExtensionSecretState(this.identifier, state);
   }
 
   /**
@@ -704,6 +727,16 @@ export default class SDK {
    */
   public getViewerState(): Promise<object> {
     return this.client.getViewerState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension secret state if the requesting user has access to the secret state.
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension secret state object.
+   */
+  public getExtensionSecretState(): Promise<object> {
+    return this.client.getExtensionSecretState(this.identifier);
   }
 
   /**

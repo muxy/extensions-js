@@ -44,6 +44,7 @@ const ServerState = {
   AUTHENTICATION: 'authentication',
   CHANNEL: 'channel_state',
   EXTENSION: 'extension_state',
+  EXTENSION_SECRET: 'extension_hidden_state',
   EXTENSION_VIEWER: 'extension_viewer_state',
   USER: 'user_info',
   VIEWER: 'viewer_state'
@@ -217,6 +218,9 @@ class StateClient {
   public getExtensionViewerState = identifier => this.getState(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
+  public getExtensionSecretState = identifier => this.getState(identifier, ServerState.EXTENSION_SECRET);
+
+  /** @ignore */
   public getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
@@ -228,6 +232,10 @@ class StateClient {
   /** @ignore */
   public setExtensionViewerState = (identifier, state) =>
     this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
+
+  /** @ignore */
+  public setExtensionSecretState = (identifier, state) =>
+    this.postState(identifier, ServerState.EXTENSION_SECRET, JSON.stringify(state));
 
   /** @ignore */
   public setChannelState = (identifier, state) =>

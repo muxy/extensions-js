@@ -61,9 +61,9 @@ export default class Ext {
         StateClient.setEnvironment(null, debug);
 
         const resp = Object.assign(new TwitchAuth(), {
-          token: auth.data.jwt,
-          clientId: this.extensionID,
           channelId: debug.channelID,
+          clientId: this.extensionID,
+          token: auth.data.jwt,
           userId: debug.userID || 'T12345678'
         });
 

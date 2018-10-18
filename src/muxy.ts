@@ -272,6 +272,10 @@ export class Muxy {
         return;
       }
 
+      if (this.debugOptions.overwriteJWT) {
+        auth.token = this.debugOptions.overwriteJWT;
+      }
+
       this.twitchClientID = auth.clientId;
       this.messenger.extensionID = auth.clientId;
       this.messenger.channelID = auth.channelId;

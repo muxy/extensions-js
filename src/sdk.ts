@@ -93,6 +93,29 @@ export interface VoteData {
 }
 
 /**
+ * A single vote cast in a poll, returned from {@link getFullVoteLogs}
+ *
+ * @typedef {Object} VoteLogEntry
+ * @property {string} identifier - Either the opaque userID or userID of a user who voted, depending on
+ *  the user's user id share status at the time of casting the vote.
+ * @property {number} value - The numerical value of the vote cast.
+ */
+export interface VoteLogEntry {
+  identifier: string;
+  value: number;
+}
+
+/**
+ * The response from {@link getFullVoteLogs}
+ *
+ * @typedef {Object} VoteLog
+ * @property {object[]} result - An array of VoteLogEntries that represents the votes cast on a poll.
+ */
+export interface VoteLog {
+  result: VoteLogEntry[];
+}
+
+/**
  * The response from {@link getRankData}.
  *
  * @typedef {Object} RankData
@@ -416,6 +439,37 @@ export default class SDK {
   public getVoteData(voteID: string): Promise<VoteData> {
     forceType(voteID, 'string');
     return this.client.getVotes(this.identifier, voteID);
+  }
+
+  /**
+   * Gets the vote logs for a given vote ID. This endpoint may only be called by
+   * an admin.
+   *
+   * @async
+   * @param voteID - the identifier to fetch the vote logs for.
+   * @return {Promise<VoteLog>} Resolves with the logs on server response. Rejects on server error.
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.getFullVoteLogs('global-12345').then((logs) => {
+   *   const audit = logs.result;
+   *
+   *   // ... process the audit logs ...
+   *   const valueToUsersMapping = {};
+   *   for (const i = 0; i < audit.length; ++i) {
+   *     const value = audit[i].value;
+   *     const identifier = audit[i].identifier;
+   *
+   *     const list = valueToUsersMapping[value] || [];
+   *     list.append(identifier);
+   *
+   *     valueTousersMapping[value] = list;
+   *   }
+   * });
+   */
+  public getFullVoteLogs(voteID: string): Promise<VoteLog> {
+    forceType(voteID, 'string');
+    return this.client.getFullVoteLogs(this.identifier, voteID);
   }
 
   /**

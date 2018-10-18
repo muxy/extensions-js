@@ -261,6 +261,9 @@ class StateClient {
   public getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
 
   /** @ignore */
+  public getFullVoteLogs = (identifier, id) => this.signedRequest(identifier, 'GET', `vote_logs?id=${id || 'default'}`);
+
+  /** @ignore */
   public rank = (identifier, id, data) =>
     this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
 

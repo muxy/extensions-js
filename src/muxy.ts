@@ -28,7 +28,7 @@ export interface SDKMap {
  * On import or inclusion in an HTML file, a singleton object will be globally accessible
  * as `Muxy`.
  */
-export class Muxy {
+class Muxy {
   /**
    * Prints to console a description of the library's current version and
    * environment info. This is called automatically when the library is
@@ -552,6 +552,9 @@ mxy.TwitchClient = function NewTwitchClient() {
 };
 
 mxy.DebuggingOptions = DebuggingOptions;
+
+// Backwards compatibility shim
+mxy['default'] = mxy;
 
 /**
  * Only export the Muxy singleton to avoid creation of competing/conflicting instances.

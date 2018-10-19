@@ -1,63 +1,103 @@
 {
   "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "1.1.0",
-  "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
+  "version": "2.0.0-rc2",
   "license": "ISC",
-  "main": "dist/muxy-extensions.js",
-  "module": "src/index.js",
   "repository": "https://github.com/muxy/extensions-js",
+  "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
+  "main": "dist/medkit.umd.js",
+  "module": "dist/medkit.esm.js",
+  "typings": "dist/types/src/muxy.d.ts",
   "scripts": {
-    "dev": "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
-    "build": "webpack",
-    "test": "NODE_ENV=testing karma start",
-    "test:watch": "NODE_ENV=testing karma start",
-    "docs": "esdoc",
+    "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "dev": "rollup -c rollup.config.ts -w",
+    "build": "tsc --module commonjs --skipLibCheck && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme default --mode modules --excludeExternals --skipLibCheck src",
+    "test": "jest",
+    "test:integration": "jest spec/*.js",
+    "test:integration_server": "./run_integration_tests.sh",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "commit": "git-cz",
+    "prebuild": "rimraf dist",
+    "precommit": "lint-staged",
     "prepublish": "npm run build"
   },
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^7.2.3",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-istanbul": "^4.1.4",
-    "babel-plugin-lodash": "^3.2.11",
-    "babel-plugin-transform-es2015-shorthand-properties": "^6.24.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "chai": "^4.1.2",
-    "esdoc": "^1.0.1",
-    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
-    "esdoc-node": "^1.0.2",
-    "esdoc-publish-html-plugin": "^1.1.0",
-    "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^4.5.0",
-    "eslint-config-airbnb": "^15.1.0",
-    "eslint-config-airbnb-base": "^11.3.2",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-loader": "^1.9.0",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-jsx-a11y": "^6.0.2",
-    "eslint-plugin-react": "^7.3.0",
-    "karma": "^1.7.1",
-    "karma-babel-preprocessor": "^6.0.1",
-    "karma-chai": "^0.1.0",
-    "karma-chai-as-promised": "^0.1.2",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.4",
-    "karma-sinon": "^1.0.5",
-    "karma-webpack": "^2.0.4",
-    "lodash": "^4.17.4",
-    "mocha": "^3.5.3",
-    "prettier": "^1.6.1",
-    "sinon": "^3.2.1",
-    "webpack": "^3.5.5",
-    "webpack-dev-server": "^2.7.1"
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --config ./.prettier.config.js --write --single-quote",
+      "git add"
+    ]
   },
-  "dependencies": {
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "collectCoverage": true,
+    "verbose": true,
+    "browser": true
+  },
+  "peerDependencies": {
     "base-64": "^0.1.0",
     "parse-headers": "^2.0.1",
-    "pusher-js": "^4.1.0"
+    "pusher-js": "^4.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.5",
+    "@types/pusher-js": "^4.2.0",
+    "colors": "^1.3.2",
+    "commitizen": "^3.0.2",
+    "coveralls": "^3.0.2",
+    "cross-env": "^5.1.5",
+    "cz-conventional-changelog": "^2.1.0",
+    "gulp": "^3.9.1",
+    "gulp-footer": "^2.0.1",
+    "gulp-replace": "^1.0.0",
+    "gumshoe": "^0.2.1",
+    "husky": "^1.1.2",
+    "jest": "^23.6.0",
+    "lint-staged": "^7.3.0",
+    "prettier": "^1.14.3",
+    "prompt": "^1.0.0",
+    "regenerator-runtime": "^0.11.1",
+    "replace-in-file": "^3.4.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.66.6",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.17.0",
+    "semantic-release": "^15.9.17",
+    "sinon": "^5.0.7",
+    "ts-jest": "^23.10.4",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typedoc": "^0.12.0",
+    "typedoc-plugin-external-module-name": "^1.1.3",
+    "typescript": "^3.1.1",
+    "validate-commit-msg": "^2.14.0"
+  },
+  "dependencies": {
+    "pusher-js": "^4.3.1"
   }
 }

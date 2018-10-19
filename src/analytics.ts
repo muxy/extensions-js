@@ -1,4 +1,8 @@
+/**
+ * @module SDK
+ */
 import gumshoeFactory from '../libs/gumshoe';
+import User from './user';
 
 /**
  * The analytics collection endpoint.
@@ -11,6 +15,12 @@ const ANALYTICS_ENDPOINT = 'https://info.muxy.io';
  * with a given UA_STRING.
  */
 export default class Analytics {
+  public gumshoe: any;
+  public ready: boolean;
+  public uaString: string;
+  public loadPromise: Promise<any>;
+  public user: User;
+
   constructor(uaString, loadPromise) {
     this.ready = false;
     this.uaString = uaString;
@@ -19,6 +29,7 @@ export default class Analytics {
 
     this.gumshoe = gumshoeFactory();
     this.gumshoe.transport({
+      map: this.mapData.bind(this),
       name: 'muxy-extension-sdk',
       send: (data, fn) => {
         const d = data;
@@ -29,11 +40,11 @@ export default class Analytics {
         delete d.sessionUuid;
         this.gumshoe.reqwest(
           {
-            data: d,
-            url: ANALYTICS_ENDPOINT,
-            method: 'POST',
             contentType: 'application/x-www-form-urlencoded',
-            crossOrigin: true
+            crossOrigin: true,
+            data: d,
+            method: 'POST',
+            url: ANALYTICS_ENDPOINT
           },
           () => {
             if (fn) {
@@ -41,8 +52,7 @@ export default class Analytics {
             }
           }
         );
-      },
-      map: this.mapData.bind(this)
+      }
     });
 
     this.gumshoe({ transport: 'muxy-extension-sdk' });
@@ -56,7 +66,7 @@ export default class Analytics {
    * Internal function to map event data to GA format.
    * @private
    */
-  mapData(data) {
+  public mapData(data) {
     const appName = 'Muxy';
 
     let ip = '<unknown ip>';
@@ -87,13 +97,22 @@ export default class Analytics {
     const result = {
       aid: appName,
       an: appName,
-      cid:
-        opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
+      cd1: channelID,
+      cd2: role,
+      cd3: game,
+      cd4: videoMode,
+      cid: opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
+      cm2: latency,
+      cm3: bitrate,
       dh: pd.hostName,
       dl: pd.url,
       dp: pd.path,
       dr: pd.referer,
       dt: pd.title,
+      ea: undefined,
+      ec: undefined,
+      el: undefined,
+      ev: undefined,
       je: pd.javaEnabled,
       sr: pd.screenResolution,
       t: 'event',
@@ -103,13 +122,7 @@ export default class Analytics {
       uip: ip,
       ul: pd.language,
       v: 1,
-      vp: `${pd.viewportHeight}x${pd.viewportWidth}`,
-      cd1: channelID,
-      cd2: role,
-      cd3: game,
-      cd4: videoMode,
-      cm2: latency,
-      cm3: bitrate
+      vp: `${pd.viewportHeight}x${pd.viewportWidth}`
     };
 
     if (data.eventName === 'page.view') {
@@ -132,7 +145,7 @@ export default class Analytics {
    * @param {*} value - (optional) A value to associate with this event (defaults to 1).
    * @param {string} label - (optional) A human-readable label for this event.
    */
-  sendEvent(category, name, value = 1, label = '') {
+  public sendEvent(category: string, name: string, value: any = 1, label: string = '') {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }
@@ -144,7 +157,7 @@ export default class Analytics {
   /**
    * Sends a simple page view event to Google Analytics.
    */
-  pageView() {
+  public pageView() {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }

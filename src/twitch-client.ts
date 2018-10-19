@@ -1,11 +1,17 @@
-import XMLHttpRequestPromise from '../libs/xhr-promise';
+/**
+ * @module SDK
+ */
+import { resolveCname } from 'dns';
+
+import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
+
 import { forceType } from './util';
 
 /**
  * A single user object as from {@link getTwitchUsers}.
  *
  * @typedef {Object} TwitchUser
-
+ *
  * @property {string} _id - The Twitch ID of the user. Universally unique.
  * @property {string} bio - A description of the user provided by the user. May be empty.
  * @property {string} created_at - A timestamp of the user account creation time in ISO 8601
@@ -18,12 +24,22 @@ import { forceType } from './util';
  * @property {string} updated_at - A timestamp of the last time the user information was
  * updated in ISO 8601 format.
  */
+export interface TwitchUser {
+  _id: string;
+  bio: string;
+  created_at: string;
+  display_name: string;
+  logo: string;
+  name: string;
+  type: string;
+  updated_at: string;
+}
 
 /**
  * A single user object as from {@link getTwitchUsersByID}.
  *
  * @typedef {Object} HelixTwitchUser
-
+ *
  * @property {string} id - The Twitch ID of the user. Universally unique.
  * @property {string} login - The user's login name
  * @property {string} description - The user's channel description
@@ -37,12 +53,23 @@ import { forceType } from './util';
  * One of ["partner", "affiliate", ""].
  * @property {int} view_count - The user's total view count.
  */
+export interface HelixTwitchUser {
+  id: string;
+  login: string;
+  description: string;
+  display_name: string;
+  profile_image_url: string;
+  offline_image_url: string;
+  type: string;
+  broadcaster_type: string;
+  view_count: number;
+}
 
 /**
  * A single good object as from {@link getUserGoods}.
  *
  * @typedef {Object} ExtensionGood
-
+ *
  * @property {string} next_instruction - The next instruction (action) for the purchase. Can be:
  *   - "NOOP" - No action is needed, the good was fullfilled.
  *   - "FULFILL" - Fulfill the purchase, then call the Twitch entitlement system to indicate
@@ -57,7 +84,7 @@ import { forceType } from './util';
  * {@link updateFulfilledGoods}.
  *
  * @typedef {Object} Receipt
-
+ *
  * @property {string} fulfillment_address - Twitch User ID
  * @property {string} receipt_id - Receipt ID for the digital good, returned by {@link getUserGoods}
  * @property {string} last_instruction - The last thing you did. Corresponds to the "next
@@ -80,6 +107,9 @@ import { forceType } from './util';
  * });
  */
 export default class TwitchClient {
+  public extensionId: string;
+  public promise: Promise<any>;
+
   /**
    * Create an instance of TwitchClient bound to the provided client ID.
    *
@@ -90,11 +120,11 @@ export default class TwitchClient {
    *
    * @param {string} clientID - A valid Twitch Extension Client ID.
    */
-  constructor(clientID) {
+  constructor(clientID: string) {
     /** @ignore */
     this.extensionId = clientID;
     /** @ignore */
-    this.promise = Promise.resolve();
+    this.promise = (Promise as any).resolve();
   }
 
   /**
@@ -105,7 +135,7 @@ export default class TwitchClient {
    *
    * @return {Promise} Will resolve when the TwitchClient is ready for use.
    */
-  loaded() {
+  public loaded(): Promise<any> {
     return this.promise;
   }
 
@@ -125,10 +155,12 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchRequest(method, endpoint, data, JWT) {
+  public signedTwitchRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
     const headers = {
       Accept: 'application/vnd.twitchtv.v5+json',
-      'Client-ID': this.extensionId
+      'Client-ID': this.extensionId,
+
+      Authorization: undefined
     };
 
     if (JWT) {
@@ -136,16 +168,17 @@ export default class TwitchClient {
     }
 
     return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
+      const xhrPromise = new XMLHttpRequestPromise({
+        data,
+        headers,
+        method,
+        url: `https://api.twitch.tv/kraken/${endpoint}`
+      });
+
       return xhrPromise
-        .send({
-          method,
-          url: `https://api.twitch.tv/kraken/${endpoint}`,
-          headers,
-          data
-        })
+        .send()
         .catch(reject)
-        .then(resp => {
+        .then((resp: XHRResponse) => {
           if (resp.status < 400) {
             resolve(resp.responseText);
           }
@@ -170,8 +203,9 @@ export default class TwitchClient {
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  signedTwitchHelixRequest(method, endpoint, data, JWT) {
+  public signedTwitchHelixRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
     const headers = {
+      Authorization: undefined,
       'Client-ID': this.extensionId
     };
 
@@ -180,22 +214,33 @@ export default class TwitchClient {
     }
 
     return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise();
+      const xhrPromise = new XMLHttpRequestPromise({
+        data,
+        headers,
+        method,
+        url: `https://api.twitch.tv/helix/${endpoint}`
+      });
+
       return xhrPromise
-        .send({
-          method,
-          url: `https://api.twitch.tv/helix/${endpoint}`,
-          headers,
-          data
-        })
-        .catch(reject)
-        .then(resp => {
+        .send()
+        .then((resp: XHRResponse) => {
           if (resp.status < 400) {
-            resolve(resp.responseText.data);
+            try {
+              if (resp.responseText.hasOwnProperty('data')) {
+                const anyResp = <any>resp.responseText;
+                const r = anyResp.data;
+                resolve(r);
+              } else {
+                resolve(resp.responseText);
+              }
+            } catch (err) {
+              reject('Unexpected response from Twitch');
+            }
           }
 
           reject(resp.responseText);
-        });
+        })
+        .catch(reject);
     });
   }
 
@@ -217,7 +262,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsers(usernames) {
+  public getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
     forceType(usernames, 'array');
     if (usernames.length === 0) {
       return Promise.resolve([]);
@@ -243,7 +288,7 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  getTwitchUsersByID(userIDs) {
+  public getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
     forceType(userIDs, 'array');
     if (userIDs.length === 0) {
       return Promise.resolve([]);
@@ -264,8 +309,8 @@ export default class TwitchClient {
    * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
    * each of the goods the user is entitled to.
    */
-  getUserGoods(JWT) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods', {}, JWT);
+  public getUserGoods(JWT) {
+    return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', JWT);
   }
 
   /**
@@ -278,7 +323,7 @@ export default class TwitchClient {
    * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
    * Receipts parameter.
    */
-  updateFulfilledGoods(JWT, receipts) {
+  public updateFulfilledGoods(JWT, receipts) {
     return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, JWT);
   }
 }

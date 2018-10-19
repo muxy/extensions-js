@@ -1,14 +1,39 @@
 /**
+ * @module SDK
+ */
+/**
  * Global environment objects. This ensures that comparisons are true between
  * object pointers. For example: ENVIRONMENTS.TESTING === Util.Environments.Testing
  *
  * @since 1.0.3
  */
-/** @ignore */ const ProductionEnvironment = { environment: 'production' };
-/** @ignore */ const SandboxDevEnvironment = { environment: 'sandbox' };
-/** @ignore */ const SandboxTwitchEnvironment = { environment: 'sandbox' };
-/** @ignore */ const ServerEnvironment = { environment: 'server' };
-/** @ignore */ const TestingEnvironment = { environment: 'testing' };
+export class Environment {
+  public environment: string;
+}
+
+/** @ignore */ const ProductionEnvironment: Environment = {
+  environment: 'production'
+};
+
+/** @ignore */ const AdministrationEnvironment: Environment = {
+  environment: 'production'
+};
+
+/** @ignore */ const SandboxDevEnvironment: Environment = {
+  environment: 'sandbox'
+};
+
+/** @ignore */ const SandboxAdministrationEnvironment: Environment = {
+  environment: 'sandbox'
+};
+
+/** @ignore */ const SandboxTwitchEnvironment: Environment = {
+  environment: 'sandbox'
+};
+/** @ignore */ const ServerEnvironment: Environment = { environment: 'server' };
+/** @ignore */ const TestingEnvironment: Environment = {
+  environment: 'testing'
+};
 
 /**
  * Possible runtime environments for the SDK.
@@ -17,11 +42,19 @@
  */
 /** @ignore */ export const ENVIRONMENTS = {
   PRODUCTION: ProductionEnvironment,
+  ADMIN: AdministrationEnvironment,
+  SANDBOX_ADMIN: SandboxAdministrationEnvironment,
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
   TESTING: TestingEnvironment
 };
+
+export interface ConsolePrintOptions {
+  type?: string;
+  boxed?: boolean;
+  style?: string;
+}
 
 /**
  * A collection of static utility functions, available at {@link Muxy.Util}.
@@ -56,7 +89,7 @@ export default class Util {
    *
    * @returns {Promise<string>} Immediately rejects the returned Promise.
    */
-  static errorPromise(err) {
+  public static errorPromise(err: string): Promise<string> {
     return Promise.reject(err);
   }
 
@@ -68,7 +101,7 @@ export default class Util {
    *
    * @param {string[]} lines - An array of strings.
    */
-  static widestLine(lines) {
+  public static widestLine(lines: string[]): number {
     return Math.max.apply(null, lines.map(x => x.length));
   }
 
@@ -83,7 +116,7 @@ export default class Util {
    * @returns {string} A string containing all `lines` of text surrounded
    * in an ASCII box art.
    */
-  static asciiBox(lines) {
+  public static asciiBox(lines: string[]): string[] {
     const contentWidth = Util.widestLine(lines);
 
     const intro = `${' '.repeat(contentWidth / 2)}🦊`;
@@ -106,12 +139,20 @@ export default class Util {
    * @since 1.0.0
    * @ignore
    */
-  static isWindowFramed() {
-    const isNotChildWindow = !window.opener;
+  public static isWindowFramed(overrideWindow?: Window): boolean {
+    let vWindow;
+    if (typeof window !== 'undefined') {
+      vWindow = window;
+    }
+    if (overrideWindow) {
+      vWindow = overrideWindow;
+    }
+
+    const isNotChildWindow = !vWindow.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
-    const windowTop = window.top && window != window.top; // eslint-disable-line eqeqeq
-    const windowParent = window.parent && window != window.parent; // eslint-disable-line eqeqeq
+    const windowTop = vWindow.top && vWindow != vWindow.top; // tslint:disable-line:triple-equals
+    const windowParent = vWindow.parent && vWindow != vWindow.parent; // tslint:disable-line:triple-equals
     const hasWindowAncestors = !!(windowTop || windowParent);
 
     return isNotChildWindow && hasWindowAncestors;
@@ -125,7 +166,7 @@ export default class Util {
    * @returns {string} Returns a string representation of the current
    * execution environment.
    */
-  static currentEnvironment(overrideWindow) {
+  public static currentEnvironment(overrideWindow?: object): Environment {
     let vWindow;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -133,15 +174,38 @@ export default class Util {
     if (overrideWindow) {
       vWindow = overrideWindow;
     }
+
     try {
       // NodeJS module system, assume server.
+      // istanbul ignore if
       if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
         return ENVIRONMENTS.SERVER;
       }
 
       // Not in an iframe, assume sandbox dev.
-      if (!Util.isWindowFramed()) {
+      if (!Util.isWindowFramed(vWindow)) {
+        // See if we're in the admin state.
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('muxyAdminInterface')) {
+          return ENVIRONMENTS.SANDBOX_ADMIN;
+        }
+
         return ENVIRONMENTS.SANDBOX_DEV;
+      }
+
+      // See if we're in the admin pane.
+      if (
+        vWindow.location.origin.indexOf('devportal.muxy.io') !== -1 ||
+        vWindow.location.origin.indexOf('dev.muxy.io') !== -1 ||
+        vWindow.location.origin.indexOf('dev-portal.staging.muxy.io') !== -1
+      ) {
+        return ENVIRONMENTS.ADMIN;
+      }
+
+      // See if we're in the admin state, but in an iframed context.
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('muxyAdminInterface')) {
+        return ENVIRONMENTS.SANDBOX_ADMIN;
       }
 
       // Loaded from Twitch's CDN, assume production.
@@ -155,7 +219,7 @@ export default class Util {
       }
 
       // Explicity set testing variable, assume testing.
-      if (vWindow.testing) {
+      if ((vWindow as any).testing) {
         return ENVIRONMENTS.TESTING;
       }
     } catch (err) {
@@ -196,7 +260,7 @@ export default class Util {
    *  | This is a box |
    *  └───────────────┘
    */
-  static consolePrint(lines, options = {}) {
+  public static consolePrint(lines: string[] | string, options: ConsolePrintOptions = {}) {
     if (!lines || Util.currentEnvironment() === Util.Environments.Production) {
       return;
     }
@@ -214,9 +278,9 @@ export default class Util {
     }
 
     if (Util.currentEnvironment() === Util.Environments.Server) {
-      console[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
+      (console as any)[type].call(this, lineArr.join('\n')); // eslint-disable-line no-console
     } else {
-      console[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
+      (console as any)[type].call(this, `%c${lineArr.join('\n')}`, style); // eslint-disable-line no-console
     }
   }
 
@@ -235,7 +299,7 @@ export default class Util {
    *
    * @return Returns true if the pattern matches the input, false otherwise.
    */
-  static eventPatternMatch(input, pattern) {
+  public static eventPatternMatch(input: string, pattern: string): boolean {
     const inputParts = input.split(':');
     const patternParts = pattern.split(':');
 
@@ -269,7 +333,7 @@ export default class Util {
    *
    * @throws {TypeError} Throws if typeof value is not in the type list.
    */
-  static forceType(value, type) {
+  public static forceType(value: any, type: string) {
     const types = [].concat(type);
     const typeString = typeof value;
 
@@ -277,6 +341,55 @@ export default class Util {
       throw new TypeError(`expected '${typeString}' to be one of [${types}]`);
     }
   }
+
+  /**
+   * Returns information about the current extension environment on twitch
+   *
+   * @public
+   *
+   * @return {TwitchEnvironment}
+   */
+  public static getTwitchEnvironment(): TwitchEnvironment {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const env: TwitchEnvironment = {
+      anchor: null,
+      language: null,
+      mode: null,
+      platform: null,
+      state: null
+    };
+
+    env.anchor = urlParams.get('anchor');
+    env.language = urlParams.get('language');
+    env.mode = urlParams.get('mode');
+    env.platform = urlParams.get('platform');
+    env.state = urlParams.get('state');
+
+    return env;
+  }
+}
+
+/**
+ * The response from {@link getTwitchEnvironment}.
+ *
+ * @typedef {Object[]} TwitchEnvironment
+ *
+ * @property {string} anchor - The type of the anchor in which the extension is activated.
+ * Valid only when platform is "web". Valid values: "component", "panel", "video_overlay".
+ * @property {string} language - The user’s language setting (e.g., "en").
+ * @property {string} mode - The extension’s mode. Valid values: "config", "dashboard", "viewer".
+ * @property {string} platform - The platform on which the Twitch client is running. Valid values: "mobile", "web".
+ * @property {string} state - The release state of the extension.
+ * Valid values: "testing", "hosted_test", "approved", "released",
+ * "ready_for_review", "in_review", "pending_action", "uploading".
+ */
+export interface TwitchEnvironment {
+  anchor: string;
+  language: string;
+  mode: string;
+  platform: string;
+  state: string;
 }
 
 /** @ignore */ export const consolePrint = Util.consolePrint;

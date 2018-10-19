@@ -8,7 +8,10 @@ v2.0.0
 
 - Added ability to easily access Twitch context information.
 - Added server time integration to provide consistent timing information.
+- Added debug override options.
 - Added new "admin" extension type.
+- Added accessors for extension secret state (admin-viewable only).
+- Added full vote log access.
 
 ### Updated
 

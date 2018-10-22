@@ -15,7 +15,7 @@ describe("StateClient", () => {
   const viewerClient = new StateClient(<DebugOptions>{});
 
   beforeAll(async () => {
-    StateClient.setEnvironment(ENVIRONMENTS.SANDBOX_DEV);
+    StateClient.setEnvironment(ENVIRONMENTS.SANDBOX_DEV, null);
     await StateClient.fetchTestAuth(clientId, <DebugOptions>{
       channelID: "12345",
       role: "broadcaster"

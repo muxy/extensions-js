@@ -36,12 +36,16 @@ export default class Ext {
     // Show that we're ready to receive.
     let connectionAttempts = 0;
     const connection = setInterval(() => {
-      window.parent.postMessage({ type: 'connect', id: this.extensionID }, '*');
       connectionAttempts++;
 
+      // Once we've tried 60 times, back off on attempting to once every 1.5 seconds or so.
       if (connectionAttempts > 60) {
-        clearInterval(connection);
+        if (connectionAttempts % 10 != 0) {
+          return;
+        }
       }
+
+      window.parent.postMessage({ type: 'connect', id: this.extensionID }, '*');
     }, 150);
 
     window.addEventListener('message', auth => {

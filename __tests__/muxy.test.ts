@@ -1,5 +1,7 @@
 import Muxy from '../src/muxy';
 
+import { TwitchContext } from '../src/twitch';
+
 const someJWT =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiMTI2OTU1MjExIiwicm9sZSI6InZpZXdlciIsImV4dGVuc2lvbl9pZCI6ImthM3kyOHJyZ2gyZjUzM214dDltbDM3ZnY2emI4ayIsImV4cCI6MjE0NzQ4MzY0Nywib3BhcXVlX3VzZXJfaWQiOiJBODk0MzIzNiIsImFsbG93ZWRfc3RhZ2UiOiJ0ZXN0aW5nIiwiYXBwX2lkIjoibXlfYXdlc29tZV9hcHAifQ.0a5_yR6bTc2V4boC0kH_0mz2v34dJQq4p1iOBA70lt4';
 
@@ -29,7 +31,7 @@ describe('Muxy', () => {
     Muxy.client = null;
     Muxy.messenger = null;
     Muxy.analytics = null;
-    Muxy.context = {};
+    Muxy.context = {} as TwitchContext;
     Muxy.user = null;
     Muxy.loadPromise = new Promise((resolve, reject) => {
       Muxy.loadResolve = resolve;

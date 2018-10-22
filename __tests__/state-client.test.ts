@@ -3,7 +3,7 @@ import { ENVIRONMENTS } from "../src/util";
 
 jest.mock("../libs/xhr-promise");
 import * as mockXHR from "../libs/xhr-promise";
-import { DebugOptions } from "../src/debug";
+import { DebugOptions, DebuggingOptions } from "../src/debug";
 
 const clientId = "test-id";
 const expiredJWT =
@@ -15,17 +15,17 @@ describe("StateClient", () => {
   const viewerClient = new StateClient(<DebugOptions>{});
 
   beforeAll(async () => {
-    StateClient.setEnvironment(ENVIRONMENTS.SANDBOX_DEV, null);
-    await StateClient.fetchTestAuth(clientId, <DebugOptions>{
+    StateClient.setEnvironment(ENVIRONMENTS.SANDBOX_DEV, new DebuggingOptions());
+    await StateClient.fetchTestAuth(clientId, {
       channelID: "12345",
       role: "broadcaster"
-    }).then(broadcasterAuth => {
+    } as DebugOptions).then(broadcasterAuth => {
       broadcasterClient.updateAuth(broadcasterAuth.token);
     });
-    await StateClient.fetchTestAuth(clientId, <DebugOptions>{
+    await StateClient.fetchTestAuth(clientId, {
       channelID: "12345",
       role: "viewer"
-    }).then(viewerAuth => {
+    } as DebugOptions).then(viewerAuth => {
       viewerClient.updateAuth(viewerAuth.token);
     });
   });

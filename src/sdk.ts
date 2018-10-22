@@ -1,5 +1,187 @@
-import { eventPatternMatch, CurrentEnvironment, forceType, consolePrint } from './util';
+/**
+ * @module SDK
+ */
+
+import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
+
+import Analytics from './analytics';
+import { DebugOptions } from './debug';
+import { CallbackHandle, Messenger } from './messenger';
+import Observer from './observer';
+import StateClient from './state-client';
+import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
+import User, { UserUpdateCallbackHandle } from './user';
+
+/**
+ * The response from {@link getAllState}.
+ *
+ * @typedef {Object} AllState
+ *
+ * @property {Object} extension - A state object only settable by the extension itself.
+ * Universal for all channels.
+ * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
+ * viewers of the same channel.
+ * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
+ * a given channel.
+ * @property {Object} extension_viewer - A state object settable by each viewer. Specific to the viewer but
+ * extension wide.
+ */
+export interface AllState {
+  extension: object;
+  channel: object;
+  viewer: object;
+  extension_viewer: object;
+}
+
+/**
+ * The response from {@link getAccumulateData}.
+ *
+ * @typedef {Object} AccumulateData
+ *
+ * @property {number} latest A Unix timestamp of the most recently posted JSON blob.
+ *
+ * @property {AccumulatePayload[]} data Array of all JSON blob payloads posted to this identifier.
+ */
+export interface AccumulateData {
+  latest: number;
+  data: AccumulatePayload[];
+}
+
+/**
+ * @typedef {Object} AccumulatePayload
+ *
+ * @property {number} observed A Unix timestamp of when this payload was received.
+ * @property {string} channel_id The id of the channel this payload is associated with
+ * (either the viewer was watching the channel, or the app/server was authed with this channel).
+ * @property {string} opaque_user_id Twitch's Opaque User ID representing the sender
+ * of the payload. This will always be set and can be used with Twitch's pub/sub system to
+ * whisper events to a particular viewer.
+ * @property {string} user_id If the viewer has chosen to share their identity with the
+ * extension, this field will hold the viewer's actual Twitch ID.
+ * @property {Object} data The actual JSON blob payload as sent to the accumulate endpoint.
+ */
+export interface AccumulatePayload {
+  observed: number;
+  channel_id: string;
+  opaque_user_id: string;
+  user_id: string;
+  data: object;
+}
+
+/**
+ * The response from {@link getVoteData}.
+ *
+ * @typedef {Object} VoteData
+ *
+ * @property {number} count - The total number of votes received for this vote identifier.
+ * @property {number} mean - The average of all votes received for this identifier.
+ * @property {number[]} specific - The number of votes cast for the specific values [0-4].
+ * @property {number} stddev - Approximate standard deviation for all votes received for
+ * this identifier.
+ * @property {number} sum - The sum of all votes received for this identifier.
+ * @property {number} vote - If the user has a vote associated with this identifer, the
+ * current value for this user. Not set if no vote has been received.
+ */
+export interface VoteData {
+  count: number;
+  mean: number;
+  specific: number[];
+  stddev: number;
+  sum: number;
+  vote: number;
+}
+
+/**
+ * A single vote cast in a poll, returned from {@link getFullVoteLogs}
+ *
+ * @typedef {Object} VoteLogEntry
+ * @property {string} identifier - Either the opaque userID or userID of a user who voted, depending on
+ *  the user's user id share status at the time of casting the vote.
+ * @property {number} value - The numerical value of the vote cast.
+ */
+export interface VoteLogEntry {
+  identifier: string;
+  value: number;
+}
+
+/**
+ * The response from {@link getFullVoteLogs}
+ *
+ * @typedef {Object} VoteLog
+ * @property {object[]} result - An array of VoteLogEntries that represents the votes cast on a poll.
+ */
+export interface VoteLog {
+  result: VoteLogEntry[];
+}
+
+/**
+ * The response from {@link getRankData}.
+ *
+ * @typedef {Object} RankData
+ *
+ * @property {RankScore[]} data - array of the rank data
+ */
+export interface RankData {
+  data: RankScore[];
+}
+
+/**
+ *
+ * @typedef {Object} RankScore
+ *
+ * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
+ * @property {number} score - The number of users who have sent this `key` for this identifier.
+ */
+export interface RankScore {
+  key: string;
+  score: number;
+}
+
+/**
+ * @typedef {Object} RankResponse
+ */
+export interface RankResponse {
+  accepted: boolean;
+  original: string | undefined;
+}
+
+/**
+ * The response from {@link getEligibleCodes}.
+ *
+ * @typedef {Object} EligibleCodes
+ *
+ * @property {Array<number>} eligible - Each integer is the array is how many codes the given user is eligible for.
+ * A zero entry in this array means that the user is not eligible for any codes for that prize.
+ */
+export interface EligibleCodes {
+  eligible: number[];
+}
+
+/**
+ * The response from {@link getRedeemedCodes}.
+ *
+ * @typedef {Object} RedeemedCodes
+ *
+ * @property {Array<Array<string>>} redeemed - Each array entry in redeemed represents a prize index.
+ * Strings in the sub arrays are the codes the user has redeemed.
+ */
+export interface RedeemedCodes {
+  redeemed: string[][];
+}
+
+/**
+ * The response from {@link redeemCode}.
+ *
+ * @typedef {Object} RedeemResult
+ *
+ * @property {string} code - The code that was redeemed if successful
+ * @property {Array<string>} all_prizes - list of all the codes that this user has redeemed for the prize index.
+ */
+export interface RedeemResult {
+  code?: string;
+  all_prizes: string[];
+}
 
 /**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
@@ -19,8 +201,35 @@ import Ext from './twitch-ext';
  * methods.
  */
 export default class SDK {
+  public loadPromise: Promise<void>;
+  public identifier: string;
+  public client: StateClient;
+  public analytics: Analytics;
+  public messenger: Messenger;
+  public user: User;
+  public SKUs: object[];
+  public timeOffset: number;
+  public debug: DebugOptions;
+  public userObservers: Observer<User>;
+  public contextObservers: Observer<TwitchContext>;
+
   /** @ignore */
-  constructor(identifier, client, user, messenger, analytics, loadPromise, SKUs) {
+  constructor(
+    identifier: string,
+    client: StateClient,
+    user: User,
+    messenger: Messenger,
+    analytics: Analytics,
+    loadPromise: Promise<void>,
+    SKUs: object[],
+    debug: DebugOptions
+  ) {
+    /** @ignore */
+    this.userObservers = new Observer<User>();
+
+    /** @ignore */
+    this.contextObservers = new Observer<TwitchContext>();
+
     /** @ignore */
     this.loadPromise = loadPromise;
 
@@ -68,6 +277,9 @@ export default class SDK {
      * @type {Object}
      */
     this.SKUs = SKUs;
+
+    /** @ignore */
+    this.debug = debug;
   }
 
   /**
@@ -85,31 +297,63 @@ export default class SDK {
    *   console.error(err);
    * });
    */
-  loaded() {
+  public loaded(): Promise<void> {
     return this.loadPromise;
   }
 
   /**
-   * Data Accumulation
+   * Updates the internally stored user object with the provided value.
+   * Also calls any stored user update callbacks with the new user object.
+   * @since 1.5
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.loaded().then(() => {
+   *   sdk.updateUser({<user object>});
+   * });
    */
+  public updateUser(user: User) {
+    this.user = user;
+
+    this.userObservers.notify(user);
+  }
 
   /**
-   * The response from {@link getAccumulateData}.
+   * Registers a new callback for when the current user's info is updated.
+   */
+  public onUserUpdate(callback: (user: User) => void): UserUpdateCallbackHandle {
+    const handler = new UserUpdateCallbackHandle(callback);
+    this.userObservers.register(handler);
+    return handler;
+  }
+
+  /**
+   * Registers a new callback for when the context is updated.
+   */
+  public onContextUpdate(callback: (context: TwitchContext) => void): ContextUpdateCallbackHandle {
+    const handler = new ContextUpdateCallbackHandle(callback);
+    this.contextObservers.register(handler);
+    return handler;
+  }
+
+  /**
+   * Returns a date object that is based on the Muxy server time.
    *
-   * @typedef {Object} AccumulateData
-   *
-   * @property {string} latest A Unix timestamp of the most recently posted JSON blob.
-   *
-   * @property {Object[]} data Array of all JSON blob payloads posted to this identifier.
-   * @property {number} data.observed A Unix timestamp of when this payload was received.
-   * @property {string} data.channel_id The id of the channel this payload is associated with
-   * (either the viewer was watching the channel, or the app/server was authed with this channel).
-   * @property {string} data.opaque_user_id Twitch's Opaque User ID representing the sender
-   * of the payload. This will always be set and can be used with Twitch's pub/sub system to
-   * whisper events to a particular viewer.
-   * @property {string} data.user_id If the viewer has chosen to share their identity with the
-   * extension, this field will hold the viewer's actual Twitch ID.
-   * @property {Object} data.data The actual JSON blob payload as sent to the accumulate endpoint.
+   * @return {Date}
+   */
+  public getOffsetDate(): Date {
+    return new Date(new Date().getTime() + this.timeOffset);
+  }
+
+  /**
+   * Invokes a request to the backend.
+   */
+  public signedRequest(method, endpoint, data) {
+    return this.client.signedRequest(this.identifier, method, endpoint, data);
+  }
+
+  /**
+   * Data Accumulation
    */
 
   /**
@@ -136,7 +380,7 @@ export default class SDK {
    *   console.log(resp.data); // A list of all accumulate values since oneMinuteAgo.
    * });
    */
-  getAccumulateData(accumulationID, start) {
+  public getAccumulateData(accumulationID: string, start: number): Promise<AccumulateData> {
     forceType(accumulationID, 'string');
     return this.client.getAccumulation(this.identifier, accumulationID, start);
   }
@@ -144,7 +388,7 @@ export default class SDK {
   /**
    * @deprecated Use getAccumulateData instead.
    */
-  getAccumulation(accumulationID, start) {
+  public getAccumulation(accumulationID, start) {
     return this.getAccumulateData(accumulationID, start);
   }
 
@@ -166,28 +410,13 @@ export default class SDK {
    *   }
    * });
    */
-  accumulate(accumulationID, data) {
+  public accumulate(accumulationID: string, data: object): Promise<object> {
     forceType(accumulationID, 'string');
     return this.client.accumulate(this.identifier, accumulationID, data);
   }
 
   /**
    * User Voting
-   */
-
-  /**
-   * The response from {@link getVoteData}.
-   *
-   * @typedef {Object} VoteData
-   *
-   * @property {number} count - The total number of votes received for this vote identifier.
-   * @property {number} mean - The average of all votes received for this identifier.
-   * @property {number[]} specific - The number of votes cast for the specific values [0-4].
-   * @property {number} stddev - Approximate standard deviation for all votes received for
-   * this identifier.
-   * @property {number} sum - The sum of all votes received for this identifier.
-   * @property {number} vote - If the user has a vote associated with this identifer, the
-   * current value for this user. Not set if no vote has been received.
    */
 
   /**
@@ -207,9 +436,40 @@ export default class SDK {
    *   console.log(voteData.sum);
    * });
    */
-  getVoteData(voteID) {
+  public getVoteData(voteID: string): Promise<VoteData> {
     forceType(voteID, 'string');
     return this.client.getVotes(this.identifier, voteID);
+  }
+
+  /**
+   * Gets the vote logs for a given vote ID. This endpoint may only be called by
+   * an admin.
+   *
+   * @async
+   * @param voteID - the identifier to fetch the vote logs for.
+   * @return {Promise<VoteLog>} Resolves with the logs on server response. Rejects on server error.
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.getFullVoteLogs('global-12345').then((logs) => {
+   *   const audit = logs.result;
+   *
+   *   // ... process the audit logs ...
+   *   const valueToUsersMapping = {};
+   *   for (const i = 0; i < audit.length; ++i) {
+   *     const value = audit[i].value;
+   *     const identifier = audit[i].identifier;
+   *
+   *     const list = valueToUsersMapping[value] || [];
+   *     list.append(identifier);
+   *
+   *     valueTousersMapping[value] = list;
+   *   }
+   * });
+   */
+  public getFullVoteLogs(voteID: string): Promise<VoteLog> {
+    forceType(voteID, 'string');
+    return this.client.getFullVoteLogs(this.identifier, voteID);
   }
 
   /**
@@ -229,7 +489,7 @@ export default class SDK {
    * @example
    * sdk.vote('poll-number-1', 1);
    */
-  vote(voteID, value) {
+  public vote(voteID: string, value: number): Promise<VoteData> {
     forceType(voteID, 'string');
     forceType(value, 'number');
 
@@ -238,15 +498,6 @@ export default class SDK {
 
   /**
    * User Ranking
-   */
-
-  /**
-   * The response from {@link getRankData}.
-   *
-   * @typedef {Object[]} RankData
-   *
-   * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
-   * @property {number} score - The number of users who have sent this `key` for this identifier.
    */
 
   /**
@@ -270,7 +521,7 @@ export default class SDK {
    *   }
    * });
    */
-  getRankData(rankID) {
+  public getRankData(rankID: string): Promise<RankData> {
     forceType(rankID, 'string');
     return new Promise((accept, reject) => {
       this.client
@@ -293,11 +544,13 @@ export default class SDK {
    * @param {string} value - Any string value to represent this user's rank data. Will be returned
    * as the `key` field when rank data is requested.
    *
+   * @return {Promise<RankResponse>} Will resolve on success. Rejects on failure.
+   *
    * @example
    * const usersFavoriteColor = 'rebeccapurple';
    * this.muxy.rank('favorite_color', usersFavoriteColor);
    */
-  rank(rankID, value) {
+  public rank(rankID: string, value: string): Promise<RankResponse> {
     forceType(rankID, 'string');
     forceType(value, 'string');
 
@@ -318,7 +571,7 @@ export default class SDK {
    *
    * @return {Promise} Will resolve on success. Rejects on failure.
    */
-  clearRankData(rankID) {
+  public clearRankData(rankID: string): Promise<object> {
     forceType(rankID, 'string');
     return this.client.deleteRank(this.identifier, rankID);
   }
@@ -326,14 +579,14 @@ export default class SDK {
   /**
    * @deprecated Deprecated in 1.0.0. Use getRankData instead.
    */
-  getRankingData(rankID) {
+  public getRankingData(rankID) {
     return this.getRankData(rankID);
   }
 
   /**
    * @deprecated Deprecated in 1.0.0. Use clearRankData instead.
    */
-  clearRanking(rankID) {
+  public clearRanking(rankID) {
     return this.clearRanking(rankID);
   }
 
@@ -362,12 +615,13 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-  setViewerState(state) {
+  public setViewerState(state: object): Promise<object> {
     return this.client.setViewerState(this.identifier, state);
   }
 
   /**
-   * Sets the extension wide viewer-specific state to a JS object, this can be called by any viewer.
+   * Sets the extension wide viewer-specific state to a JS object, this is only a valid call for a
+   * user that has shared their identity.
    * Future calls to {@link getAllState} by **this** user will have a clone of this object in the
    * `extension_viewer` field.
    * @async
@@ -386,8 +640,57 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-  setExtensionViewerState(state) {
+
+  public setExtensionViewerState(state: object): Promise<object> {
     return this.client.setExtensionViewerState(this.identifier, state);
+  }
+
+  /**
+   * Sets the extension wide state to a JS object, this may only be called in a broadcaster context
+   * for the extension owner. Extension owner may be configured through the development portal.
+   * Future calls to {@link getAllState} by all users will have a clone of this object in the
+   * `extension` field.
+   * @async
+   * @since 1.1.0
+   *
+   * @param {Object} state - A complete JS object representing the current extension's state.
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionState({
+   *   favorite_movie: 'Jaws: The Revenge'
+   * }).then(() => {
+   *   console.log('Extension state saved!');
+   * }).catch((err) => {
+   *   console.error(`Failed saving viewer state: ${err}`);
+   * });
+   */
+  public setExtensionState(state: object): Promise<object> {
+    return this.client.setExtensionState(this.identifier, state);
+  }
+
+  /**
+   * Sets the extension-wide secret state to a JS object, this may only be called by an extension
+   * owner. This state object will never be returned to the broadcaster or viewers.
+   * @async
+   * @since 2.0.0
+   *
+   * @param {Object} state - A complete JS object
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionSecretState({
+   *   favorite_movie: 'Twilight: New Moon'
+   * }).then(() => {
+   *   console.log('Extension secrets saved!');
+   * }).catch((err) => {
+   *   console.error(`Failed saving secret state: ${err}`);
+   * });
+   */
+  public setExtensionSecretState(state: object): Promise<object> {
+    return this.client.setExtensionSecretState(this.identifier, state);
   }
 
   /**
@@ -413,22 +716,9 @@ export default class SDK {
    *   console.error(`Failed saving channel state: ${err}`);
    * });
    */
-  setChannelState(state) {
+  public setChannelState(state: object): Promise<object> {
     return this.client.setChannelState(this.identifier, state);
   }
-
-  /**
-   * The response from {@link getAllState}.
-   *
-   * @typedef {Object} AllState
-   *
-   * @property {Object} extension - A state object only settable by the extension itself.
-   * Universal for all channels.
-   * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
-   * viewers of the same channel.
-   * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
-   * a given channel.
-   */
 
   /**
    * Returns the current state object as set for the current extension, channel and
@@ -449,8 +739,58 @@ export default class SDK {
    *   }
    * });
    */
-  getAllState() {
+  public getAllState(): Promise<AllState> {
     return this.client.getState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension state object.
+   */
+  public getExtensionState(): Promise<object> {
+    return this.client.getExtensionState(this.identifier);
+  }
+
+  /**
+   * Returns the current channel state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated channel state object.
+   */
+  public getChannelState(): Promise<object> {
+    return this.client.getChannelState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension viewer state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension viewer state object.
+   */
+  public getExtensionViewerState(): Promise<object> {
+    return this.client.getExtensionViewerState(this.identifier);
+  }
+
+  /**
+   * Returns the current viewer state object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated viewer state object.
+   */
+  public getViewerState(): Promise<object> {
+    return this.client.getViewerState(this.identifier);
+  }
+
+  /**
+   * Returns the current extension secret state if the requesting user has access to the secret state.
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension secret state object.
+   */
+  public getExtensionSecretState(): Promise<object> {
+    return this.client.getExtensionSecretState(this.identifier);
   }
 
   /**
@@ -489,7 +829,7 @@ export default class SDK {
    *   }
    * });
    */
-  getJSONStore(key) {
+  public getJSONStore(key?: string): Promise<object> {
     if (key) {
       forceType(key, 'string');
     }
@@ -523,7 +863,7 @@ export default class SDK {
    *   console.log('Validated! Go go go!');
    * });
    */
-  validateCode(pin) {
+  public validateCode(pin: string) {
     forceType(pin, 'string');
     return this.client.validateCode(this.identifier, pin);
   }
@@ -549,7 +889,7 @@ export default class SDK {
    *   }
    * });
    */
-  pinTokenExists() {
+  public pinTokenExists() {
     return this.client.pinTokenExists(this.identifier);
   }
 
@@ -569,7 +909,7 @@ export default class SDK {
    *   console.log('No more data coming in!');
    * });
    */
-  revokeAllPINCodes() {
+  public revokeAllPINCodes() {
     return this.client.revokeAllPINCodes(this.identifier);
   }
 
@@ -599,7 +939,7 @@ export default class SDK {
    *   year: 1997
    * });
    */
-  send(event, userID, data) {
+  public send(event, userID, data) {
     forceType(event, 'string');
     let target = 'broadcast';
     let realData = data;
@@ -643,7 +983,7 @@ export default class SDK {
    *   console.log(`${track.artist} - {track.title} (${track.year})`);
    * });
    */
-  listen(inEvent, inUserID, inCallback) {
+  public listen(inEvent, inUserID, inCallback) {
     const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
 
     let l = 'broadcast';
@@ -693,7 +1033,7 @@ export default class SDK {
    *
    * @param {Object} handle - An event handle as returned from {@see listen}.
    */
-  unlisten(handle) {
+  public unlisten(handle) {
     return this.messenger.unlisten(this.identifier, handle);
   }
 
@@ -711,7 +1051,7 @@ export default class SDK {
    * @param {number} [value=1] - A value to associate with this event.
    * @param {string} [label=''] - A human-readable label for this event.
    */
-  sendAnalyticsEvent(name, value = 1, label = '') {
+  public sendAnalyticsEvent(name: string, value: number = 1, label: string = '') {
     this.analytics.sendEvent(this.identifier, name, value, label);
   }
 
@@ -722,9 +1062,9 @@ export default class SDK {
   /**
    * Begins the purchase flow for a given product's SKU.
    *
-   * @param {string} The SKU of the digital good that the user has indicated they want to buy.
+   * @param {string} sku - The SKU of the digital good that the user has indicated they want to buy.
    */
-  beginPurchase(sku) {
+  public beginPurchase(sku) {
     if (this.SKUs.length === 0) {
       throw new Error('beginPurchase() cannot be used unless SKUs are provided.');
     }
@@ -739,7 +1079,7 @@ export default class SDK {
    *
    * @return {Object} An object with the SKU codes as keys.
    */
-  getPrices() {
+  public getPrices() {
     if (this.SKUs.length === 0) {
       throw new Error('getPrices() cannot be used unless SKUs are provided.');
     }
@@ -754,12 +1094,69 @@ export default class SDK {
    * Sets a function to be used as a callback when entitlements need to be reloaded, i.e. after a
    * purchase has been made.
    *
-   * @param {function} The function to be called to update user entitlements.
+   * @param {function} callback - A function to be called to update user entitlements.
    */
-  onReloadEntitlements(cb) {
+  public onReloadEntitlements(callback) {
     if (this.SKUs.length === 0) {
       throw new Error('onReloadEntitlements() cannot be used unless SKUs are provided.');
     }
-    return Ext.onReloadEntitlements(cb);
+    return Ext.onReloadEntitlements(callback);
+  }
+
+  /**
+   * Sets a function to be used as a callback that is triggered when the extension visibility changes
+   * (This occurs only for mobile or component extensions.)
+   *
+   * @param {function} callback
+   */
+  public onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void): void {
+    return Ext.onVisibilityChanged(callback);
+  }
+
+  /**
+   * Sets a function to be used as a callback that is triggered when the extension changes position in the player
+   * This occurs only for video-component extensions.
+   *
+   * @param {function} callback
+   */
+  public onPositionChanged(callback: (position: Position) => void): void {
+    return Ext.onPositionChanged(callback);
+  }
+
+  /**
+   * Attempt to exchange one eligibility status for a single prize code.
+   * If a code is redeemed, the returned body will have a `code` member, which is the code that was redeemed.
+   * @async
+   *
+   * @throws {TypeError} Will throw an error if prizeIndex is not a valid number
+   *
+   * @param {number} prize_idx - The prize index
+   *
+   * @return {Promise<RedeemResult>}
+   */
+  public redeemCode(prizeIndex: number): Promise<RedeemResult> {
+    forceType(prizeIndex, 'number');
+
+    return this.client.redeemCode(this.identifier, prizeIndex);
+  }
+
+  /**
+   * Fetches all codes that the user has redeemed for this extension.
+   * @async
+   *
+   * @return {Promise<RedeemedCodes>} Will resolve on success. Rejects on failure.
+   */
+  public getRedeemedCodes(): Promise<RedeemedCodes> {
+    return this.client.getRedeemedCodes(this.identifier);
+  }
+
+  /**
+   * Fetches information about which codes a user is eligible for
+   * @async
+   *
+   * @return {Promise<EligibleCodes>} Will resolve on success. Rejects on failure.
+   */
+  public getEligibleCodes(): Promise<EligibleCodes> {
+    return this.client.getEligibleCodes(this.identifier);
   }
 }

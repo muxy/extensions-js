@@ -1481,4 +1481,4 @@ function gumshoeFactory() {
 
 }
 
-export default gumshoeFactory;
+module.exports = gumshoeFactory;

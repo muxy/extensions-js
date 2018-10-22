@@ -64,6 +64,8 @@ export interface ConsolePrintOptions {
  * Muxy.Util.forceType(a, 'string');
  */
 export default class Util {
+  public static overrideEnvironment?: Environment;
+
   /**
    * Possible runtime environments for the library. Used to define available
    * behavior and services.
@@ -76,6 +78,8 @@ export default class Util {
       Production: ProductionEnvironment,
       SandboxDev: SandboxDevEnvironment,
       SandboxTwitch: SandboxTwitchEnvironment,
+      SandboxAdmin: SandboxAdministrationEnvironment,
+      Admin: AdministrationEnvironment,
       Server: ServerEnvironment,
       Testing: TestingEnvironment
     };
@@ -171,8 +175,13 @@ export default class Util {
     if (typeof window !== 'undefined') {
       vWindow = window;
     }
+
     if (overrideWindow) {
       vWindow = overrideWindow;
+    }
+
+    if (Util.overrideEnvironment) {
+      return Util.overrideEnvironment;
     }
 
     try {
@@ -186,7 +195,7 @@ export default class Util {
       if (!Util.isWindowFramed(vWindow)) {
         // See if we're in the admin state.
         const params = new URLSearchParams(window.location.search);
-        if (params.get('muxyAdminInterface')) {
+        if (params.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
           return ENVIRONMENTS.SANDBOX_ADMIN;
         }
 
@@ -194,17 +203,13 @@ export default class Util {
       }
 
       // See if we're in the admin pane.
-      if (
-        vWindow.location.origin.indexOf('devportal.muxy.io') !== -1 ||
-        vWindow.location.origin.indexOf('dev.muxy.io') !== -1 ||
-        vWindow.location.origin.indexOf('dev-portal.staging.muxy.io') !== -1
-      ) {
+      if (vWindow.name === 'Admin') {
         return ENVIRONMENTS.ADMIN;
       }
 
       // See if we're in the admin state, but in an iframed context.
       const params = new URLSearchParams(window.location.search);
-      if (params.get('muxyAdminInterface')) {
+      if (params.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
         return ENVIRONMENTS.SANDBOX_ADMIN;
       }
 

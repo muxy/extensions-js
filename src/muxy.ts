@@ -57,8 +57,8 @@ class Muxy {
     ];
 
     switch (Util.currentEnvironment()) {
-      case Util.Environments.Testing:
-        SDKInfoText.push('Running in testing environment outside of Twitch');
+      case Util.Environments.Production:
+        SDKInfoText.push('Running on production');
         break;
       case Util.Environments.SandboxDev:
         SDKInfoText.push('Running in sandbox environment outside of Twitch');
@@ -66,8 +66,14 @@ class Muxy {
       case Util.Environments.SandboxTwitch:
         SDKInfoText.push('Running in sandbox environment on Twitch');
         break;
-      case Util.Environments.Production:
-        SDKInfoText.push('Running on production');
+      case Util.Environments.SandboxAdmin:
+        SDKInfoText.push('Running in sandbox environment in the Admin panel');
+        break;
+      case Util.Environments.Admin:
+        SDKInfoText.push('Running in the Admin panel');
+        break;
+      case Util.Environments.Testing:
+        SDKInfoText.push('Running in testing environment outside of Twitch');
         break;
       case Util.Environments.Server:
         SDKInfoText.push('Running on a NodeJS server');
@@ -423,6 +429,10 @@ class Muxy {
         onPubsubReceive: noop,
         onPubsubSend: noop
       };
+    }
+
+    if (this.debugOptions.environment) {
+      Util.overrideEnvironment = Util.Environments[this.debugOptions.environment];
     }
 
     this.client = new StateClient(this.debugOptions);

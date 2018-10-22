@@ -10,6 +10,8 @@ export interface DebugOptions {
 
   jwt?: string;
 
+  environment?: string;
+
   onPubsubListen: (...args: any[]) => void;
   onPubsubReceive: (...args: any[]) => void;
   onPubsubSend: (...args: any[]) => void;
@@ -34,6 +36,19 @@ export class DebuggingOptions {
       onPubsubReceive: noop,
       onPubsubSend: noop
     };
+
+    if (window.location && window.location.search) {
+      const qp = new URLSearchParams(window.location.search);
+      this.options.url = this.readFromQuery(qp, 'url');
+      this.options.url = this.readFromQuery(qp, 'channelID');
+      this.options.url = this.readFromQuery(qp, 'userID');
+      this.options.url = this.readFromQuery(qp, 'role');
+      this.options.url = this.readFromQuery(qp, 'environment');
+    }
+  }
+
+  private readFromQuery(params: URLSearchParams, key: string) {
+    return params.get(`muxy_debug_${key}`);
   }
 
   public url(url) {
@@ -58,6 +73,11 @@ export class DebuggingOptions {
 
   public jwt(j) {
     this.options.jwt = j;
+    return this;
+  }
+
+  public environment(e) {
+    this.options.environment = e;
     return this;
   }
 

@@ -1,21 +1,21 @@
-# Muxy Extension JS Library
+# Muxy MEDKit JS Library
 
-The Muxy Extensions JS library provides easy access to Muxy's powerful backend architecture.
+The Muxy MEDKit JS library provides easy access to Muxy's powerful extension backend architecture.
 
-The extension provides four main sections of functionality: Data Storage, an Event Manager,
+The library provides four main sections of functionality: Persistent Data Storage, an Event Manager,
 a Twitch Client and a Google Analytics system.
 
 ## Hosted Versions
 
-Muxy hosts specific versions and latest releases at https://ext-cdn.muxy.io/muxy-extensions-js.
+Muxy hosts specific versions and latest releases at https://ext-cdn.muxy.io/medkit.
 
-Tagged releases (starting with 1.0.0):
-* https://ext-cdn.muxy.io/muxy-extensions-js/1.0.0/muxy-extensions.js
-* https://ext-cdn.muxy.io/muxy-extensions-js/1.0.0/muxy-extensions.min.js
+Tagged releases (starting with 2.0.0):
+* https://ext-cdn.muxy.io/medkit/2.0.0/medkit.umd.js
+* https://ext-cdn.muxy.io/medkit/2.0.0/medkit.esm.js
 
 Latest production release:
-* https://ext-cdn.muxy.io/muxy-extensions-js/latest/muxy-extensions.js
-* https://ext-cdn.muxy.io/muxy-extensions-js/latest/muxy-extensions.min.js
+* https://ext-cdn.muxy.io/medkit/latest/medkit.umd.js
+* https://ext-cdn.muxy.io/medkit/latest/medkit.esm.js
 
 ## Building
 
@@ -26,13 +26,13 @@ npm install
 npm run build
 ```
 
-in this directory. The complete library will be built and both minified and full versions will be
+in this directory. The complete library will be built and both UMD and ES Module versions will be
 placed in the `dist/` folder.
 
-- `dist/muxy-extensions.js`
-- `dist/muxy-extensions.min.js`
+- `dist/medkit.umd.js`
+- `dist/medkit.esm.js`
 
-## Running tests
+## Running Tests
 
 To run the full suite of tests, run:
 
@@ -40,19 +40,15 @@ To run the full suite of tests, run:
 npm run test
 ```
 
-This will fully compile the SDK and execute all unit tests, printing the results to the console.
+This will fully compile the library and execute all unit tests, printing the results to the console.
 Note that this can take several minutes to execute, especially the first time.
 
-## Building documentation
 
-A hosted version of the documentation in this repo can be found at
-[https://dev.muxy.io/javascript/index.html](https://dev.muxy.io/javascript/index.html).
+## Getting Started
 
-The SDK documentation can be build locally by running:
+To get started building an extension with Muxy, we have a [Vue.js](https://vuejs.org) based starter
+[here](https://github.com/muxy/medkit-starter-vue).
 
-```sh
-npm run docs
-```
-
-This will generate a full suite of HTML-formatted documentation in the `dist/docs/` directory. The
-main entry to the docs is at `dist/docs/index.html`
+Once you've played around there and are ready to dig into some documentation, our
+[Getting Started](https://dev.muxy.io/getting-started.html) and
+[Detailed Usage Guides](https://dev.muxy.io/using.html) should help.

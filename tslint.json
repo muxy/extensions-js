@@ -1,7 +1,12 @@
 {
   "extends": ["tslint:latest", "tslint-config-prettier"],
 
-  "linterOptions": { "exclude": ["**/*.d.ts"] },
+  "linterOptions": {
+    "exclude": [
+      "**/*.d.ts",
+      "__tests__/**/*.ts"
+    ]
+  },
 
   "rules": {
     // Use single quote marks, unless it's inconvenient.

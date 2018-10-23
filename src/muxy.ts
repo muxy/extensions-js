@@ -221,10 +221,10 @@ class Muxy {
 
   /**
    * Debugging options. Should only be set by a call to .debug()
-   * @private
+   * @internal
    * @type {object}
    */
-  private debugOptions: DebugOptions;
+  public debugOptions: DebugOptions;
 
   /**
    * Private constructor for singleton use only.
@@ -491,9 +491,7 @@ class Muxy {
    *   console.error(err);
    * });
    */
-  public SDK(id?: string) {
-    /* Implemented below to deal with scoping issues. */
-  }
+  public SDK = SDK;
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -515,42 +513,6 @@ class Muxy {
  * @ignore
  */
 const mxy: Muxy = new Muxy();
-
-// Constructors for sub-objects are added to the singleton so that using the `new`
-// operator doesn't mess with the mxy singleton scope. Only applies to SDK, TwitchClient
-// and Analytics if we ever add that functionality.
-
-/** @ignore */
-mxy.SDK = function NewSDK(id?: string) {
-  if (!mxy.setupCalled) {
-    throw new Error('Muxy.setup() must be called before creating a new SDK instance');
-  }
-
-  const identifier = id || mxy.twitchClientID;
-  if (!identifier) {
-    return null;
-  }
-
-  if (!mxy.watchingAuth) {
-    mxy.watchingAuth = true;
-    mxy.watchAuth(identifier);
-  }
-
-  if (!mxy.SDKClients[identifier]) {
-    mxy.SDKClients[identifier] = new SDK(
-      identifier,
-      mxy.client,
-      mxy.user,
-      mxy.messenger,
-      mxy.analytics,
-      mxy.loadPromise,
-      mxy.SKUs,
-      this.debugOptions
-    );
-  }
-
-  return mxy.SDKClients[identifier];
-};
 
 /** @ignore */
 mxy.TwitchClient = function NewTwitchClient() {

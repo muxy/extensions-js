@@ -298,14 +298,15 @@ class Muxy {
 
       const onFirstAuth = () => {
         this.client
-          .getUserInfo(extensionID)
+          .immediateGetUserInfo(extensionID)
           .then(userinfo => {
+            const offset = userinfo.server_time - new Date().getTime();
+
             const user = new User(auth);
             user.ip = userinfo.ip_address;
             user.registeredWithMuxy = userinfo.registered || false;
             user.visualizationID = userinfo.visualization_id || '';
-
-            const offset = userinfo.server_time - new Date().getTime();
+            user.timeOffset = offset;
 
             const keys = Object.keys(this.SDKClients);
             for (const key of keys) {
@@ -435,7 +436,7 @@ class Muxy {
       Util.overrideEnvironment = Util.Environments[this.debugOptions.environment];
     }
 
-    this.client = new StateClient(this.debugOptions);
+    this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
 
     this.twitchClientID = options.clientID || options.extensionID;

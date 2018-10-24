@@ -38,6 +38,7 @@ export default class User {
   public buffer: number;
   public theme: string;
   public volume: number;
+  public timeOffset: number;
 
   /**
    * Defines the current user's role on Twitch relative to the current channel being
@@ -209,6 +210,12 @@ export default class User {
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.
     this.extractJWTInfo(auth.token);
+
+    /**
+     * Offset of this user from the server time.
+     * @private
+     */
+    this.timeOffset = 0;
   }
 
   /**
@@ -255,5 +262,14 @@ export default class User {
   public updateAuth(auth: TwitchAuth) {
     this.twitchJWT = auth.token;
     this.extractJWTInfo(auth.token);
+  }
+
+  /**
+   * Returns a date object that is based on the Muxy server time.
+   *
+   * @return {Date}
+   */
+  public getOffsetDate(): Date {
+    return new Date(new Date().getTime() + this.timeOffset);
   }
 }

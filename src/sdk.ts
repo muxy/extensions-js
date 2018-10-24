@@ -301,6 +301,7 @@ export default class SDK {
 
     /**
      * An automatically updated User instance for the current extension user.
+     * This is only valid after .loaded() has resolved.
      * @public
      * @type {User}
      */
@@ -349,7 +350,6 @@ export default class SDK {
    */
   public updateUser(user: User) {
     this.user = user;
-
     this.userObservers.notify(user);
   }
 
@@ -373,11 +373,22 @@ export default class SDK {
 
   /**
    * Returns a date object that is based on the Muxy server time.
+   * This method only returns valid results after .loaded() resolves.
    *
    * @return {Date}
    */
   public getOffsetDate(): Date {
     return new Date(new Date().getTime() + this.timeOffset);
+  }
+
+  /**
+   * Returns a promise to get the user object. This automatically
+   * waits for .loaded() to resolve.
+   */
+  public getUser(): Promise<User> {
+    return this.loaded().then(() => {
+      return Promise.resolve(this.user);
+    });
   }
 
   /**

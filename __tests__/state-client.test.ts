@@ -11,8 +11,9 @@ const expiredJWT =
 
 /** @test {StateClient} */
 describe("StateClient", () => {
-  const broadcasterClient = new StateClient(<DebugOptions>{});
-  const viewerClient = new StateClient(<DebugOptions>{});
+  const loadedPromise = Promise.resolve();
+  const broadcasterClient = new StateClient(loadedPromise, <DebugOptions>{});
+  const viewerClient = new StateClient(loadedPromise, <DebugOptions>{});
 
   beforeAll(async () => {
     StateClient.setEnvironment(ENVIRONMENTS.SANDBOX_DEV, new DebuggingOptions());
@@ -36,7 +37,7 @@ describe("StateClient", () => {
 
   /** @test {StateClient#validateJWT} */
   it("should fail with invalid JWT", async () => {
-    const client = new StateClient(<DebugOptions>{});
+    const client = new StateClient(loadedPromise, <DebugOptions>{});
     await expect(client.getRank(clientId, "empty")).rejects.toEqual(
       "Your authentication token has expired."
     );
@@ -44,7 +45,7 @@ describe("StateClient", () => {
 
   /** @test {StateClient#validateJWT} */
   it("should fail with an expired JWT", async () => {
-    const client = new StateClient(<DebugOptions>{});
+    const client = new StateClient(loadedPromise, <DebugOptions>{});
     client.updateAuth(expiredJWT);
     await expect(client.getRank(clientId, "empty")).rejects.toEqual(
       "Your authentication token has expired."

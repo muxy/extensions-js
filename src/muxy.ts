@@ -221,10 +221,10 @@ class Muxy {
 
   /**
    * Debugging options. Should only be set by a call to .debug()
-   * @private
+   * @internal
    * @type {object}
    */
-  private debugOptions: DebugOptions;
+  public debugOptions: DebugOptions;
 
   /**
    * Private constructor for singleton use only.
@@ -298,14 +298,15 @@ class Muxy {
 
       const onFirstAuth = () => {
         this.client
-          .getUserInfo(extensionID)
+          .immediateGetUserInfo(extensionID)
           .then(userinfo => {
+            const offset = userinfo.server_time - new Date().getTime();
+
             const user = new User(auth);
             user.ip = userinfo.ip_address;
             user.registeredWithMuxy = userinfo.registered || false;
             user.visualizationID = userinfo.visualization_id || '';
-
-            const offset = userinfo.server_time - new Date().getTime();
+            user.timeOffset = offset;
 
             const keys = Object.keys(this.SDKClients);
             for (const key of keys) {
@@ -435,7 +436,7 @@ class Muxy {
       Util.overrideEnvironment = Util.Environments[this.debugOptions.environment];
     }
 
-    this.client = new StateClient(this.debugOptions);
+    this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
 
     this.twitchClientID = options.clientID || options.extensionID;
@@ -491,9 +492,7 @@ class Muxy {
    *   console.error(err);
    * });
    */
-  public SDK(id?: string) {
-    /* Implemented below to deal with scoping issues. */
-  }
+  public SDK = SDK;
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.
@@ -515,42 +514,6 @@ class Muxy {
  * @ignore
  */
 const mxy: Muxy = new Muxy();
-
-// Constructors for sub-objects are added to the singleton so that using the `new`
-// operator doesn't mess with the mxy singleton scope. Only applies to SDK, TwitchClient
-// and Analytics if we ever add that functionality.
-
-/** @ignore */
-mxy.SDK = function NewSDK(id?: string) {
-  if (!mxy.setupCalled) {
-    throw new Error('Muxy.setup() must be called before creating a new SDK instance');
-  }
-
-  const identifier = id || mxy.twitchClientID;
-  if (!identifier) {
-    return null;
-  }
-
-  if (!mxy.watchingAuth) {
-    mxy.watchingAuth = true;
-    mxy.watchAuth(identifier);
-  }
-
-  if (!mxy.SDKClients[identifier]) {
-    mxy.SDKClients[identifier] = new SDK(
-      identifier,
-      mxy.client,
-      mxy.user,
-      mxy.messenger,
-      mxy.analytics,
-      mxy.loadPromise,
-      mxy.SKUs,
-      this.debugOptions
-    );
-  }
-
-  return mxy.SDKClients[identifier];
-};
 
 /** @ignore */
 mxy.TwitchClient = function NewTwitchClient() {

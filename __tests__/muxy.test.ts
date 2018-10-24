@@ -31,7 +31,25 @@ describe('Muxy', () => {
     Muxy.client = null;
     Muxy.messenger = null;
     Muxy.analytics = null;
-    Muxy.context = {} as TwitchContext;
+    Muxy.context = {
+      arePlayerControlsVisible: false,
+      bitrate: 480,
+      bufferSize: 4096,
+      displayResolution: '1920x1080',
+      game: 'IRL',
+      hlsLatencyBroadcaster: 7,
+      isFullScreen: true,
+      isMuted: false,
+      isPaused: false,
+      isTheatreMode: false,
+      language: 'en',
+      mode: 'playing',
+      playbackMode: 'unknown',
+      theme: 'default',
+      videoResolution: '1920x1080',
+      volume: 90
+    };
+
     Muxy.user = null;
     Muxy.loadPromise = new Promise((resolve, reject) => {
       Muxy.loadResolve = resolve;
@@ -80,7 +98,7 @@ describe('Muxy', () => {
 
   it('can create new SDK instances', () => {
     Muxy.setup({ extensionID: 'testextensionid', quiet: true });
-    const sdk = Muxy.SDK();
+    const sdk = new Muxy.SDK();
   });
 
   it('can create new SDK instances with new scope', () => {

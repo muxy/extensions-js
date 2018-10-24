@@ -119,12 +119,14 @@ class StateClient {
 
   public token: string;
   public debug: DebugOptions;
+  private loaded: Promise<void>;
 
   /** @ignore */
-  constructor(debug: DebugOptions) {
+  constructor(loadedPromise: Promise<void>, debug: DebugOptions) {
     /** @ignore */
     this.token = null;
     this.debug = debug;
+    this.loaded = loadedPromise;
   }
 
   /** @ignore */
@@ -137,32 +139,39 @@ class StateClient {
    * request to the EBS with valid auth credentials.s
    * @ignore
    */
-  public signedRequest(extensionID, method, endpoint, data?): Promise<any> {
-    if (!this.validateJWT()) {
-      return Promise.reject('Your authentication token has expired.');
+  public signedRequest(extensionID, method, endpoint, data?: any, skipPromise?: boolean): Promise<any> {
+    let waitedPromise = this.loaded;
+    if (skipPromise) {
+      waitedPromise = Promise.resolve();
     }
 
-    const xhrPromise = new XHRPromise({
-      data,
-      headers: {
-        Authorization: `${extensionID} ${this.token}`
-      },
-      method,
-      url: `${SERVER_URL}/v1/e/${endpoint}`
-    });
-
-    return xhrPromise.send().then(resp => {
-      try {
-        if (resp.status < 400) {
-          return Promise.resolve(resp.responseText);
-        } else if (resp.responseText) {
-          return Promise.reject(resp.responseText);
-        } else {
-          return Promise.reject(`Server returned status ${resp.status}`);
-        }
-      } catch (err) {
-        return Promise.reject(err);
+    return waitedPromise.then(() => {
+      if (!this.validateJWT()) {
+        return Promise.reject('Your authentication token has expired.');
       }
+
+      const xhrPromise = new XHRPromise({
+        data,
+        headers: {
+          Authorization: `${extensionID} ${this.token}`
+        },
+        method,
+        url: `${SERVER_URL}/v1/e/${endpoint}`
+      });
+
+      return xhrPromise.send().then(resp => {
+        try {
+          if (resp.status < 400) {
+            return Promise.resolve(resp.responseText);
+          } else if (resp.responseText) {
+            return Promise.reject(resp.responseText);
+          } else {
+            return Promise.reject(`Server returned status ${resp.status}`);
+          }
+        } catch (err) {
+          return Promise.reject(err);
+        }
+      });
     });
   }
 
@@ -210,6 +219,9 @@ class StateClient {
 
   /** @ignore */
   public getUserInfo = identifier => this.getState(identifier, ServerState.USER);
+
+  /** @ignore */
+  public immediateGetUserInfo = identifier => this.signedRequest(identifier, 'GET', ServerState.USER, undefined, true);
 
   /** @ignore */
   public getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);

@@ -12,6 +12,7 @@ import StateClient from './state-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
+import mxy from './muxy';
 
 /**
  * The response from {@link getAllState}.
@@ -214,7 +215,41 @@ export default class SDK {
   public contextObservers: Observer<TwitchContext>;
 
   /** @ignore */
-  constructor(
+  constructor(id?: string) {
+    if (!mxy.setupCalled) {
+      throw new Error('Muxy.setup() must be called before creating a new SDK instance');
+    }
+
+    const identifier = id || mxy.twitchClientID;
+    if (!identifier) {
+      return null;
+    }
+
+    if (!mxy.watchingAuth) {
+      mxy.watchingAuth = true;
+      mxy.watchAuth(identifier);
+    }
+
+    if (!mxy.SDKClients[identifier]) {
+      this.setup(
+        identifier,
+        mxy.client,
+        mxy.user,
+        mxy.messenger,
+        mxy.analytics,
+        mxy.loadPromise,
+        mxy.SKUs,
+        mxy.debugOptions
+      );
+
+      mxy.SDKClients[identifier] = this;
+    }
+
+    return mxy.SDKClients[identifier];
+  }
+
+  /** @ignore */
+  private setup(
     identifier: string,
     client: StateClient,
     user: User,
@@ -266,6 +301,7 @@ export default class SDK {
 
     /**
      * An automatically updated User instance for the current extension user.
+     * This is only valid after .loaded() has resolved.
      * @public
      * @type {User}
      */
@@ -314,7 +350,6 @@ export default class SDK {
    */
   public updateUser(user: User) {
     this.user = user;
-
     this.userObservers.notify(user);
   }
 
@@ -338,11 +373,22 @@ export default class SDK {
 
   /**
    * Returns a date object that is based on the Muxy server time.
+   * This method only returns valid results after .loaded() resolves.
    *
    * @return {Date}
    */
   public getOffsetDate(): Date {
     return new Date(new Date().getTime() + this.timeOffset);
+  }
+
+  /**
+   * Returns a promise to get the user object. This automatically
+   * waits for .loaded() to resolve.
+   */
+  public getUser(): Promise<User> {
+    return this.loaded().then(() => {
+      return Promise.resolve(this.user);
+    });
   }
 
   /**

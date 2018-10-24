@@ -5,6 +5,7 @@ import SDK from '../src/sdk';
 import StateClient from '../src/state-client';
 import { TwitchAuth } from '../src/twitch';
 import User from '../src/user';
+import mxy from '../src/muxy';
 
 const someJWT =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiMTI2OTU1MjExIiwicm9sZSI6InZpZXdlciIsImV4dGVuc2lvbl9pZCI6ImthM3kyOHJyZ2gyZjUzM214dDltbDM3ZnY2emI4ayIsImV4cCI6MjE0NzQ4MzY0Nywib3BhcXVlX3VzZXJfaWQiOiJBODk0MzIzNiIsImFsbG93ZWRfc3RhZ2UiOiJ0ZXN0aW5nIiwiYXBwX2lkIjoibXlfYXdlc29tZV9hcHAifQ.0a5_yR6bTc2V4boC0kH_0mz2v34dJQq4p1iOBA70lt4';
@@ -24,36 +25,36 @@ describe('SDK', () => {
 
     prom = Promise.resolve();
     analytics = new Analytics('ua-string', prom);
-    client = new StateClient(new DefaultDebugOptions());
+    client = new StateClient(prom, new DefaultDebugOptions());
     messenger = Messenger(new DefaultDebugOptions());
     messenger.close();
     user = new User(auth);
   });
 
   it('can be created', () => {
-    const sdk = new SDK(
-      'test',
-      client,
-      user,
-      messenger,
-      analytics,
-      prom,
-      [],
-      new DefaultDebugOptions()
-    );
+    mxy.setupCalled = true;
+    mxy.client = client;
+    mxy.user = user;
+    mxy.messenger = messenger;
+    mxy.analytics = analytics;
+    mxy.loadPromise = prom;
+    mxy.SKUs = [];
+    mxy.debugOptions = new DefaultDebugOptions();
+
+    const sdk = new SDK('test');
   });
 
   it('should generate a offset date object', () => {
-    const sdk = new SDK(
-      'test',
-      client,
-      user,
-      messenger,
-      analytics,
-      prom,
-      [],
-      new DefaultDebugOptions()
-    );
+    mxy.setupCalled = true;
+    mxy.client = client;
+    mxy.user = user;
+    mxy.messenger = messenger;
+    mxy.analytics = analytics;
+    mxy.loadPromise = prom;
+    mxy.SKUs = [];
+    mxy.debugOptions = new DefaultDebugOptions();
+
+    const sdk = new SDK('test');
     sdk.timeOffset = 10;
 
     const newDate = sdk.getOffsetDate();

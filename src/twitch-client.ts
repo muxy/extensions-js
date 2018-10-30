@@ -289,7 +289,6 @@ export default class TwitchClient {
    * });
    */
   public getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
-    forceType(userIDs, 'array');
     if (userIDs.length === 0) {
       return Promise.resolve([]);
     }

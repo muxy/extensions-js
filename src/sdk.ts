@@ -7,12 +7,12 @@ import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from '
 import Analytics from './analytics';
 import { DebugOptions } from './debug';
 import { CallbackHandle, Messenger } from './messenger';
+import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
-import mxy from './muxy';
 
 /**
  * The response from {@link getAllState}.
@@ -177,11 +177,38 @@ export interface RedeemedCodes {
  * @typedef {Object} RedeemResult
  *
  * @property {string} code - The code that was redeemed if successful
- * @property {Array<string>} all_prizes - list of all the codes that this user has redeemed for the prize index.
+ * @property {Array<string>} all_prizes - list of all the codes that this user has redeemed for the
+ * prize index.
  */
 export interface RedeemResult {
   code?: string;
   all_prizes: string[];
+}
+
+/**
+ * A single entry in the response from {@link getExtensionUsers}.
+ *
+ * @typedef {Object} ExtensionUser
+ *
+ * @property {string} twitch_id - The user's Twitch id.
+ */
+export interface ExtensionUser {
+  twitch_id: string;
+}
+
+/**
+ * The response from {@link getExtensionUsers}.
+ *
+ * @typedef {Object} ExtensionUsersResult
+ *
+ * @property {string} next - A cursor to request the next (up-to) 1000 results. A value of `0` means
+ * all results have been returned.
+ * @property {ExtensionUser[]} results - A list of (up-to) 1000 user IDs who have shared their ID with
+ * the extension.
+ */
+export interface ExtensionUsersResult {
+  next: string;
+  results: ExtensionUser[];
 }
 
 /**
@@ -246,76 +273,6 @@ export default class SDK {
     }
 
     return mxy.SDKClients[identifier];
-  }
-
-  /** @ignore */
-  private setup(
-    identifier: string,
-    client: StateClient,
-    user: User,
-    messenger: Messenger,
-    analytics: Analytics,
-    loadPromise: Promise<void>,
-    SKUs: object[],
-    debug: DebugOptions
-  ) {
-    /** @ignore */
-    this.userObservers = new Observer<User>();
-
-    /** @ignore */
-    this.contextObservers = new Observer<TwitchContext>();
-
-    /** @ignore */
-    this.loadPromise = loadPromise;
-
-    /**
-     * A unique instance identifier. Either the extension or app ID.
-     * @public
-     * @type {string}
-     */
-    this.identifier = identifier;
-
-    /**
-     * The backend state client.
-     * @private
-     * @type {Client}
-     *
-     */
-    this.client = client;
-
-    /**
-     * The backend event messenger client.
-     * @private
-     * @type {Messenger}
-     *
-     */
-    this.messenger = messenger;
-
-    /**
-     * The backend analytics client.
-     * @private
-     * @type {Analytics}
-     *
-     */
-    this.analytics = analytics;
-
-    /**
-     * An automatically updated User instance for the current extension user.
-     * This is only valid after .loaded() has resolved.
-     * @public
-     * @type {User}
-     */
-    this.user = user;
-
-    /**
-     * SKUs associated with the products offered in the extension.
-     * @public
-     * @type {Object}
-     */
-    this.SKUs = SKUs;
-
-    /** @ignore */
-    this.debug = debug;
   }
 
   /**
@@ -1204,5 +1161,104 @@ export default class SDK {
    */
   public getEligibleCodes(): Promise<EligibleCodes> {
     return this.client.getEligibleCodes(this.identifier);
+  }
+
+  /**
+   * Admin-level functionality
+   */
+
+  /**
+   * Fetches a list of all users who have shared their identity with the extension.
+   *
+   * This function takes an optional `next` value which should match that returned from previous
+   * invocations to iterate through the response. If the returned `next` value is `0`, all
+   * available values have been returned and iteration can be stopped.
+   *
+   * At most 1000 entries will be returned in a single call.
+   *
+   * Note that because of the asynchronous nature, duplicate entries may be returned and should be
+   * uniqued on the client.
+   *
+   * Admin-only function.
+   * @async
+   *
+   * @return {Promise<ExtensionUsersResult>} Will resolve on success. Rejects on failure.
+   */
+  public getExtensionUsers(next?: string): Promise<ExtensionUsersResult> {
+    return this.client.getExtensionUsers(this.identifier, next);
+  }
+
+  /**
+   * Private Instance Methods
+   */
+
+  /** @ignore */
+  private setup(
+    identifier: string,
+    client: StateClient,
+    user: User,
+    messenger: Messenger,
+    analytics: Analytics,
+    loadPromise: Promise<void>,
+    SKUs: object[],
+    debug: DebugOptions
+  ) {
+    /** @ignore */
+    this.userObservers = new Observer<User>();
+
+    /** @ignore */
+    this.contextObservers = new Observer<TwitchContext>();
+
+    /** @ignore */
+    this.loadPromise = loadPromise;
+
+    /**
+     * A unique instance identifier. Either the extension or app ID.
+     * @public
+     * @type {string}
+     */
+    this.identifier = identifier;
+
+    /**
+     * The backend state client.
+     * @private
+     * @type {Client}
+     *
+     */
+    this.client = client;
+
+    /**
+     * The backend event messenger client.
+     * @private
+     * @type {Messenger}
+     *
+     */
+    this.messenger = messenger;
+
+    /**
+     * The backend analytics client.
+     * @private
+     * @type {Analytics}
+     *
+     */
+    this.analytics = analytics;
+
+    /**
+     * An automatically updated User instance for the current extension user.
+     * This is only valid after .loaded() has resolved.
+     * @public
+     * @type {User}
+     */
+    this.user = user;
+
+    /**
+     * SKUs associated with the products offered in the extension.
+     * @public
+     * @type {Object}
+     */
+    this.SKUs = SKUs;
+
+    /** @ignore */
+    this.debug = debug;
   }
 }

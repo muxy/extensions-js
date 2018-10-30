@@ -47,12 +47,8 @@ export class DebuggingOptions {
     }
   }
 
-  private readFromQuery(params: URLSearchParams, key: string) {
-    return params.get(`muxy_debug_${key}`);
-  }
-
   public url(url) {
-    this.options.url = url;
+    this.options.url = /^https?:\/\//.test(url) ? url : `https://${url}`;
     return this;
   }
 
@@ -94,5 +90,9 @@ export class DebuggingOptions {
   public onPubsubListen(cb) {
     this.options.onPubsubListen = cb;
     return this;
+  }
+
+  private readFromQuery(params: URLSearchParams, key: string) {
+    return params.get(`muxy_debug_${key}`);
   }
 }

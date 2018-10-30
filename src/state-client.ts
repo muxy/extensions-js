@@ -308,6 +308,10 @@ class StateClient {
   /** @ignore */
   public redeemCode = (identifier, prizeIndex) =>
     this.signedRequest(identifier, 'POST', 'codes/redeem', JSON.stringify({ prize: prizeIndex }));
+
+  /** @ignore */
+  public getExtensionUsers = (identifier, cursor) =>
+    this.signedRequest(identifier, 'GET', `user_ids?cursor=${cursor || 0}`);
 }
 
 export default StateClient;

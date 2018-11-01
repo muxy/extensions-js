@@ -441,6 +441,7 @@ class Muxy {
 
     this.twitchClientID = options.clientID || options.extensionID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
+    this.cachedTwitchClient.promise = this.loadPromise;
 
     if (options.uaString) {
       this.analytics = new Analytics(options.uaString, this.loadPromise);

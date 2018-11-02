@@ -312,6 +312,57 @@ class StateClient {
   /** @ignore */
   public getExtensionUsers = (identifier, cursor) =>
     this.signedRequest(identifier, 'GET', `user_ids?cursor=${cursor || 0}`);
+
+  /** @ignore */
+  public joinTriviaTeam = identifier => this.signedRequest(identifier, 'POST', 'team_membership');
+
+  /** @ignore */
+  public getJoinedTeam = identifier => this.signedRequest(identifier, 'GET', 'team_membership');
+
+  /** @ignore */
+  public addExtensionTriviaQuestion = (identifier, triviaQuestion) =>
+    this.signedRequest(identifier, 'POST', 'curated_poll_edit', JSON.stringify(triviaQuestion));
+
+  /** @ignore */
+  public addExtensionTriviaOptionToQuestion = (identifier, questionID, option) =>
+    this.signedRequest(
+      identifier,
+      'POST',
+      'curated_poll_edit_option',
+      JSON.stringify({ question: questionID, option })
+    );
+
+  /** @ignore */
+  public removeExtensionTriviaOptionFromQuestion = (identifier, questionID, optionID) =>
+    this.signedRequest(
+      identifier,
+      'DELETE',
+      'curated_poll_edit_option',
+      JSON.stringify({ question: questionID, option: optionID })
+    );
+
+  /** @ignore */
+  public setExtensionTriviaQuestionState = (identifier, questionID, state, winner) =>
+    this.signedRequest(
+      identifier,
+      'POST',
+      `curated_poll_state?id=${questionID}`,
+      JSON.stringify({ transition: state, winner: winner })
+    );
+
+  /** @ignore */
+  public setExtensionTriviaQuestionVote = (identifier, questionID, optionID) =>
+    this.signedRequest(identifier, 'POST', 'curated_poll', JSON.stringify({ question_id: questionID, vote: optionID }));
+
+  /** @ignore */
+  public getExtensionTriviaQuestions = identifier => this.signedRequest(identifier, 'GET', `curated_poll`);
+
+  /** @ignore */
+  public getExtensionTriviaQuestion = (identifier, questionID) =>
+    this.signedRequest(identifier, 'GET', `curated_poll?id=${questionID}`);
+
+  /** @ignore */
+  public getExtensionTriviaLeaderboard = identifer => this.signedRequest(identifer, 'GET', 'curated_poll_leaderboard');
 }
 
 export default StateClient;

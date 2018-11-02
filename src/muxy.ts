@@ -463,7 +463,7 @@ class Muxy {
    *
    * @param {*} options - an instance of DebuggingOptions
    */
-  public debug(options) {
+  public debug(options: DebuggingOptions) {
     this.debugOptions = {
       channelID: this.testChannelID,
       role: this.testJWTRole,

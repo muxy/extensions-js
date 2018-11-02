@@ -324,6 +324,10 @@ class StateClient {
     this.signedRequest(identifier, 'POST', 'curated_poll_edit', JSON.stringify(triviaQuestion));
 
   /** @ignore */
+  public removeExtensionTriviaQuestion = (identifier, triviaQuestionID) =>
+    this.signedRequest(identifier, 'DELETE', 'curated_poll_edit', JSON.stringify({ id: triviaQuestionID }));
+
+  /** @ignore */
   public addExtensionTriviaOptionToQuestion = (identifier, questionID, option) =>
     this.signedRequest(
       identifier,
@@ -347,7 +351,7 @@ class StateClient {
       identifier,
       'POST',
       `curated_poll_state?id=${questionID}`,
-      JSON.stringify({ transition: state, winner: winner })
+      JSON.stringify({ transition: state, winner })
     );
 
   /** @ignore */
@@ -355,7 +359,7 @@ class StateClient {
     this.signedRequest(identifier, 'POST', 'curated_poll', JSON.stringify({ question_id: questionID, vote: optionID }));
 
   /** @ignore */
-  public getExtensionTriviaQuestions = identifier => this.signedRequest(identifier, 'GET', `curated_poll`);
+  public getExtensionTriviaQuestions = identifier => this.signedRequest(identifier, 'GET', 'curated_poll');
 
   /** @ignore */
   public getExtensionTriviaQuestion = (identifier, questionID) =>

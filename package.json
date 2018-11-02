@@ -9,7 +9,7 @@
   "module": "dist/medkit.esm.js",
   "typings": "dist/types/src/muxy.d.ts",
   "scripts": {
-    "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "lint": "tslint -t codeFrame 'src/**/*.ts' '__tests__/**/*.ts' 'integration_tests/**/*.ts'",
     "dev": "rollup -c rollup.config.ts -w",
     "build": "tsc --module commonjs --skipLibCheck && rollup -c rollup.config.ts && typedoc --out dist/docs --target es6 --theme default --mode modules --excludeExternals --skipLibCheck src",
     "test": "jest __tests__/*.ts",

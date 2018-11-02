@@ -2,10 +2,9 @@
  * @module SDK
  */
 import { DebugOptions } from './debug';
-import Client from './state-client';
+import StateClient from './state-client';
 import { Position, TwitchAuth, TwitchContext } from './twitch';
 import { consolePrint, CurrentEnvironment, ENVIRONMENTS } from './util';
-import StateClient from './state-client';
 
 // 25 minutes between updates of the testing auth token.
 const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
@@ -18,7 +17,7 @@ export default class Ext {
   public static extensionID: string;
 
   public static fetchTestAuth(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
-    Client.fetchTestAuth(this.extensionID, opts)
+    StateClient.fetchTestAuth(this.extensionID, opts)
       .then((auth: TwitchAuth) => {
         cb(auth);
       })
@@ -40,7 +39,7 @@ export default class Ext {
 
       // Once we've tried 60 times, back off on attempting to once every 1.5 seconds or so.
       if (connectionAttempts > 60) {
-        if (connectionAttempts % 10 != 0) {
+        if (connectionAttempts % 10 !== 0) {
           return;
         }
       }
@@ -75,18 +74,6 @@ export default class Ext {
         return cb(resp);
       }
     });
-  }
-
-  private static authFromJWT(jwt: string): TwitchAuth {
-    const claims = JSON.parse(atob(jwt.split('.')[1]));
-    const res = new TwitchAuth();
-
-    res.token = jwt;
-    res.channelId = claims.channel_id;
-    res.userId = claims.user_id;
-    res.clientId = Ext.extensionID;
-
-    return res;
   }
 
   public static onAuthorized(opts: DebugOptions, cb: (auth: TwitchAuth) => void) {
@@ -231,5 +218,17 @@ export default class Ext {
           type: 'error'
         });
     }
+  }
+
+  private static authFromJWT(jwt: string): TwitchAuth {
+    const claims = JSON.parse(atob(jwt.split('.')[1]));
+    const res = new TwitchAuth();
+
+    res.token = jwt;
+    res.channelId = claims.channel_id;
+    res.userId = claims.user_id;
+    res.clientId = Ext.extensionID;
+
+    return res;
   }
 }

@@ -220,15 +220,17 @@ export interface ExtensionUsersResult {
  * @property {string} description - A description for the question
  * @property {string} image - A url that hosts an image to show with the question
  * @property {TriviaOption[]} - An array of options that this question has
+ * @property {string} state - Currrent state of the question
  */
 export interface TriviaQuestion {
   id: string;
   name: string;
   short_name: string;
   description: string;
-  image: string;
-  order: number;
+  image?: string;
+  order?: number;
   options?: TriviaOption[];
+  state?: string;
 }
 
 /**
@@ -245,8 +247,8 @@ export interface TriviaOption {
   name: string;
   short_name: string;
   description: string;
-  image: string;
-  order: number;
+  image?: string;
+  order?: number;
 }
 
 export interface TriviaLeaderboard {
@@ -1267,11 +1269,11 @@ export default class SDK {
   }
 
   /**
-  *  Sets the users trivia team to the current channel they are on
-  * @async
-  *
-  * @return {Promise<any>}
-  */
+   *  Sets the users trivia team to the current channel they are on
+   * @async
+   *
+   * @return {Promise<any>}
+   */
   public joinTriviaTeam(): Promise<any> {
     return this.client.joinTriviaTeam(this.identifier);
   }
@@ -1292,6 +1294,18 @@ export default class SDK {
    */
   public addExtensionTriviaQuestion(question: TriviaQuestion): Promise<any> {
     return this.client.addExtensionTriviaQuestion(this.identifier, question);
+  }
+
+  /**
+   * Removes a trivia question from the extension
+   *
+   * Requires extension admin permissions
+   * @async
+   *
+   * @return {Promise<any>}
+   */
+  public removeExtensionTriviaQuestion(triviaQuestionID: string): Promise<any> {
+    return this.client.removeExtensionTriviaQuestion(this.identifier, triviaQuestionID);
   }
 
   /**

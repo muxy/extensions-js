@@ -103,7 +103,7 @@ class StateClient {
 
   /** @ignore */
   public static setEnvironment(env, debug) {
-    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH) {
+    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH || env === ENVIRONMENTS.SANDBOX_ADMIN) {
       SERVER_URL = SANDBOX_URL;
     }
 

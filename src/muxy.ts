@@ -84,6 +84,28 @@ class Muxy {
 
     Util.consolePrint(SDKInfoText, { boxed: true });
   }
+  
+  /**
+   * Returns a version of the Muxy SDK associated with the provided identifier.
+   * @since 1.0.0
+   * @public
+   *
+   * @param {string?} id - A unique identifier for this extension or app. If omitted, the
+   * extension client id will be used.
+   *
+   * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
+   *
+   * @returns {SDK} An instance of the SDK class.
+   *
+   * @example
+   * const sdk = new Muxy.SDK();
+   * sdk.loaded().then(() => {
+   *   sdk.send('Hello World');
+   * }).catch((err) => {
+   *   console.error(err);
+   * });
+   */
+  public SDK = SDK;
 
   /**
    * Convenience accessor for users of the Muxy library, makes the util functions accessible
@@ -463,7 +485,7 @@ class Muxy {
    *
    * @param {*} options - an instance of DebuggingOptions
    */
-  public debug(options) {
+  public debug(options: DebuggingOptions) {
     this.debugOptions = {
       channelID: this.testChannelID,
       role: this.testJWTRole,
@@ -472,28 +494,6 @@ class Muxy {
       ...options.options
     };
   }
-
-  /**
-   * Returns a version of the Muxy SDK associated with the provided identifier.
-   * @since 1.0.0
-   * @public
-   *
-   * @param {string?} id - A unique identifier for this extension or app. If omitted, the
-   * extension client id will be used.
-   *
-   * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
-   *
-   * @returns {SDK} An instance of the SDK class.
-   *
-   * @example
-   * const sdk = new Muxy.SDK();
-   * sdk.loaded().then(() => {
-   *   sdk.send('Hello World');
-   * }).catch((err) => {
-   *   console.error(err);
-   * });
-   */
-  public SDK = SDK;
 
   /**
    * Returns a twitch client to use. Can only be used after the loaded promise resolves.

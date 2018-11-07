@@ -12,9 +12,9 @@ export interface DebugOptions {
 
   environment?: string;
 
-  onPubsubListen: (...args: any[]) => void;
-  onPubsubReceive: (...args: any[]) => void;
-  onPubsubSend: (...args: any[]) => void;
+  onPubsubListen?: (...args: any[]) => void;
+  onPubsubReceive?: (...args: any[]) => void;
+  onPubsubSend?: (...args: any[]) => void;
 }
 
 export class DefaultDebugOptions implements DebugOptions {

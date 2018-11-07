@@ -263,7 +263,6 @@ export default class TwitchClient {
    * });
    */
   public getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
-    forceType(usernames, 'array');
     if (usernames.length === 0) {
       return Promise.resolve([]);
     }

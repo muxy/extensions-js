@@ -41,8 +41,8 @@ export class Environment {
  * @deprecated Use {@link Util.Environments} instead.
  */
 /** @ignore */ export const ENVIRONMENTS = {
-  PRODUCTION: ProductionEnvironment,
   ADMIN: AdministrationEnvironment,
+  PRODUCTION: ProductionEnvironment,
   SANDBOX_ADMIN: SandboxAdministrationEnvironment,
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
@@ -75,11 +75,11 @@ export default class Util {
    */
   static get Environments() {
     return {
+      Admin: AdministrationEnvironment,
       Production: ProductionEnvironment,
+      SandboxAdmin: SandboxAdministrationEnvironment,
       SandboxDev: SandboxDevEnvironment,
       SandboxTwitch: SandboxTwitchEnvironment,
-      SandboxAdmin: SandboxAdministrationEnvironment,
-      Admin: AdministrationEnvironment,
       Server: ServerEnvironment,
       Testing: TestingEnvironment
     };
@@ -194,8 +194,8 @@ export default class Util {
       // Not in an iframe, assume sandbox dev.
       if (!Util.isWindowFramed(vWindow)) {
         // See if we're in the admin state.
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
           return ENVIRONMENTS.SANDBOX_ADMIN;
         }
 
@@ -208,8 +208,8 @@ export default class Util {
       }
 
       // See if we're in the admin state, but in an iframed context.
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
+      const iFrameUrlParams = new URLSearchParams(window.location.search);
+      if (iFrameUrlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
         return ENVIRONMENTS.SANDBOX_ADMIN;
       }
 

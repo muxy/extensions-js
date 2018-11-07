@@ -1,5 +1,43 @@
 # Change Log
 
+## 2018-11-07
+
+v2.1.0
+
+### Added
+
+- Added admin functionality to set and retrieve individual viewer state.
+- Added new trivia system to support polls with winners.
+
+## Fixed
+
+- Removed another type check.
+
+## 2018-11-03
+
+v2.0.3
+
+### Fixed
+
+- Removed type checking on getTwitchUsers* calls.
+
+## 2018-11-02
+
+v2.0.2
+
+### Fixed
+
+- Make sure `TwitchClient.loaded` doesn't resolve until the library is fully ready.
+- Fix issue where running an admin-extension would use the production server instead of sandbox.
+
+## 2018-10-31
+
+v2.0.1
+
+### Fixed
+
+- Passing a partial URL as a debug option will no longer make all API requests relative to the hosted domain.
+
 ## 2018-10-22
 
 v2.0.0

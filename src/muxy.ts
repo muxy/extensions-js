@@ -5,7 +5,7 @@
 import Analytics from './analytics';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';
-import SDK from './sdk';
+import SDK, { TriviaQuestionState } from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
@@ -84,7 +84,7 @@ class Muxy {
 
     Util.consolePrint(SDKInfoText, { boxed: true });
   }
-  
+
   /**
    * Returns a version of the Muxy SDK associated with the provided identifier.
    * @since 1.0.0
@@ -106,6 +106,11 @@ class Muxy {
    * });
    */
   public SDK = SDK;
+
+  /**
+   * Makes trivia state enum available from the global `Muxy` object
+   */
+  public TriviaQuestionState = TriviaQuestionState;
 
   /**
    * Convenience accessor for users of the Muxy library, makes the util functions accessible

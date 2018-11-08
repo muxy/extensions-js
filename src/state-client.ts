@@ -314,10 +314,10 @@ class StateClient {
     this.signedRequest(identifier, 'GET', `user_ids?cursor=${cursor || 0}`);
 
   /** @ignore */
-  public joinTriviaTeam = identifier => this.signedRequest(identifier, 'POST', 'team_membership');
+  public joinExtensionTriviaTeam = identifier => this.signedRequest(identifier, 'POST', 'team_membership');
 
   /** @ignore */
-  public getJoinedTeam = identifier => this.signedRequest(identifier, 'GET', 'team_membership');
+  public getExtensionTriviaJoinedTeam = identifier => this.signedRequest(identifier, 'GET', 'team_membership');
 
   /** @ignore */
   public addExtensionTriviaQuestion = (identifier, triviaQuestion) =>

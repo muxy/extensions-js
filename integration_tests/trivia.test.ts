@@ -118,11 +118,11 @@ describe('trivia', ()=> {
     await expect(sdk.setExtensionTriviaQuestionState('sdktest', TriviaQuestionState.Unlocked))
       .resolves.toEqual({'state': TriviaQuestionState.Unlocked});
 
-    await expect(sdk.getJoinedTeam()).resolves.toEqual({});
+    await expect(sdk.getExtensionTriviaJoinedTeam()).resolves.toEqual({});
 
-    await expect(sdk.joinTriviaTeam()).resolves.toEqual({});
+    await expect(sdk.joinExtensionTriviaTeam()).resolves.toEqual({});
 
-    await expect(sdk.getJoinedTeam()).resolves.toEqual({id: '26052853'});
+    await expect(sdk.getExtensionTriviaJoinedTeam()).resolves.toEqual({id: '26052853'});
 
     await expect(sdk.setExtensionTriviaQuestionVote('sdktest', 'option 1')).resolves.toEqual({});
 

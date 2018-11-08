@@ -251,6 +251,15 @@ export interface TriviaOption {
   order?: number;
 }
 
+/**
+ * The response from `getExtensionTriviaJoinedTeam`.
+ *
+ * @property {string} id - A unique identifier representing this team.
+ */
+export interface TriviaTeam {
+  id: string;
+}
+
 export interface TriviaLeaderboard {
   leaderboard: TriviaLeaderboardTeam[];
 }
@@ -1269,25 +1278,28 @@ export default class SDK {
   }
 
   /**
-   *  Sets the users trivia team to the current channel they are on
+   * Sets the user's trivia team to the current channel.
    * @async
    *
    * @return {Promise<any>}
    */
-  public joinTriviaTeam(): Promise<any> {
-    return this.client.joinTriviaTeam(this.identifier);
+  public joinExtensionTriviaTeam(): Promise<any> {
+    return this.client.joinExtensionTriviaTeam(this.identifier);
   }
 
   /**
-   * Return the trivia team that the user is on
+   * Return the user's stored trivia team.
+   * @async
+   *
+   * @return {Promise<TriviaTeam>}
    */
-  public getJoinedTeam(): Promise<any> {
-    return this.client.getJoinedTeam(this.identifier);
+  public getExtensionTriviaJoinedTeam(): Promise<TriviaTeam> {
+    return this.client.getExtensionTriviaJoinedTeam(this.identifier);
   }
 
   /**
-   * Add a trivia question to the extension
-   * Requires extension admin permissions
+   * Add a trivia question to the extension.
+   * Requires extension admin permissions.
    * @async
    *
    * @return {Promise<any>}
@@ -1297,9 +1309,8 @@ export default class SDK {
   }
 
   /**
-   * Removes a trivia question from the extension
-   *
-   * Requires extension admin permissions
+   * Removes a trivia question from the extension.
+   * Requires extension admin permissions.
    * @async
    *
    * @return {Promise<any>}
@@ -1309,8 +1320,8 @@ export default class SDK {
   }
 
   /**
-   * Add a option to a trivia question
-   * Requires extension admin permissions
+   * Add an option to a trivia question.
+   * Requires extension admin permissions.
    * @async
    *
    * @return {Promise<any>}
@@ -1320,8 +1331,8 @@ export default class SDK {
   }
 
   /**
-   * Remove an option from a trivia question
-   * Requires extension admin permissions
+   * Remove an option from a trivia question.
+   * Requires extension admin permissions.
    * @async
    *
    * @return {Promise<any>}
@@ -1331,8 +1342,8 @@ export default class SDK {
   }
 
   /**
-   * Change the state of a extension trivia question
-   * Requires extension admin permissions
+   * Change the state of a extension trivia question.
+   * Requires extension admin permissions.
    * @async
    *
    * @return {Promise<any>}

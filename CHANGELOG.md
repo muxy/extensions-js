@@ -1,5 +1,14 @@
 # Change Log
 
+## 2018-11-09
+
+v2.1.1
+
+### Fixed
+
+- Fixed up some internal naming inconsistencies with the trivia system.
+- Exposed the TriviaQuestionState enum on the global Muxy object.
+
 ## 2018-11-07
 
 v2.1.0
@@ -8,6 +17,7 @@ v2.1.0
 
 - Added admin functionality to set and retrieve individual viewer state.
 - Added new trivia system to support polls with winners.
+- Added ability to fetch a list of users who have shared their identity with the extension.
 
 ## Fixed
 

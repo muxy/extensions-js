@@ -220,7 +220,7 @@ export interface ExtensionUsersResult {
  * @property {string} description - A description for the question
  * @property {string} image - A url that hosts an image to show with the question
  * @property {TriviaOption[]} - An array of options that this question has
- * @property {string} state - Currrent state of the question
+ * @property {string} state - Current state of the question
  */
 export interface TriviaQuestion {
   id: string;
@@ -321,7 +321,7 @@ export enum TriviaQuestionState {
   // are visible while unlocked.
   Locked = 'state-locked',
 
-  // Results marks a poll as complete, and results are avaliable.
+  // Results marks a poll as complete, and results are available.
   Results = 'state-results'
 }
 
@@ -1100,7 +1100,7 @@ export default class SDK {
    *   console.log(`${track.artist} - {track.title} (${track.year})`);
    * });
    */
-  public listen(inEvent, inUserID, inCallback) {
+  public listen(inEvent, inUserID, inCallback?) {
     const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
 
     let l = 'broadcast';

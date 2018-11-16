@@ -56,6 +56,11 @@ module.exports = {
     // We don't actually use JSX, but airbnb does. And there is a bug with
     // this option in the current eslint/npm versions.
     'jsx-a11y/href-no-hash': 'off',
-    'jsx-a11y/anchor-is-valid': 'off'
+    'jsx-a11y/anchor-is-valid': 'off',
+
+    'max-len': ["error", {
+      "code": 120,
+      "ignoreComments": true
+    }]
   }
 };

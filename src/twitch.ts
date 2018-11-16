@@ -6,6 +6,7 @@
 import { ObserverHandler } from './observer';
 import User from './user';
 
+// Twitch types
 export class TwitchAuth {
   public clientId: string;
   public token: string;
@@ -22,24 +23,68 @@ export class JWT {
   // tslint:enable:variable-name
 }
 
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface TwitchBitsTransaction {
+  transactionId: string;
+  product: TwitchBitsProduct;
+  userId: string;
+  displayName: string;
+  initiator: any;
+}
+
+export interface TwitchBitsProduct {
+  domain: string;
+  sku: string;
+  inDevelopment: boolean;
+  displayName: string;
+  cost: TwitchBitsCost;
+}
+
+export interface TwitchBitsCost {
+  amount: number;
+  type: string;
+}
+
+// Twitch SDK Interfaces
+
+export interface TwitchActionsSDK {
+  followChannel(chan: string): void;
+  onFollow(cb: (didFollow: boolean, chan: string) => void): void;
+  requestIdShare(): void;
+}
+
+export interface TwitchBitsSDK {
+  getProducts: () => Promise<TwitchBitsProduct[]>;
+  useBits: (sku: string) => void;
+  onTransactionComplete: (callback: (transaction: TwitchBitsTransaction) => void) => void;
+  showBitsBalance: () => void;
+  setUseLoopback: (useLoopback: boolean) => void;
+}
+
 export interface TwitchPurchasesSDK {
   beginPurchase(sku: string): void;
   getPrices(): Promise<any>;
   onReloadEntitlements(cb: (arg: any) => void): void;
 }
 
-export interface Position {
-  x: number;
-  y: number;
-}
-
+// Twitch Extension SDK
 export interface TwitchSDK {
+  actions: TwitchActionsSDK;
+  bits: TwitchBitsSDK;
   purchases: TwitchPurchasesSDK;
+  settings: any;
 
   onAuthorized(cb: (auth: TwitchAuth) => void): void;
-  onContext(cb: (auth: TwitchContext) => void): void;
-  onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void): void;
+  onContext(cb: (ctx: TwitchContext, fields: object) => void): void;
+  onError(cb: (err: string | Error) => void): void;
+  onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext | null) => void): void;
   onPositionChanged(callback: (position: Position) => void): void;
+
+  getAuthData(): any;
 
   send(
     target: string,
@@ -54,7 +99,8 @@ export interface TwitchSDK {
   unlisten(topic: string, callback: (t: any, datatype: string, message: string) => void);
 }
 
-export interface TwitchWrapper {
+// Twitch Global Object
+export interface TwitchExtensionHelper {
   ext: TwitchSDK;
 }
 
@@ -92,6 +138,6 @@ export interface TwitchContext {
 
 declare global {
   interface Window {
-    Twitch: TwitchWrapper;
+    Twitch: TwitchExtensionHelper;
   }
 }

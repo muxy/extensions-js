@@ -20,6 +20,25 @@ export interface SDKMap {
 }
 
 /**
+ * Options that can be passed to Muxy.setup()
+ *
+ * `clientID` - The Extension Client ID as provided by Twitch.
+ * `uaString` - An optional Google Analytics UA_String to send events to.
+ * `quiet` - If true, will not print library information to the console. This is always
+ *  true when running in production.
+ */
+export interface SetupOptions {
+  clientID: string;
+  uaString?: string;
+  quiet?: boolean;
+}
+
+/** @ignore */
+export interface DeprecatedSetupOptions {
+  extensionID?: string;
+}
+
+/**
  * The main extension entry interface, available as the global `Muxy` object.
  *
  * This class handles environment detection, data harness collection and updates (for
@@ -28,7 +47,7 @@ export interface SDKMap {
  * On import or inclusion in an HTML file, a singleton object will be globally accessible
  * as `Muxy`.
  */
-class Muxy {
+export class Muxy {
   /**
    * Prints to console a description of the library's current version and
    * environment info. This is called automatically when the library is
@@ -435,12 +454,17 @@ class Muxy {
    *   clientID: <your extension client id>
    * });
    */
-  public setup(options) {
+  public setup(options: SetupOptions & DeprecatedSetupOptions) {
     if (this.setupCalled) {
       throw new Error('Muxy.setup() can only be called once.');
     }
 
-    if (!options || (!options.extensionID && !options.clientID)) {
+    if (!options) {
+      throw new Error('Muxy.setup() was called with invalid options');
+    }
+
+    const clientID = options.clientID || options.extensionID;
+    if (!clientID) {
       throw new Error('Muxy.setup() was called without an Extension Client ID');
     }
 
@@ -466,7 +490,7 @@ class Muxy {
     this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
 
-    this.twitchClientID = options.clientID || options.extensionID;
+    this.twitchClientID = clientID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);
     this.cachedTwitchClient.promise = this.loadPromise;
 
@@ -522,7 +546,7 @@ class Muxy {
 const mxy: Muxy = new Muxy();
 
 /** @ignore */
-mxy.TwitchClient = function NewTwitchClient() {
+mxy.TwitchClient = function NewTwitchClient(): TwitchClient {
   if (!mxy.setupCalled) {
     throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
   }
@@ -533,6 +557,7 @@ mxy.TwitchClient = function NewTwitchClient() {
 mxy.DebuggingOptions = DebuggingOptions;
 
 // Backwards compatibility shim
+// tslint:disable-next-line
 mxy['default'] = mxy;
 
 /**

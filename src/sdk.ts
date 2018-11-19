@@ -757,9 +757,33 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-
   public setExtensionViewerState(state: object): Promise<object> {
     return this.client.setExtensionViewerState(this.identifier, state);
+  }
+
+  /**
+   * Applies a set of patches to multiple extension-wide viewer-specific states.
+   * This method requires a mapping of user_id to objects. The provided state
+   * objects per user are merged server-side. A key may be specified to be 'null'
+   * to delete the key on the server. Arrays are overwritten in their entirety on merge.
+   * Objects are merged recursively.
+   *
+   * This method can only set state for viewers who have shared their ID.
+   *
+   * This method requires an admin context.
+   * @async
+   * @param userStates - a mapping of userID to patch objects.
+   *
+   * @return {Promise} Will resolve on successful setting of state. Rejects on failure.
+   *
+   * @example
+   * sdk.patchExtensionViewerState({
+   *  '12452': { 'hello': 'world' },
+   *  '12422': { 'foo': 'bar' }
+   * });
+   */
+  public patchExtensionViewerState(userStates: object): Promise<object> {
+    return this.client.patchExtensionViewerState(this.identifier, userStates);
   }
 
   /**
@@ -908,6 +932,38 @@ export default class SDK {
    */
   public getExtensionSecretState(): Promise<object> {
     return this.client.getExtensionSecretState(this.identifier);
+  }
+
+  /**
+   * Returns a mapping of user_id to extension specific viewer states.
+   * If a viewer doesn't have state set, but was requested, that user will
+   * not be in the response object. The maximum numer of users that can be
+   * queried with this call is 1000.
+   * @async
+   *
+   * @param users - an array of userIDs to request state for.
+   *
+   * @return {Promise<object>} Resolves on successful server request with an object that is a mapping
+   *  of userID to state. Rejects on failure.
+   *
+   * @example
+   * sdk.patchExtensionViewerState({
+   *  'valid-user-id': {
+   *    'hello': 'world'
+   *  }
+   * }).then(() => {
+   *  sdk.multiGetExtensionViewerState(['valid-user-id', 'invalid-user-id']).then(state => {
+   *    console.log(state['valid-user-id'].hello) // prints 'world'
+   *    console.log(state['invalid-user-id']) // is undefined.
+   *  });
+   * }
+   */
+  public multiGetExtensionViewerState(users): Promise<object> {
+    if (users.length > 1000) {
+      throw new Error('Too many users specified in call to multiGetExtensionViewerState');
+    }
+
+    return this.client.multiGetExtensionViewerState(this.identifier, users);
   }
 
   /**

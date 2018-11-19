@@ -1,5 +1,14 @@
 # Change Log
 
+## 2018-11-19
+
+v2.2.0
+
+### Added
+
+- Added admin functionality to set and retrieve individual viewer state.
+- Exposed more types publicly to aid TypeScript development.
+
 ## 2018-11-09
 
 v2.1.1
@@ -15,7 +24,6 @@ v2.1.0
 
 ### Added
 
-- Added admin functionality to set and retrieve individual viewer state.
 - Added new trivia system to support polls with winners.
 - Added ability to fetch a list of users who have shared their identity with the extension.
 

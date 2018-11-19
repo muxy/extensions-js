@@ -246,6 +246,14 @@ class StateClient {
     this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
 
   /** @ignore */
+  public patchExtensionViewerState = (identifier, multiState) =>
+    this.signedRequest(identifier, 'PATCH', 'extension_viewer_state', JSON.stringify(multiState));
+
+  /** @ignore */
+  public multiGetExtensionViewerState = (identifier, users) =>
+    this.signedRequest(identifier, 'GET', `extension_viewer_state?user_ids=${users.join(',')}`);
+
+  /** @ignore */
   public setExtensionSecretState = (identifier, state) =>
     this.postState(identifier, ServerState.EXTENSION_SECRET, JSON.stringify(state));
 

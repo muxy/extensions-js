@@ -1,5 +1,13 @@
 # Change Log
 
+## 2018-11-20
+
+v2.2.1
+
+### Fixed
+
+- Added missing type definition files.
+
 ## 2018-11-19
 
 v2.2.0
@@ -37,7 +45,7 @@ v2.0.3
 
 ### Fixed
 
-- Removed type checking on getTwitchUsers* calls.
+- Removed type checking on getTwitchUsers\* calls.
 
 ## 2018-11-02
 

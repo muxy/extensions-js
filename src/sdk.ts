@@ -1167,6 +1167,9 @@ export default class SDK {
       callback = inUserID;
     }
 
+    let lastMessage = '';
+    let lastTimestamp = new Date();
+
     const cb = msg => {
       try {
         // Production messages may be unprefixed.
@@ -1188,6 +1191,15 @@ export default class SDK {
             .split(':')
             .slice(2)
             .join(':');
+
+          const deltaT = new Date().valueOf() - lastTimestamp.valueOf();
+          const serialized = JSON.stringify(msg);
+          if (serialized === lastMessage && deltaT < 100) {
+            return;
+          }
+
+          lastMessage = serialized;
+          lastTimestamp = new Date();
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {

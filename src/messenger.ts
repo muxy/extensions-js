@@ -83,6 +83,9 @@ class TwitchMessenger implements Messenger {
 
     this.debug.onPubsubListen(id, topic);
     window.Twitch.ext.listen(topic, cb);
+    if (topic === 'broadcast') {
+      window.Twitch.ext.listen('global', cb);
+    }
 
     return {
       cb,
@@ -116,6 +119,7 @@ class PusherMessenger implements Messenger {
 
   public client: Pusher.Pusher;
   public channel: Pusher.Channel;
+  public globalChannel: Pusher.Channel;
 
   constructor(debug: DebugOptions) {
     // @ts-ignore
@@ -148,7 +152,10 @@ class PusherMessenger implements Messenger {
   public listen(id, topic, callback) {
     if (!this.channel) {
       const channelName = `twitch.pubsub.${this.extensionID}.${this.channelID}`;
+      const globalName = `twitch.pubsub.${this.extensionID}.all`;
+
       this.channel = this.client.subscribe(channelName);
+      this.globalChannel = this.client.subscribe(globalName);
     }
 
     const cb = message => {
@@ -164,6 +171,7 @@ class PusherMessenger implements Messenger {
 
     this.debug.onPubsubListen(id, topic);
     this.channel.bind(topic, cb);
+    this.globalChannel.bind(topic, cb);
 
     return {
       cb,
@@ -173,6 +181,7 @@ class PusherMessenger implements Messenger {
 
   public unlisten(id, h) {
     this.channel.unbind(h.target, h.cb);
+    this.globalChannel.unbind(h.target, h.cb);
   }
 
   public close() {

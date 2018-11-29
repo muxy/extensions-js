@@ -1167,8 +1167,7 @@ export default class SDK {
       callback = inUserID;
     }
 
-    let lastMessage = '';
-    let lastTimestamp = new Date();
+    let messageBuffer = [];
 
     const cb = msg => {
       try {
@@ -1192,14 +1191,28 @@ export default class SDK {
             .slice(2)
             .join(':');
 
-          const deltaT = new Date().valueOf() - lastTimestamp.valueOf();
           const serialized = JSON.stringify(msg);
-          if (serialized === lastMessage && deltaT < 100) {
+          const now = new Date().valueOf();
+          let deduped = false;
+
+          messageBuffer.forEach(b => {
+            if (b.content === serialized) {
+              if (now - b.timestamp < 60 * 1000) {
+                deduped = true;
+              }
+            }
+          });
+
+          if (deduped) {
             return;
           }
 
-          lastMessage = serialized;
-          lastTimestamp = new Date();
+          messageBuffer.unshift({
+            content: serialized,
+            timestamp: now
+          });
+
+          messageBuffer = messageBuffer.slice(0, 10);
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {

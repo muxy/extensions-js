@@ -1,5 +1,14 @@
 # Change Log
 
+## 2018-11-29
+
+v2.2.2
+
+### Fixed
+
+- Support Twitch-sent global broadcast messages.
+- Correctly whitelist type definition files for NPM.
+
 ## 2018-11-20
 
 v2.2.1

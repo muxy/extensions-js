@@ -1167,6 +1167,8 @@ export default class SDK {
       callback = inUserID;
     }
 
+    let messageBuffer = [];
+
     const cb = msg => {
       try {
         // Production messages may be unprefixed.
@@ -1188,6 +1190,29 @@ export default class SDK {
             .split(':')
             .slice(2)
             .join(':');
+
+          const serialized = JSON.stringify(msg);
+          const now = new Date().valueOf();
+          let deduped = false;
+
+          messageBuffer.forEach(b => {
+            if (b.content === serialized) {
+              if (now - b.timestamp < 60 * 1000) {
+                deduped = true;
+              }
+            }
+          });
+
+          if (deduped) {
+            return;
+          }
+
+          messageBuffer.unshift({
+            content: serialized,
+            timestamp: now
+          });
+
+          messageBuffer = messageBuffer.slice(0, 10);
           callback(msg.data, truncatedEvent);
         }
       } catch (err) {

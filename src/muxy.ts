@@ -38,6 +38,14 @@ export interface DeprecatedSetupOptions {
   extensionID?: string;
 }
 
+export interface MuxyInterface {
+  debug(dbg: DebuggingOptions): void;
+  setup(options: SetupOptions & DeprecatedSetupOptions): void;
+  watchAuth(extensionID: string);
+
+  TwitchClient(): TwitchClient;
+}
+
 /**
  * The main extension entry interface, available as the global `Muxy` object.
  *
@@ -47,7 +55,7 @@ export interface DeprecatedSetupOptions {
  * On import or inclusion in an HTML file, a singleton object will be globally accessible
  * as `Muxy`.
  */
-export class Muxy {
+class Muxy implements MuxyInterface {
   /**
    * Prints to console a description of the library's current version and
    * environment info. This is called automatically when the library is
@@ -534,8 +542,9 @@ export class Muxy {
    *
    * @throws {Error} Will throw an error if called before {@link Muxy.setup}.
    */
-  public TwitchClient() {
+  public TwitchClient(): TwitchClient {
     /* Implemented below to deal with scoping issues. */
+    return undefined;
   }
 }
 

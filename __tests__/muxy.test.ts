@@ -68,11 +68,13 @@ describe('Muxy', () => {
 
   it('needs an extension client id to setup', () => {
     expect(() => {
+      // @ts-ignore
       Muxy.setup({ quiet: true });
     }).toThrow(Error);
   });
 
   it('can be set up', () => {
+    // @ts-ignore
     Muxy.setup({
       extensionID: 'testextensionid',
       quiet: true
@@ -80,8 +82,10 @@ describe('Muxy', () => {
   });
 
   it('cannot call setup() twice', () => {
+    // @ts-ignore
     Muxy.setup({ extensionID: 'testextensionid', quiet: true });
     expect(() => {
+      // @ts-ignore
       Muxy.setup({ extensionID: 'textextensionid', quiet: true });
     }).toThrow(Error);
   });
@@ -97,11 +101,13 @@ describe('Muxy', () => {
   });
 
   it('can create new SDK instances', () => {
+    // @ts-ignore
     Muxy.setup({ extensionID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });
 
   it('can create new SDK instances with new scope', () => {
+    // @ts-ignore
     Muxy.setup({ extensionID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });

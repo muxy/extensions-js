@@ -1,5 +1,21 @@
 # Change Log
 
+## 2019-01-03
+
+v2.2.4
+
+### Fixed
+
+- Actually fix `default` export in UMD build. 🙄
+
+## 2019-01-03
+
+v2.2.3
+
+### Fixed
+
+- Fix requirement to use `Muxy.default.*` when using UMD build of extension.
+
 ## 2018-11-29
 
 v2.2.2

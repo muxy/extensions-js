@@ -1,5 +1,11 @@
 {
   "presets": ["es2015", "stage-2"],
-  "plugins": ["transform-runtime"],
+  "plugins": [
+    "add-module-exports",
+    {
+      "addDefaultProperty": true
+    },
+    "transform-runtime"
+  ],
   "comments": false
 }

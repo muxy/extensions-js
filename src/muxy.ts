@@ -233,6 +233,7 @@ class Muxy implements MuxyInterface {
   public loadPromise: Promise<void>;
   public loadResolve: () => void;
   public loadReject: (err: string) => void;
+  public didLoad: boolean;
 
   /**
    * List of SKUs and product metadata that is used for monetization purposes
@@ -296,10 +297,12 @@ class Muxy implements MuxyInterface {
     this.cachedTwitchClient = null;
     this.analytics = null;
     this.user = null;
+    this.didLoad = false;
 
     this.loadPromise = new Promise((resolve, reject) => {
       /** @ignore */
       this.loadResolve = resolve;
+
       /** @ignore */
       this.loadReject = reject;
     });
@@ -368,6 +371,8 @@ class Muxy implements MuxyInterface {
             }
 
             updateUserContextSettings.call(this);
+
+            this.didLoad = true;
 
             resolvePromise(user);
             this.loadResolve();

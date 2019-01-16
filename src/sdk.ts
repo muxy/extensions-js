@@ -1113,6 +1113,10 @@ export default class SDK {
    * });
    */
   public send(event, userID, data) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
     forceType(event, 'string');
     let target = 'broadcast';
     let realData = data;
@@ -1157,6 +1161,10 @@ export default class SDK {
    * });
    */
   public listen(inEvent, inUserID, inCallback?) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
     const realEvent = `${CurrentEnvironment().environment}:${this.identifier}:${inEvent}`;
 
     let l = 'broadcast';

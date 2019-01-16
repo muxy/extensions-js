@@ -1,5 +1,19 @@
 # Change Log
 
+## 2019-01-16
+
+v2.2.5
+
+### Fixed
+
+- Reduced the automatic deduplication on message events from 60 seconds to 5. This could prevent
+clients from receiving e.g. vote update events more than once a minute.
+
+### Updated
+
+- SDK now throws an error when attempting to send or receive messages before it has fully `loaded`.
+Previously, these operations would fail silently.
+
 ## 2019-01-03
 
 v2.2.4

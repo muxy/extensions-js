@@ -27,6 +27,12 @@ const SANDBOX_URL = 'https://sandbox.api.muxy.io';
 const LOCALHOST_URL = 'http://localhost:5000';
 
 /**
+ * Muxy staging API URL.
+ * @ignore
+ */
+const STAGING_URL = 'https://staging.api.muxy.io';
+
+/**
  * API URL to use for backend requests. Uses production API be default, but
  * can be updated using {@link setEnvironment}.
  * @ignore
@@ -107,6 +113,11 @@ class StateClient {
       SERVER_URL = SANDBOX_URL;
     }
 
+    if (env === ENVIRONMENTS.STAGING_DEV || env === ENVIRONMENTS.STAGING_TWITCH) {
+      SERVER_URL = STAGING_URL;
+      FAKEAUTH_URL = STAGING_URL;
+    }
+
     if (env === ENVIRONMENTS.TESTING) {
       SERVER_URL = LOCALHOST_URL;
       FAKEAUTH_URL = LOCALHOST_URL;
@@ -114,6 +125,7 @@ class StateClient {
 
     if (debug && debug.url) {
       SERVER_URL = debug.url;
+      FAKEAUTH_URL = debug.url;
     }
   }
 

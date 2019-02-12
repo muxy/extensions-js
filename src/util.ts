@@ -35,6 +35,18 @@ export class Environment {
   environment: 'testing'
 };
 
+/** @ignore */ const StagingDevEnvironment: Environment = {
+  environment: 'staging'
+};
+
+/** @ignore */ const StagingAdministrationEnvironment: Environment = {
+  environment: 'staging'
+};
+
+/** @ignore */ const StagingTwitchEnvironment: Environment = {
+  environment: 'staging'
+};
+
 /**
  * Possible runtime environments for the SDK.
  * @since 1.0.0
@@ -47,7 +59,10 @@ export class Environment {
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
-  TESTING: TestingEnvironment
+  TESTING: TestingEnvironment,
+  STAGING_ADMIN: StagingAdministrationEnvironment,
+  STAGING_DEV: StagingDevEnvironment,
+  STAGING_TWITCH: StagingTwitchEnvironment
 };
 
 export interface ConsolePrintOptions {
@@ -81,7 +96,10 @@ export default class Util {
       SandboxDev: SandboxDevEnvironment,
       SandboxTwitch: SandboxTwitchEnvironment,
       Server: ServerEnvironment,
-      Testing: TestingEnvironment
+      Testing: TestingEnvironment,
+      StagingDev: StagingDevEnvironment,
+      StagingTwitch: StagingTwitchEnvironment,
+      StagingAdmin: StagingAdministrationEnvironment
     };
   }
 

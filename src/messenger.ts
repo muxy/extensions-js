@@ -244,9 +244,12 @@ export default function DefaultMessenger(debug: DebugOptions): Messenger {
     case ENVIRONMENTS.SANDBOX_DEV:
     case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
     case ENVIRONMENTS.SANDBOX_ADMIN:
+    case ENVIRONMENTS.STAGING_ADMIN:
+    case ENVIRONMENTS.STAGING_DEV:
       return new PusherMessenger(debug);
     case ENVIRONMENTS.SANDBOX_TWITCH:
     case ENVIRONMENTS.PRODUCTION:
+    case ENVIRONMENTS.STAGING_TWITCH:
       return new TwitchMessenger(debug);
     case ENVIRONMENTS.SERVER:
       return new ServerMessenger(debug);

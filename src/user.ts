@@ -3,6 +3,7 @@
  */
 import { ObserverHandler } from './observer';
 import { JWT, TwitchAuth } from './twitch';
+import Util from './util';
 
 export class UserUpdateCallbackHandle extends ObserverHandler<User> {
   private cb: (user: User) => void;
@@ -226,13 +227,10 @@ export default class User {
    */
   public extractJWTInfo(jwt: string) {
     try {
-      const splitToken = jwt.split('.');
-      if (splitToken.length === 3) {
-        const token = JSON.parse(window.atob(splitToken[1])) as JWT;
-        this.role = token.role;
-        if (token.user_id) {
-          this.twitchID = token.user_id;
-        }
+      const token = Util.extractJWTInfo(jwt);
+      this.role = token.role;
+      if (token.user_id) {
+        this.twitchID = token.user_id;
       }
     } catch (err) {
       // Silently fail (enforcement of Twitch ID is done externally).

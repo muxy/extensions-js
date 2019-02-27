@@ -1,6 +1,8 @@
 /**
  * @module SDK
  */
+import { JWT } from './twitch';
+
 /**
  * Global environment objects. This ensures that comparisons are true between
  * object pointers. For example: ENVIRONMENTS.TESTING === Util.Environments.Testing
@@ -373,16 +375,24 @@ export default class Util {
    * @return {TwitchEnvironment}
    */
   public static getTwitchEnvironment(): TwitchEnvironment {
-    const urlParams = new URLSearchParams(window.location.search);
+    const url = new URL(window.location.search);
 
     const env: TwitchEnvironment = {
       anchor: null,
       language: null,
       mode: null,
       platform: null,
-      state: null
+      state: null,
+      version: null
     };
 
+    const path = url.pathname;
+    const splitPath = path.split('/');
+    if (splitPath.length > 2) {
+      env.version = splitPath[2];
+    }
+
+    const urlParams = url.searchParams;
     env.anchor = urlParams.get('anchor');
     env.language = urlParams.get('language');
     env.mode = urlParams.get('mode');
@@ -390,6 +400,22 @@ export default class Util {
     env.state = urlParams.get('state');
 
     return env;
+  }
+
+  /**
+   * Attempts to parse the provided JWT and return the payload info
+   *
+   * @param {Object} jwt - The auth JWT token as returned from the auth harness.
+   */
+  public static extractJWTInfo(jwt: string): JWT {
+    try {
+      const splitToken = jwt.split('.');
+      if (splitToken.length === 3) {
+        return JSON.parse(window.atob(splitToken[1])) as JWT;
+      }
+    } catch (err) {
+      throw new Error('Failed to parse JWT');
+    }
   }
 }
 
@@ -404,6 +430,7 @@ export default class Util {
  * @property {string} mode - The extension’s mode. Valid values: "config", "dashboard", "viewer".
  * @property {string} platform - The platform on which the Twitch client is running. Valid values: "mobile", "web".
  * @property {string} state - The release state of the extension.
+ * @property {string} version - The version of the extension
  * Valid values: "testing", "hosted_test", "approved", "released",
  * "ready_for_review", "in_review", "pending_action", "uploading".
  */
@@ -413,6 +440,7 @@ export interface TwitchEnvironment {
   mode: string;
   platform: string;
   state: string;
+  version: string;
 }
 
 /** @ignore */ export const consolePrint = Util.consolePrint;

@@ -5,7 +5,7 @@ import { resolveCname } from 'dns';
 
 import XMLHttpRequestPromise, { XHRResponse } from '../libs/xhr-promise';
 
-import { forceType } from './util';
+import Util from './util';
 
 /**
  * A single user object as from {@link getTwitchUsers}.
@@ -245,6 +245,53 @@ export default class TwitchClient {
   }
 
   /**
+   * Wraps an AJAX request to Twitch's Extension API. Used internally by the API
+   * convenience methods.
+   *
+   * @async
+   * @ignore
+   *
+   * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
+   * @param {string} endpoint - The Twitch Extension API endpoint.
+   * @param {string?} data - A string-encoded JSON payload to send with the request.
+   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
+   *
+   * @return {Promise} Resolves with the AJAX payload on response < 400.
+   * Rejects otherwise.
+   */
+  public signedTwitchExtensionRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
+    const headers = {
+      'Client-ID': this.extensionId,
+
+      Authorization: undefined
+    };
+
+    if (JWT) {
+      headers.Authorization = `Bearer ${JWT}`;
+    }
+
+    return new Promise((resolve, reject) => {
+      const xhrPromise = new XMLHttpRequestPromise({
+        data,
+        headers,
+        method,
+        url: `https://api.twitch.tv/extensions/${endpoint}`
+      });
+
+      return xhrPromise
+        .send()
+        .catch(reject)
+        .then((resp: XHRResponse) => {
+          if (resp.status < 400) {
+            resolve(resp.responseText);
+          }
+
+          reject(resp.responseText);
+        });
+    });
+  }
+
+  /**
    * Returns a list of Twitch User objects for a given list of usernames.
    *
    * @async
@@ -302,26 +349,49 @@ export default class TwitchClient {
   /**
    * Gets a list of the digital goods the current user has.
    *
-   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT
+   * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
    *
    * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
    * each of the goods the user is entitled to.
    */
-  public getUserGoods(JWT) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', JWT);
+  public getUserGoods(jwt) {
+    return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', jwt);
   }
 
   /**
    * Sets the fulfillment status for the specified receipts (purchases).
    *
-   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT
-   * @param {[]Receipt} Receipts - List of {@link Receipt} objects detailing which goods need to be
+   * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
+   * @param {[]Receipt} receipts - List of {@link Receipt} objects detailing which goods need to be
    * updated.
    *
    * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
    * Receipts parameter.
    */
-  public updateFulfilledGoods(JWT, receipts) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, JWT);
+  public updateFulfilledGoods(jwt, receipts) {
+    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, jwt);
+  }
+
+  /**
+   * Sets the required configuration string enabling an extension to be enabled
+   *
+   * SEE: https://dev.twitch.tv/docs/extensions/reference/#set-extension-required-configuration
+   *
+   * @param jwt - Signed JWT, accessible from sdk.user.twitchJWT
+   * @param configurationString - A string that matches the required configuration string in the extension config
+   */
+  public setExtensionRequiredConfiguration(jwt: string, configurationString: string) {
+    const environment = Util.getTwitchEnvironment();
+
+    const data = { required_configuration: configurationString };
+
+    const token = Util.extractJWTInfo(jwt);
+
+    return this.signedTwitchExtensionRequest(
+      'PUT',
+      `${this.extensionId}/${environment.version}/required_configuration?channel_id=${token.channel_id}`,
+      JSON.stringify(data),
+      jwt
+    );
   }
 }

@@ -1,5 +1,18 @@
 # Change Log
 
+## 2019-02-27
+
+v2.2.6
+
+### Fixed
+
+- Update staging URL in admin auth whitelist.
+
+### Added
+
+- Added ability to quickly set an extension's required configuration from MEDKit.
+- Added extension version to available metadata.
+
 ## 2019-01-16
 
 v2.2.5

@@ -25,7 +25,7 @@ export default class Ext {
   }
 
   public static fetchAdminAuth(debug: DebugOptions, cb: (auth: TwitchAuth) => void) {
-    const allowedOrigins = ['^https://dev\\.staging.muxy\\.io$', '^https://dev\\.muxy\\.io$', '^https?://localhost'];
+    const allowedOrigins = ['^https://.*?\\.muxy\\.io$', '^https://.*?\\.staging\\.muxy\\.io$', '^https?://localhost'];
 
     // Show that we're ready to receive.
     let connectionAttempts = 0;

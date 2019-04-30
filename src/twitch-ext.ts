@@ -83,19 +83,16 @@ export default class Ext {
 
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_DEV:
-      case ENVIRONMENTS.STAGING_DEV:
         Ext.fetchTestAuth(opts, cb);
         setInterval(Ext.fetchTestAuth, TEST_AUTH_TIMEOUT_MS, opts, cb);
         break;
 
       case ENVIRONMENTS.SANDBOX_ADMIN:
-      case ENVIRONMENTS.STAGING_ADMIN:
       case ENVIRONMENTS.ADMIN:
         Ext.fetchAdminAuth(opts, cb);
         break;
 
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION: {
         const timer = setTimeout(cb, 1000 * 15);
         window.Twitch.ext.onAuthorized(auth => {
@@ -118,7 +115,6 @@ export default class Ext {
   public static onContext(cb: (ctx: TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         (function setupOnContextCallback() {
           // Twitch currently (2017-08-25) has an issue where certain browser mis-configurations
@@ -147,7 +143,6 @@ export default class Ext {
   public static beginPurchase(sku: string) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.purchases.beginPurchase(sku);
         break;
@@ -162,7 +157,6 @@ export default class Ext {
   public static getPrices(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.purchases
           .getPrices()
@@ -182,7 +176,6 @@ export default class Ext {
   public static onReloadEntitlements(cb: (a: any) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.purchases.onReloadEntitlements(cb);
         break;
@@ -197,7 +190,6 @@ export default class Ext {
   public static onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.onVisibilityChanged(callback);
         break;
@@ -212,7 +204,6 @@ export default class Ext {
   public static onPositionChanged(callback: (position: Position) => void) {
     switch (CurrentEnvironment()) {
       case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.STAGING_TWITCH:
       case ENVIRONMENTS.PRODUCTION:
         window.Twitch.ext.onPositionChanged(callback);
         break;

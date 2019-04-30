@@ -2,6 +2,7 @@
  * @module SDK
  */
 import { JWT } from './twitch';
+import Config from './config';
 
 /**
  * Global environment objects. This ensures that comparisons are true between
@@ -37,18 +38,6 @@ export class Environment {
   environment: 'testing'
 };
 
-/** @ignore */ const StagingDevEnvironment: Environment = {
-  environment: 'staging'
-};
-
-/** @ignore */ const StagingAdministrationEnvironment: Environment = {
-  environment: 'staging'
-};
-
-/** @ignore */ const StagingTwitchEnvironment: Environment = {
-  environment: 'staging'
-};
-
 /**
  * Possible runtime environments for the SDK.
  * @since 1.0.0
@@ -61,10 +50,7 @@ export class Environment {
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
-  TESTING: TestingEnvironment,
-  STAGING_ADMIN: StagingAdministrationEnvironment,
-  STAGING_DEV: StagingDevEnvironment,
-  STAGING_TWITCH: StagingTwitchEnvironment
+  TESTING: TestingEnvironment
 };
 
 export interface ConsolePrintOptions {
@@ -83,6 +69,20 @@ export interface ConsolePrintOptions {
 export default class Util {
   public static overrideEnvironment?: Environment;
 
+  private static availableEnvironments: { [key: string]: Environment } = {
+    Admin: AdministrationEnvironment,
+    Production: ProductionEnvironment,
+    SandboxAdmin: SandboxAdministrationEnvironment,
+    SandboxDev: SandboxDevEnvironment,
+    SandboxTwitch: SandboxTwitchEnvironment,
+    Server: ServerEnvironment,
+    Testing: TestingEnvironment
+  };
+
+  static registerEnviornment(key: string, env: Environment) {
+    this.availableEnvironments[key] = env;
+  }
+
   /**
    * Possible runtime environments for the library. Used to define available
    * behavior and services.
@@ -91,18 +91,7 @@ export default class Util {
    * @type {Object}
    */
   static get Environments() {
-    return {
-      Admin: AdministrationEnvironment,
-      Production: ProductionEnvironment,
-      SandboxAdmin: SandboxAdministrationEnvironment,
-      SandboxDev: SandboxDevEnvironment,
-      SandboxTwitch: SandboxTwitchEnvironment,
-      Server: ServerEnvironment,
-      Testing: TestingEnvironment,
-      StagingDev: StagingDevEnvironment,
-      StagingTwitch: StagingTwitchEnvironment,
-      StagingAdmin: StagingAdministrationEnvironment
-    };
+    return this.availableEnvironments;
   }
 
   /**
@@ -202,6 +191,11 @@ export default class Util {
 
     if (Util.overrideEnvironment) {
       return Util.overrideEnvironment;
+    }
+
+    let otherEnv = Config.OtherEnvironmentCheck(vWindow);
+    if (otherEnv !== undefined) {
+      return otherEnv as Environment;
     }
 
     try {

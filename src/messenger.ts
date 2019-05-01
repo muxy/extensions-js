@@ -7,6 +7,14 @@ import Pusher from 'pusher-js';
 
 import { DebugOptions } from './debug';
 import { CurrentEnvironment, Environment, ENVIRONMENTS } from './util';
+import Config from './config';
+
+export enum MessengerType {
+  Pusher,
+  Twitch,
+  Server,
+  Unknown
+}
 
 // CallbackHandle is what is returned from a call to listen from the Messenger, and should be
 // passed to unlisten.
@@ -240,20 +248,15 @@ class ServerMessenger implements Messenger {
 }
 
 export default function DefaultMessenger(debug: DebugOptions): Messenger {
-  switch (CurrentEnvironment()) {
-    case ENVIRONMENTS.SANDBOX_DEV:
-    case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
-    case ENVIRONMENTS.SANDBOX_ADMIN:
-    case ENVIRONMENTS.STAGING_ADMIN:
-    case ENVIRONMENTS.STAGING_DEV:
+  const type = Config.DefaultMessengerType(CurrentEnvironment());
+  switch (type) {
+    case MessengerType.Pusher:
       return new PusherMessenger(debug);
-    case ENVIRONMENTS.SANDBOX_TWITCH:
-    case ENVIRONMENTS.PRODUCTION:
-    case ENVIRONMENTS.STAGING_TWITCH:
+    case MessengerType.Twitch:
       return new TwitchMessenger(debug);
-    case ENVIRONMENTS.SERVER:
+    case MessengerType.Server:
       return new ServerMessenger(debug);
     default:
-      throw new Error('Could not determine execution environment.');
+      throw new Error('Could not determine proper messenger type for environment.');
   }
 }

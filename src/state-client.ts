@@ -6,39 +6,15 @@ import XHRPromise from '../libs/xhr-promise';
 
 import { DebugOptions } from './debug';
 import { TwitchAuth } from './twitch';
-import { ENVIRONMENTS } from './util';
+import Config from './config';
 
 /**
- * Muxy production API URL.
+ * API URL to use for backend requests.
+ * Configure using using {@link setEnvironment}.
  * @ignore
  */
-const API_URL = 'https://api.muxy.io';
-
-/**
- * Muxy sandbox API URL.
- * @ignore
- */
-const SANDBOX_URL = 'https://sandbox.api.muxy.io';
-
-/**
- * Localhost for testing purposes.
- * @ignore
- */
-const LOCALHOST_URL = 'http://localhost:5000';
-
-/**
- * Muxy staging API URL.
- * @ignore
- */
-const STAGING_URL = 'https://staging.api.muxy.io';
-
-/**
- * API URL to use for backend requests. Uses production API be default, but
- * can be updated using {@link setEnvironment}.
- * @ignore
- */
-let SERVER_URL = API_URL;
-let FAKEAUTH_URL = SANDBOX_URL;
+let SERVER_URL;
+let FAKEAUTH_URL;
 
 /**
  * ServerState enum maps the subsets of state persisted to the server to
@@ -86,7 +62,7 @@ class StateClient {
         'Content-Type': 'application/json'
       },
       method: 'POST',
-      url: `${debug.url || SANDBOX_URL}/v1/e/authtoken?role=${debug.role}` // pass roll as a param for fixtures
+      url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass roll as a param for fixtures
     });
 
     return xhr.send().then(resp => {
@@ -109,19 +85,9 @@ class StateClient {
 
   /** @ignore */
   public static setEnvironment(env, debug) {
-    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH || env === ENVIRONMENTS.SANDBOX_ADMIN) {
-      SERVER_URL = SANDBOX_URL;
-    }
-
-    if (env === ENVIRONMENTS.STAGING_DEV || env === ENVIRONMENTS.STAGING_TWITCH) {
-      SERVER_URL = STAGING_URL;
-      FAKEAUTH_URL = STAGING_URL;
-    }
-
-    if (env === ENVIRONMENTS.TESTING) {
-      SERVER_URL = LOCALHOST_URL;
-      FAKEAUTH_URL = LOCALHOST_URL;
-    }
+    const urls = Config.GetServerURLs(env);
+    SERVER_URL = urls.ServerURL;
+    FAKEAUTH_URL = urls.FakeAuthURL;
 
     if (debug && debug.url) {
       SERVER_URL = debug.url;

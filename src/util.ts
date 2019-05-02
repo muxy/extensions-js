@@ -79,7 +79,7 @@ export default class Util {
     Testing: TestingEnvironment
   };
 
-  static registerEnviornment(key: string, env: Environment) {
+  static registerEnvironment(key: string, env: Environment) {
     this.availableEnvironments[key] = env;
   }
 

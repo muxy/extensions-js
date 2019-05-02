@@ -1,4 +1,4 @@
-import Util, { Environment, ENVIRONMENTS } from './util';
+import { Environment, ENVIRONMENTS } from './util';
 import { MessengerType } from './messenger';
 
 /**
@@ -25,6 +25,8 @@ interface ServerURLs {
 }
 
 export default class Config {
+  public static RegisterMoreEnvironments() {}
+
   public static DefaultMessengerType(env: Environment): MessengerType {
     switch (env) {
       case ENVIRONMENTS.SANDBOX_DEV:

@@ -11,6 +11,7 @@ import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
 import User from './user';
 import Util from './util';
+import Config from './config';
 
 import * as PackageConfig from '../package.json';
 import { TwitchContext } from './twitch';
@@ -552,6 +553,8 @@ class Muxy implements MuxyInterface {
     return undefined;
   }
 }
+
+Config.RegisterMoreEnvironments();
 
 /**
  * Global Muxy singleton object.

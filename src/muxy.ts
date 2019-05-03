@@ -84,7 +84,8 @@ class Muxy implements MuxyInterface {
       ''
     ];
 
-    switch (Util.currentEnvironment()) {
+    const env = Util.currentEnvironment();
+    switch (env) {
       case Util.Environments.Production:
         SDKInfoText.push('Running on production');
         break;
@@ -108,6 +109,9 @@ class Muxy implements MuxyInterface {
         break;
       default:
         SDKInfoText.push('Could not determine execution environment.');
+        if (env) {
+          SDKInfoText.push(`Current env string ${env.environment}`);
+        }
     }
 
     Util.consolePrint(SDKInfoText, { boxed: true });

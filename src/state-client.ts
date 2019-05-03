@@ -85,9 +85,11 @@ class StateClient {
 
   /** @ignore */
   public static setEnvironment(env, debug) {
-    const urls = Config.GetServerURLs(env);
-    SERVER_URL = urls.ServerURL;
-    FAKEAUTH_URL = urls.FakeAuthURL;
+    if (env) {
+      const urls = Config.GetServerURLs(env);
+      SERVER_URL = urls.ServerURL;
+      FAKEAUTH_URL = urls.FakeAuthURL;
+    }
 
     if (debug && debug.url) {
       SERVER_URL = debug.url;

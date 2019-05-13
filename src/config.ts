@@ -24,6 +24,13 @@ interface ServerURLs {
   FakeAuthURL: string;
 }
 
+export enum AuthorizationFlowType {
+  TwitchAuth = 0,
+  AdminAuth = 1,
+  TestAuth = 2,
+  Unknown = 3
+}
+
 export default class Config {
   public static RegisterMoreEnvironments() {}
 
@@ -40,6 +47,33 @@ export default class Config {
         return MessengerType.Server;
     }
     return MessengerType.Unknown;
+  }
+
+  public static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType {
+    switch (env) {
+      case ENVIRONMENTS.SANDBOX_DEV:
+        return AuthorizationFlowType.TestAuth;
+
+      case ENVIRONMENTS.SANDBOX_ADMIN:
+      case ENVIRONMENTS.ADMIN:
+        return AuthorizationFlowType.AdminAuth;
+
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        return AuthorizationFlowType.TwitchAuth;
+    }
+
+    return AuthorizationFlowType.Unknown;
+  }
+
+  public static CanUseTwitchAPIs(env: Environment): boolean {
+    switch (env) {
+      case ENVIRONMENTS.PRODUCTION:
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+        return true;
+    }
+
+    return false;
   }
 
   public static GetServerURLs(env: Environment): ServerURLs {

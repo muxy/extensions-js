@@ -33,7 +33,11 @@ export class Environment {
 /** @ignore */ const SandboxTwitchEnvironment: Environment = {
   environment: 'sandbox'
 };
-/** @ignore */ const ServerEnvironment: Environment = { environment: 'server' };
+
+/** @ignore */ const ServerEnvironment: Environment = {
+  environment: 'server'
+};
+
 /** @ignore */ const TestingEnvironment: Environment = {
   environment: 'testing'
 };

@@ -1,5 +1,32 @@
 # Change Log
 
+## 2019-05-21
+
+v2.2.9
+
+## Added
+
+- Export Twitch types from module root.
+- Add transactionReceipt to TwitchBitsTransaction.
+- Easier customization of behavior for different environments.
+
+## 2019-05-03
+
+v2.2.8
+
+### Added
+
+- Log information about unknown environments.
+- Move environment configuration setup into new config class.
+
+## 2019-04-24
+
+v2.2.7
+
+### Added
+
+- Whitelist for internal staging environment.
+
 ## 2019-02-27
 
 v2.2.6

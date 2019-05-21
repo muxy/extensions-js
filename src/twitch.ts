@@ -34,6 +34,7 @@ export interface TwitchBitsTransaction {
   userId: string;
   displayName: string;
   initiator: any;
+  transactionReceipt: string;
 }
 
 export interface TwitchBitsProduct {

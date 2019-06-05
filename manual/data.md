@@ -10,7 +10,15 @@ documented.
 If you have an existing server or game that you would like to integrate with your app, Muxy provides
 a simple JSON storage and retrieval system. This works similarly to a standard key/value store, with
 the only limitation that the value must be a valid JSON object. The amount of data that can be
-stored is currently limited to 2KB per-developer.
+stored is currently limited to 4KB per-developer.
+
+The Muxy API backend will attempt to compress messages larger than 4KB with zlib. This allows
+for JSON store update messages significantly larger than 4KB. This compression is transparent
+to the .listen() api. When using the lower-level (Twitch, Pusher) APIs to listen for compressed
+messages, compressed messages can be distinguished by the non-existence of a JSON object token
+at the start of the message - either '{' or '['.
+
+Compressed messages are zlib compressed and then base64 encoded.
 
 To push data to the store, simply send a POST request to the json_store endpoint:
 

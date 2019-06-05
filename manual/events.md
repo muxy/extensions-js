@@ -5,6 +5,14 @@ endpoint, you can send any custom messages to the viewers. This can be done from
 or from the broadcaster-facing pages. Individual viewers may not, however, send arbitrary messages
 to other viewers.
 
+The Muxy API backend will attempt to compress messages larger than 4KB with zlib. This allows
+for messages significantly larger than 4KB. This compression is transparent to the .listen() api.
+When using the lower-level (Twitch, Pusher) APIs to listen for compressed
+messages, compressed messages can be distinguished by the non-existence of a JSON object token
+at the start of the message - either '{' or '['.
+
+Compressed messages are zlib compressed and then base64 encoded.
+
 To listen for incoming messages, simply call the listen function on the Muxy SDK object:
 
 ```javascript

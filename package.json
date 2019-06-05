@@ -1,7 +1,7 @@
 {
   "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "2.2.9",
+  "version": "2.3.0",
   "license": "ISC",
   "repository": "https://github.com/muxy/extensions-js",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
@@ -99,6 +99,7 @@
     "validate-commit-msg": "^2.14.0"
   },
   "dependencies": {
+    "pako": "^1.0.10",
     "pusher-js": "^4.3.1"
   },
   "husky": {

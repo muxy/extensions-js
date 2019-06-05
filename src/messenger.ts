@@ -4,6 +4,7 @@
 // The pusher types have no default export, ignore that error since we are using the namespace
 // @ts-ignore
 import Pusher from 'pusher-js';
+import pako from 'pako';
 
 import { DebugOptions } from './debug';
 import { CurrentEnvironment, Environment, ENVIRONMENTS } from './util';
@@ -31,6 +32,23 @@ export interface Messenger {
   listen(id, topic, callback: (parsedObject: object) => void): CallbackHandle;
   unlisten(id, CallbackHandle): void;
   close(): void;
+}
+
+function parseMessage(msg) {
+  if (msg.length == 0) {
+    return {};
+  }
+
+  if (msg[0] == '{' || msg[0] == '[') {
+    return JSON.parse(msg);
+  } else {
+    const decoded = atob(msg);
+    const integers = decoded.split('').map(function(x) {
+      return x.charCodeAt(0);
+    });
+    const bytes = new Uint8Array(integers);
+    return JSON.parse(pako.inflate(bytes, { to: 'string' }));
+  }
 }
 
 // TwitchMessenger implements the basic 'messenger' interface, which should be implemented
@@ -80,7 +98,7 @@ class TwitchMessenger implements Messenger {
   public listen(id, topic: string, callback): CallbackHandle {
     const cb = (t, datatype, message) => {
       try {
-        const parsed = JSON.parse(message);
+        const parsed = parseMessage(message);
 
         this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);
@@ -168,7 +186,7 @@ class PusherMessenger implements Messenger {
 
     const cb = message => {
       try {
-        const parsed = JSON.parse(message.message);
+        const parsed = parseMessage(message.message);
 
         this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);

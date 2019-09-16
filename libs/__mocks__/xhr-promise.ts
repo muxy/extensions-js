@@ -3,30 +3,30 @@ import * as fs from 'fs';
 const DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8';
 
 export interface XHROptions {
-  url?: string,
-  method?: string
-  data?: string,
-  headers?: Object,
+  url?: string;
+  method?: string;
+  data?: string;
+  headers?: object;
 }
 
 export interface XHRResponse {
-  url: string,
-  status: Number,
-  statusText: string,
-  responseText: Object,
-  headers: Object,
-  xhr: XMLHttpRequest
+  url: string;
+  status: number;
+  statusText: string;
+  responseText: object;
+  headers: object;
+  xhr: XMLHttpRequest;
 }
 
-let __responseQueue: string[] = [];
+const __responseQueue: string[] = [];
 
 export const __queueResponseMock = (response: string) => {
   __responseQueue.push(response);
 };
 
 export default class XHRPromise {
-  options: XHROptions;
-  xhr: XMLHttpRequest;
+  public options: XHROptions;
+  public xhr: XMLHttpRequest;
 
   constructor(options: XHROptions = {}) {
     this.options = {
@@ -37,7 +37,7 @@ export default class XHRPromise {
     Object.assign(this.options, options);
   }
 
-  send() : Promise<XHRResponse> {
+  public send(): Promise<XHRResponse> {
     const self = this;
     return new Promise((resolve, reject) => {
       if (typeof self.options.url !== 'string' || self.options.url.length === 0) {
@@ -82,14 +82,14 @@ export default class XHRPromise {
         }
       });
     });
-  };
+  }
 
-  handleResponse(reason: string, response: Function, status: Number, statusText: string) {
+  public handleResponse(reason: string, response: Function, status: Number, statusText: string) {
     return response({
-      reason: reason,
-      status: status,
-      statusText: statusText,
+      reason,
+      status,
+      statusText,
       xhr: this.xhr
     });
-  };
+  }
 }

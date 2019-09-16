@@ -35,11 +35,11 @@ export interface Messenger {
 }
 
 function parseMessage(msg) {
-  if (msg.length == 0) {
+  if (msg.length === 0) {
     return {};
   }
 
-  if (msg[0] == '{' || msg[0] == '[') {
+  if (msg[0] === '{' || msg[0] === '[') {
     return JSON.parse(msg);
   } else {
     const decoded = atob(msg);

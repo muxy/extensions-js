@@ -29,8 +29,18 @@ module.exports = {
     // Don't allow trailing commas (e.g. ['a',]).
     'comma-dangle': ['error', 'never'],
 
+    // Enforce use of === for comparisons.
+    eqeqeq: 'error',
+
     // Keep spacing around function parens consistent.
-    'space-before-function-paren': ['error', 'never'],
+    'space-before-function-paren': [
+      'error',
+      {
+        anonymous: 'never',
+        named: 'never',
+        asyncArrow: 'always'
+      }
+    ],
 
     // Don't allow reassigning function paramaters.
     'no-param-reassign': 'error',
@@ -57,5 +67,15 @@ module.exports = {
         ignoreComments: true
       }
     ]
-  }
+  },
+
+  overrides: [
+    {
+      files: ['__tests__/**/*.ts'],
+      rules: {
+        'no-console': 'off',
+        'max-len': 'off'
+      }
+    }
+  ]
 };

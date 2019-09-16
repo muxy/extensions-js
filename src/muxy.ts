@@ -3,6 +3,7 @@
  */
 
 import Analytics from './analytics';
+import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';
 import SDK, { TriviaQuestionState } from './sdk';
@@ -11,7 +12,6 @@ import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
 import User from './user';
 import Util from './util';
-import Config from './config';
 
 import * as PackageConfig from '../package.json';
 import { TwitchContext } from './twitch';
@@ -42,7 +42,7 @@ export interface DeprecatedSetupOptions {
 export interface MuxyInterface {
   debug(dbg: DebuggingOptions): void;
   setup(options: SetupOptions & DeprecatedSetupOptions): void;
-  watchAuth(extensionID: string);
+  watchAuth(extensionID: string): void;
 
   TwitchClient(): TwitchClient;
 }
@@ -56,7 +56,7 @@ export interface MuxyInterface {
  * On import or inclusion in an HTML file, a singleton object will be globally accessible
  * as `Muxy`.
  */
-class Muxy implements MuxyInterface {
+export class Muxy implements MuxyInterface {
   /**
    * Prints to console a description of the library's current version and
    * environment info. This is called automatically when the library is
@@ -331,6 +331,41 @@ class Muxy implements MuxyInterface {
    * Twitch API requests.
    */
   public watchAuth(extensionID: string) {
+    // Context callback handler
+    const updateUserContextSettings = () => {
+      if (!this.user || !this.context) {
+        return;
+      }
+
+      // Set Video Mode
+      if (this.context.isFullScreen) {
+        this.user.videoMode = 'fullscreen';
+      } else if (this.context.isTheatreMode) {
+        this.user.videoMode = 'theatre';
+      } else {
+        this.user.videoMode = 'default';
+      }
+
+      this.user.game = this.context.game;
+      this.user.bitrate = Math.round(this.context.bitrate || 0);
+      this.user.latency = this.context.hlsLatencyBroadcaster;
+      this.user.buffer = this.context.bufferSize;
+      this.user.theme = this.context.theme;
+      this.user.volume = this.context.volume;
+
+      const keys = Object.keys(this.SDKClients);
+      for (const key of keys) {
+        this.SDKClients[key].updateUser(this.user);
+      }
+
+      // If buffer size goes to 0, send an analytics event that
+      // this user's video is buffering.
+      if (this.context.bufferSize < 1 && this.analytics) {
+        this.analytics.user = this.user;
+        this.analytics.sendEvent('video', 'buffer', 1);
+      }
+    };
+
     Ext.extensionID = extensionID;
 
     // Auth callback handler
@@ -394,41 +429,6 @@ class Muxy implements MuxyInterface {
         onFirstAuth();
       }
     });
-
-    // Context callback handler
-    const updateUserContextSettings = () => {
-      if (!this.user || !this.context) {
-        return;
-      }
-
-      // Set Video Mode
-      if (this.context.isFullScreen) {
-        this.user.videoMode = 'fullscreen';
-      } else if (this.context.isTheatreMode) {
-        this.user.videoMode = 'theatre';
-      } else {
-        this.user.videoMode = 'default';
-      }
-
-      this.user.game = this.context.game;
-      this.user.bitrate = Math.round(this.context.bitrate || 0);
-      this.user.latency = this.context.hlsLatencyBroadcaster;
-      this.user.buffer = this.context.bufferSize;
-      this.user.theme = this.context.theme;
-      this.user.volume = this.context.volume;
-
-      const keys = Object.keys(this.SDKClients);
-      for (const key of keys) {
-        this.SDKClients[key].updateUser(this.user);
-      }
-
-      // If buffer size goes to 0, send an analytics event that
-      // this user's video is buffering.
-      if (this.context.bufferSize < 1 && this.analytics) {
-        this.analytics.user = this.user;
-        this.analytics.sendEvent('video', 'buffer', 1);
-      }
-    };
 
     Ext.onContext(context => {
       this.context = context;

@@ -16,13 +16,12 @@
     "test:watch": "jest --watch",
     "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
-    "commit": "git-cz",
     "prebuild": "rimraf dist",
     "prepublish": "npm run build"
   },
   "lint-staged": {
     "{src,test}/**/*.ts": [
-      "prettier --config ./.prettier.config.js --write --single-quote",
+      "prettier --config ./.prettierrc.js --write",
       "git add"
     ]
   },
@@ -66,7 +65,7 @@
     "eslint-plugin-prettier": "^3.1.0",
     "husky": "^1.1.2",
     "jest": "^24.9.0",
-    "lint-staged": "^7.3.0",
+    "lint-staged": "^9.2.5",
     "prettier": "^1.14.3",
     "prompt": "^1.0.0",
     "regenerator-runtime": "^0.12.1",

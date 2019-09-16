@@ -1,11 +1,11 @@
 /**
  * @module SDK
  */
+import Config, { AuthorizationFlowType } from './config';
 import { DebugOptions } from './debug';
 import StateClient from './state-client';
 import { Position, TwitchAuth, TwitchContext } from './twitch';
 import { consolePrint, CurrentEnvironment } from './util';
-import Config, { AuthorizationFlowType } from './config';
 
 // 25 minutes between updates of the testing auth token.
 const TEST_AUTH_TIMEOUT_MS = 25 * 60 * 1000;
@@ -82,7 +82,7 @@ export default class Ext {
       });
     }
 
-    let flowType = Config.GetAuthorizationFlowType(CurrentEnvironment());
+    const flowType = Config.GetAuthorizationFlowType(CurrentEnvironment());
 
     switch (flowType) {
       case AuthorizationFlowType.TestAuth:

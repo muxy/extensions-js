@@ -580,7 +580,7 @@ export default class SDK {
    *     const list = valueToUsersMapping[value] || [];
    *     list.append(identifier);
    *
-   *     valueTousersMapping[value] = list;
+   *     valueToUsersMapping[value] = list;
    *   }
    * });
    */
@@ -937,7 +937,7 @@ export default class SDK {
   /**
    * Returns a mapping of user_id to extension specific viewer states.
    * If a viewer doesn't have state set, but was requested, that user will
-   * not be in the response object. The maximum numer of users that can be
+   * not be in the response object. The maximum number of users that can be
    * queried with this call is 1000.
    * @async
    *
@@ -1075,7 +1075,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @return {Promise} Resolves on sucess, rejects with an error otherwise.
+   * @return {Promise} Resolves on success, rejects with an error otherwise.
    *
    * @example
    * sdk.revokeAllPINCodes().then(() => {
@@ -1091,7 +1091,7 @@ export default class SDK {
    */
 
   /**
-   * Sends a message to all listening clients. And viewers or broadcaters listening for the
+   * Sends a message to all listening clients. And viewers or broadcasters listening for the
    * event name will be automatically notified. See {@link listen} for receiving events.
    *
    * Broadcaster-only functionality.
@@ -1148,7 +1148,7 @@ export default class SDK {
    * @param {string} inEvent - The event name to listen on. May include wildcards `*`.
    * @param {string|Function} inUserID - An optional opaque user id, used to limit
    * the scope of this listen to that user only.
-   * @param {Function} [inCallback] - A callback with the signature `function(body, eventname)`.
+   * @param {Function} [inCallback] - A callback with the signature `function(body, eventName)`.
    * This callback will receive the message body as its first parameter and the `event` parameter
    * to {@link send} as the second.
    *

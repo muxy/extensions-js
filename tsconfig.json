@@ -2,6 +2,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "dist/types",
+    "downlevelIteration": true,
     "outDir": "dist/lib",
     "noImplicitAny": false,
     "lib": ["es2015", "es2016", "es2017", "dom"],

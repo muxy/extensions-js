@@ -1,26 +1,18 @@
 module.exports = {
   root: true,
 
-  parser: 'babel-eslint',
-
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     sourceType: 'module'
   },
 
-  extends: 'airbnb',
+  extends: ['plugin:prettier/recommended', 'prettier/@typescript-eslint'],
+
+  plugins: ['prettier'],
 
   env: {
     browser: true,
     node: true
-  },
-
-  settings: {
-    ecmascript: 6,
-    'import/resolver': {
-      webpack: {
-        config: 'webpack.config.js'
-      }
-    }
   },
 
   rules: {
@@ -58,9 +50,12 @@ module.exports = {
     'jsx-a11y/href-no-hash': 'off',
     'jsx-a11y/anchor-is-valid': 'off',
 
-    'max-len': ["error", {
-      "code": 120,
-      "ignoreComments": true
-    }]
+    'max-len': [
+      'error',
+      {
+        code: 120,
+        ignoreComments: true
+      }
+    ]
   }
 };

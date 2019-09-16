@@ -20,9 +20,13 @@ export interface XHRResponse {
 
 const __responseQueue: string[] = [];
 
-export const __queueResponseMock = (response: string) => {
+export function __queueResponseMock(response: string) {
   __responseQueue.push(response);
-};
+}
+
+export function reset() {
+  __responseQueue.splice(0, __responseQueue.length);
+}
 
 export default class XHRPromise {
   public options: XHROptions;

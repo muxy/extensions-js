@@ -20,7 +20,7 @@
     "prepublish": "npm run build"
   },
   "lint-staged": {
-    "{src,test}/**/*.ts": [
+    "{src,__tests__}/**/*.ts": [
       "prettier --config ./.prettierrc.js --write",
       "git add"
     ]

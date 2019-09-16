@@ -1,7 +1,7 @@
 import Util from '../src/util';
 
 // Convenience test harness for forceType.
-function testForceType(value, expected) {
+function testForceType(value: any, expected: string) {
   return function() {
     Util.forceType(value, expected);
   };
@@ -12,11 +12,11 @@ describe('Util', () => {
   /** @test {Util.errorPromise} */
   describe('errorPromise', () => {
     it('rejects immediately', () => {
-      return expect(Util.errorPromise('error string')).rejects.toEqual('error string')
+      return expect(Util.errorPromise('error string')).rejects.toEqual('error string');
     });
 
     it('passes error string', () => {
-      return expect(Util.errorPromise('error string')).rejects.toEqual('error string')
+      return expect(Util.errorPromise('error string')).rejects.toEqual('error string');
     });
   });
 

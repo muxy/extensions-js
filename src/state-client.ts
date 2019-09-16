@@ -23,16 +23,81 @@ let FAKEAUTH_URL: string;
  * their respective endpoints.
  * @ignore
  */
-const ServerState = {
-  ALL: 'all_state',
-  AUTHENTICATION: 'authentication',
-  CHANNEL: 'channel_state',
-  EXTENSION: 'extension_state',
-  EXTENSION_SECRET: 'extension_hidden_state',
-  EXTENSION_VIEWER: 'extension_viewer_state',
-  USER: 'user_info',
-  VIEWER: 'viewer_state'
-};
+export enum ServerState {
+  ALL = 'all_state',
+  AUTHENTICATION = 'authentication',
+  CHANNEL = 'channel_state',
+  EXTENSION = 'extension_state',
+  EXTENSION_SECRET = 'extension_hidden_state',
+  EXTENSION_VIEWER = 'extension_viewer_state',
+  USER = 'user_info',
+  VIEWER = 'viewer_state'
+}
+
+/** @ignore */
+export interface Hook<HookCallback> {
+  failure: HookCallback;
+  success: HookCallback;
+}
+
+// Request hooks must return the config object, optionally after mutating it.
+export type RequestHook = (config: any) => any;
+export type ResponseHook = (resp: any) => any;
+
+/**
+ * HookManager class for adding and removing network request
+ * and response hooks.
+ *
+ * Similar to the axios interceptor pattern:
+ * https://github.com/axios/axios/blob/master/lib/core/InterceptorManager.js
+ *
+ * @ignore
+ */
+export class HookManager<HookCallback> implements Iterable<Hook<HookCallback>> {
+  private callbacks: Array<{
+    failure: HookCallback;
+    success: HookCallback;
+  }> = [];
+
+  public get length() {
+    return this.callbacks.length;
+  }
+
+  public add(success: HookCallback, failure?: HookCallback): number {
+    this.callbacks.push({ failure, success });
+
+    return this.callbacks.length - 1;
+  }
+
+  public remove(index: number) {
+    if (this.callbacks[index]) {
+      this.callbacks[index] = null;
+    }
+  }
+
+  // Iterable interface allows looping through hooks like:
+  // for (let h of this.hooks) {
+  //   h.success();
+  // }
+  public [Symbol.iterator]() {
+    let current = 0;
+    const callbacks = this.callbacks;
+
+    return {
+      next(): IteratorResult<Hook<HookCallback>> {
+        while (callbacks[current] === null && current < callbacks.length) {
+          current++;
+        }
+
+        if (current < callbacks.length) {
+          return { done: false, value: callbacks[current++] };
+        } else {
+          return { done: true, value: null };
+        }
+      }
+    };
+  }
+}
 
 /**
  * Wraps all extension backend accessor and mutator endpoints in convenience functions.
@@ -50,7 +115,7 @@ const ServerState = {
  */
 class StateClient {
   /** @ignore */
-  public static fetchTestAuth(extensionID: string, debug: DebugOptions): Promise<TwitchAuth> {
+  public static async fetchTestAuth(extensionID: string, debug: DebugOptions): Promise<TwitchAuth> {
     const data = JSON.stringify({
       app_id: extensionID,
       channel_id: debug.channelID,
@@ -64,7 +129,7 @@ class StateClient {
         'Content-Type': 'application/json'
       },
       method: 'POST',
-      url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass roll as a param for fixtures
+      url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass role as a param for fixtures
     });
 
     return xhr.send().then(resp => {
@@ -101,6 +166,12 @@ class StateClient {
 
   public token: string;
   public debug: DebugOptions;
+
+  public hooks = {
+    requests: new HookManager<RequestHook>(),
+    responses: new HookManager<ResponseHook>()
+  };
+
   private loaded: Promise<void>;
 
   /** @ignore */
@@ -118,31 +189,29 @@ class StateClient {
 
   /**
    * signedRequest checks that we have a valid JWT and wraps a standard AJAX
-   * request to the EBS with valid auth credentials.s
+   * request to the EBS with valid auth credentials.
    * @ignore
    */
-  public signedRequest(extensionID, method, endpoint, data?: any, skipPromise?: boolean): Promise<any> {
-    let waitedPromise = this.loaded;
-    if (skipPromise) {
-      waitedPromise = Promise.resolve();
-    }
+  public async signedRequest(
+    extensionID: string,
+    method: string,
+    endpoint: string,
+    data?: any,
+    skipPromise?: boolean
+  ): Promise<any> {
+    let promise: Promise<any> = skipPromise ? Promise.resolve() : this.loaded;
 
-    return waitedPromise.then(() => {
-      if (!this.validateJWT()) {
-        return Promise.reject('Your authentication token has expired.');
-      }
+    // Middle of chain makes the actual server request
+    const chain: any = [
+      async (config: any): Promise<any> => {
+        if (!this.validateJWT()) {
+          return Promise.reject('Your authentication token has expired.');
+        }
 
-      const xhrPromise = new XHRPromise({
-        data,
-        headers: {
-          Authorization: `${extensionID} ${this.token}`
-        },
-        method,
-        url: `${SERVER_URL}/v1/e/${endpoint}`
-      });
+        const xhrPromise = new XHRPromise(config);
 
-      return xhrPromise.send().then(resp => {
         try {
+          const resp = await xhrPromise.send();
           if (resp.status < 400) {
             return Promise.resolve(resp.responseText);
           } else if (resp.responseText) {
@@ -150,11 +219,37 @@ class StateClient {
           } else {
             return Promise.reject(`Server returned status ${resp.status}`);
           }
-        } catch (err) {
-          return Promise.reject(err);
+        } catch (requestErr) {
+          return Promise.reject(requestErr);
         }
-      });
-    });
+      },
+      undefined
+    ];
+
+    // Unshift pre-request hooks to beginning of call chain
+    for (const h of this.hooks.requests) {
+      chain.unshift(h.success, h.failure);
+    }
+
+    // Push post-request hooks to end of call chain
+    for (const h of this.hooks.responses) {
+      chain.push(h.success, h.failure);
+    }
+
+    // Start the promise chain with the current config object
+    promise = promise.then(() => ({
+      data,
+      headers: { Authorization: `${extensionID} ${this.token}` },
+      method,
+      url: `${SERVER_URL}/v1/e/${endpoint}`
+    }));
+
+    // Build promise
+    while (chain.length) {
+      promise = promise.then(chain.shift(), chain.shift());
+    }
+
+    return promise;
   }
 
   /**
@@ -274,7 +369,7 @@ class StateClient {
     this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  public getRank = (identifier: string, id: string = 'default') =>
+  public getRank = async (identifier: string, id: string = 'default') =>
     this.signedRequest(identifier, 'GET', `rank?id=${id}`);
 
   /** @ignore */

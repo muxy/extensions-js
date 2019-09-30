@@ -9,15 +9,16 @@
   "module": "dist/medkit.esm.js",
   "typings": "dist/types/src/index.d.ts",
   "scripts": {
-    "lint": "npx eslint 'src/**/*.ts' '__tests__/**/*.ts'",
-    "dev": "rollup -c rollup.config.ts -w",
     "build": "tsc --module commonjs --skipLibCheck && rollup -c rollup.config.ts",
+    "dev": "rollup -c rollup.config.ts -w",
+    "docs": "node ./tools/generate-docs.js",
+    "lint": "npx eslint 'src/**/*.ts' '__tests__/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "prepublish": "npm run build",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "test": "jest __tests__/*.ts",
     "test:watch": "jest --watch",
-    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
-    "report-coverage": "cat ./coverage/lcov.info | coveralls",
-    "prebuild": "rimraf dist",
-    "prepublish": "npm run build"
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache"
   },
   "lint-staged": {
     "{src,__tests__}/**/*.ts": [
@@ -65,6 +66,7 @@
     "eslint-plugin-prettier": "^3.1.0",
     "husky": "^1.1.2",
     "jest": "^24.9.0",
+    "js-yaml": "^3.13.1",
     "lint-staged": "^9.2.5",
     "prettier": "^1.14.3",
     "prompt": "^1.0.0",
@@ -77,13 +79,15 @@
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.24.2",
     "semantic-release": "^15.13.24",
+    "shins": "^2.3.2-5",
     "ts-jest": "^24.1.0",
     "ts-node": "^7.0.1",
     "typedoc": "^0.15.0",
-    "typedoc-plugin-external-module-name": "^1.1.3",
+    "typedoc-plugin-external-module-name": "^2.1.0",
     "typedoc-plugin-sourcefile-url": "^1.0.4",
     "typescript": "^3.6.3",
-    "validate-commit-msg": "^2.14.0"
+    "validate-commit-msg": "^2.14.0",
+    "widdershins": "^3.6.7"
   },
   "dependencies": {
     "eslint-config-prettier": "^6.3.0",

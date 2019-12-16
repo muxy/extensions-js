@@ -1,8 +1,8 @@
 /**
  * @module SDK
  */
-import { JWT } from './twitch';
 import Config from './config';
+import { JWT } from './twitch';
 
 /**
  * Global environment objects. This ensures that comparisons are true between
@@ -71,22 +71,6 @@ export interface ConsolePrintOptions {
  * Muxy.Util.forceType(a, 'string');
  */
 export default class Util {
-  public static overrideEnvironment?: Environment;
-
-  private static availableEnvironments: { [key: string]: Environment } = {
-    Admin: AdministrationEnvironment,
-    Production: ProductionEnvironment,
-    SandboxAdmin: SandboxAdministrationEnvironment,
-    SandboxDev: SandboxDevEnvironment,
-    SandboxTwitch: SandboxTwitchEnvironment,
-    Server: ServerEnvironment,
-    Testing: TestingEnvironment
-  };
-
-  static registerEnvironment(key: string, env: Environment) {
-    this.availableEnvironments[key] = env;
-  }
-
   /**
    * Possible runtime environments for the library. Used to define available
    * behavior and services.
@@ -96,6 +80,12 @@ export default class Util {
    */
   static get Environments() {
     return this.availableEnvironments;
+  }
+
+  public static overrideEnvironment?: Environment;
+
+  public static registerEnvironment(key: string, env: Environment) {
+    this.availableEnvironments[key] = env;
   }
 
   /**
@@ -157,7 +147,7 @@ export default class Util {
    * @ignore
    */
   public static isWindowFramed(overrideWindow?: Window): boolean {
-    let vWindow;
+    let vWindow: Window;
     if (typeof window !== 'undefined') {
       vWindow = window;
     }
@@ -168,8 +158,8 @@ export default class Util {
     const isNotChildWindow = !vWindow.opener;
 
     // Cannot compare WindowProxy objects with ===/!==
-    const windowTop = vWindow.top && vWindow != vWindow.top; // tslint:disable-line:triple-equals
-    const windowParent = vWindow.parent && vWindow != vWindow.parent; // tslint:disable-line:triple-equals
+    const windowTop = vWindow.top && vWindow != vWindow.top; // eslint-disable-line eqeqeq
+    const windowParent = vWindow.parent && vWindow != vWindow.parent; // eslint-disable-line eqeqeq
     const hasWindowAncestors = !!(windowTop || windowParent);
 
     return isNotChildWindow && hasWindowAncestors;
@@ -184,7 +174,7 @@ export default class Util {
    * execution environment.
    */
   public static currentEnvironment(overrideWindow?: object): Environment {
-    let vWindow;
+    let vWindow: Window | any;
     if (typeof window !== 'undefined') {
       vWindow = window;
     }
@@ -197,7 +187,7 @@ export default class Util {
       return Util.overrideEnvironment;
     }
 
-    let otherEnv = Config.OtherEnvironmentCheck(vWindow);
+    const otherEnv = Config.OtherEnvironmentCheck(vWindow);
     if (otherEnv !== undefined) {
       return otherEnv as Environment;
     }
@@ -415,6 +405,16 @@ export default class Util {
       throw new Error('Failed to parse JWT');
     }
   }
+
+  private static availableEnvironments: { [key: string]: Environment } = {
+    Admin: AdministrationEnvironment,
+    Production: ProductionEnvironment,
+    SandboxAdmin: SandboxAdministrationEnvironment,
+    SandboxDev: SandboxDevEnvironment,
+    SandboxTwitch: SandboxTwitchEnvironment,
+    Server: ServerEnvironment,
+    Testing: TestingEnvironment
+  };
 }
 
 /**

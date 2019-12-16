@@ -4,33 +4,100 @@
 
 import XHRPromise from '../libs/xhr-promise';
 
-import { DebugOptions } from './debug';
-import { TwitchAuth } from './twitch';
 import Config from './config';
+import { DebugOptions } from './debug';
+import { TriviaOption, TriviaQuestion, TriviaQuestionState } from './sdk';
+import { TwitchAuth } from './twitch';
+import { Environment } from './util';
 
 /**
  * API URL to use for backend requests.
  * Configure using using {@link setEnvironment}.
  * @ignore
  */
-let SERVER_URL;
-let FAKEAUTH_URL;
+let SERVER_URL: string;
+let FAKEAUTH_URL: string;
 
 /**
  * ServerState enum maps the subsets of state persisted to the server to
  * their respective endpoints.
  * @ignore
  */
-const ServerState = {
-  ALL: 'all_state',
-  AUTHENTICATION: 'authentication',
-  CHANNEL: 'channel_state',
-  EXTENSION: 'extension_state',
-  EXTENSION_SECRET: 'extension_hidden_state',
-  EXTENSION_VIEWER: 'extension_viewer_state',
-  USER: 'user_info',
-  VIEWER: 'viewer_state'
-};
+export enum ServerState {
+  ALL = 'all_state',
+  AUTHENTICATION = 'authentication',
+  CHANNEL = 'channel_state',
+  EXTENSION = 'extension_state',
+  EXTENSION_SECRET = 'extension_hidden_state',
+  EXTENSION_VIEWER = 'extension_viewer_state',
+  USER = 'user_info',
+  VIEWER = 'viewer_state'
+}
+
+/** @ignore */
+export interface Hook<HookCallback> {
+  failure: HookCallback;
+  success: HookCallback;
+}
+
+// Request hooks must return the config object, optionally after mutating it.
+export type RequestHook = (config: any) => any;
+export type ResponseHook = (resp: any) => any;
+
+/**
+ * HookManager class for adding and removing network request
+ * and response hooks.
+ *
+ * Similar to the axios interceptor pattern:
+ * https://github.com/axios/axios/blob/master/lib/core/InterceptorManager.js
+ *
+ * @ignore
+ */
+export class HookManager<HookCallback> implements Iterable<Hook<HookCallback>> {
+  private callbacks: Array<{
+    failure: HookCallback;
+    success: HookCallback;
+  }> = [];
+
+  public get length() {
+    return this.callbacks.length;
+  }
+
+  public add(success: HookCallback, failure?: HookCallback): number {
+    this.callbacks.push({ failure, success });
+
+    return this.callbacks.length - 1;
+  }
+
+  public remove(index: number) {
+    if (this.callbacks[index]) {
+      this.callbacks[index] = null;
+    }
+  }
+
+  // Iterable interface allows looping through hooks like:
+  // for (let h of this.hooks) {
+  //   h.success();
+  // }
+  public [Symbol.iterator]() {
+    let current = 0;
+    const callbacks = this.callbacks;
+
+    return {
+      next(): IteratorResult<Hook<HookCallback>> {
+        while (callbacks[current] === null && current < callbacks.length) {
+          current++;
+        }
+
+        if (current < callbacks.length) {
+          return { done: false, value: callbacks[current++] };
+        } else {
+          return { done: true, value: null };
+        }
+      }
+    };
+  }
+}
 
 /**
  * Wraps all extension backend accessor and mutator endpoints in convenience functions.
@@ -48,7 +115,7 @@ const ServerState = {
  */
 class StateClient {
   /** @ignore */
-  public static fetchTestAuth(extensionID: string, debug: DebugOptions): Promise<TwitchAuth> {
+  public static async fetchTestAuth(extensionID: string, debug: DebugOptions): Promise<TwitchAuth> {
     const data = JSON.stringify({
       app_id: extensionID,
       channel_id: debug.channelID,
@@ -62,7 +129,7 @@ class StateClient {
         'Content-Type': 'application/json'
       },
       method: 'POST',
-      url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass roll as a param for fixtures
+      url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass role as a param for fixtures
     });
 
     return xhr.send().then(resp => {
@@ -84,7 +151,7 @@ class StateClient {
   }
 
   /** @ignore */
-  public static setEnvironment(env, debug) {
+  public static setEnvironment(env: Environment, debug: DebugOptions) {
     if (env) {
       const urls = Config.GetServerURLs(env);
       SERVER_URL = urls.ServerURL;
@@ -99,6 +166,12 @@ class StateClient {
 
   public token: string;
   public debug: DebugOptions;
+
+  public hooks = {
+    requests: new HookManager<RequestHook>(),
+    responses: new HookManager<ResponseHook>()
+  };
+
   private loaded: Promise<void>;
 
   /** @ignore */
@@ -116,31 +189,29 @@ class StateClient {
 
   /**
    * signedRequest checks that we have a valid JWT and wraps a standard AJAX
-   * request to the EBS with valid auth credentials.s
+   * request to the EBS with valid auth credentials.
    * @ignore
    */
-  public signedRequest(extensionID, method, endpoint, data?: any, skipPromise?: boolean): Promise<any> {
-    let waitedPromise = this.loaded;
-    if (skipPromise) {
-      waitedPromise = Promise.resolve();
-    }
+  public async signedRequest(
+    extensionID: string,
+    method: string,
+    endpoint: string,
+    data?: any,
+    skipPromise?: boolean
+  ): Promise<any> {
+    let promise: Promise<any> = skipPromise ? Promise.resolve() : this.loaded;
 
-    return waitedPromise.then(() => {
-      if (!this.validateJWT()) {
-        return Promise.reject('Your authentication token has expired.');
-      }
+    // Middle of chain makes the actual server request
+    const chain: any = [
+      async (config: any): Promise<any> => {
+        if (!this.validateJWT()) {
+          return Promise.reject('Your authentication token has expired.');
+        }
 
-      const xhrPromise = new XHRPromise({
-        data,
-        headers: {
-          Authorization: `${extensionID} ${this.token}`
-        },
-        method,
-        url: `${SERVER_URL}/v1/e/${endpoint}`
-      });
+        const xhrPromise = new XHRPromise(config);
 
-      return xhrPromise.send().then(resp => {
         try {
+          const resp = await xhrPromise.send();
           if (resp.status < 400) {
             return Promise.resolve(resp.responseText);
           } else if (resp.responseText) {
@@ -148,11 +219,37 @@ class StateClient {
           } else {
             return Promise.reject(`Server returned status ${resp.status}`);
           }
-        } catch (err) {
-          return Promise.reject(err);
+        } catch (requestErr) {
+          return Promise.reject(requestErr);
         }
-      });
-    });
+      },
+      undefined
+    ];
+
+    // Unshift pre-request hooks to beginning of call chain
+    for (const h of this.hooks.requests) {
+      chain.unshift(h.success, h.failure);
+    }
+
+    // Push post-request hooks to end of call chain
+    for (const h of this.hooks.responses) {
+      chain.push(h.success, h.failure);
+    }
+
+    // Start the promise chain with the current config object
+    promise = promise.then(() => ({
+      data,
+      headers: { Authorization: `${extensionID} ${this.token}` },
+      method,
+      url: `${SERVER_URL}/v1/e/${endpoint}`
+    }));
+
+    // Build promise
+    while (chain.length) {
+      promise = promise.then(chain.shift(), chain.shift());
+    }
+
+    return promise;
   }
 
   /**
@@ -187,136 +284,143 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  public getState = (identifier, substate?): Promise<any> =>
+  public getState = (identifier: string, substate?: ServerState): Promise<any> =>
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**
    * postState sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  public postState = (identifier, substate, data) =>
+  public postState = (identifier: string, substate: ServerState, data: any) =>
     this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
   /** @ignore */
-  public getUserInfo = identifier => this.getState(identifier, ServerState.USER);
+  public getUserInfo = (identifier: string) => this.getState(identifier, ServerState.USER);
 
   /** @ignore */
-  public immediateGetUserInfo = identifier => this.signedRequest(identifier, 'GET', ServerState.USER, undefined, true);
+  public immediateGetUserInfo = (identifier: string) =>
+    this.signedRequest(identifier, 'GET', ServerState.USER, undefined, true);
 
   /** @ignore */
-  public getViewerState = identifier => this.getState(identifier, ServerState.VIEWER);
+  public getViewerState = (identifier: string) => this.getState(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  public getExtensionViewerState = identifier => this.getState(identifier, ServerState.EXTENSION_VIEWER);
+  public getExtensionViewerState = (identifier: string) => this.getState(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  public getExtensionSecretState = identifier => this.getState(identifier, ServerState.EXTENSION_SECRET);
+  public getExtensionSecretState = (identifier: string) => this.getState(identifier, ServerState.EXTENSION_SECRET);
 
   /** @ignore */
-  public getChannelState = identifier => this.getState(identifier, ServerState.CHANNEL);
+  public getChannelState = (identifier: string) => this.getState(identifier, ServerState.CHANNEL);
 
   /** @ignore */
-  public getExtensionState = identifier => this.getState(identifier, ServerState.EXTENSION);
+  public getExtensionState = (identifier: string) => this.getState(identifier, ServerState.EXTENSION);
 
   /** @ignore */
-  public setViewerState = (identifier, state) => this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
+  public setViewerState = (identifier: string, state: any) =>
+    this.postState(identifier, ServerState.VIEWER, JSON.stringify(state));
 
   /** @ignore */
-  public setExtensionViewerState = (identifier, state) =>
+  public setExtensionViewerState = (identifier: string, state: any) =>
     this.postState(identifier, ServerState.EXTENSION_VIEWER, JSON.stringify(state));
 
   /** @ignore */
-  public patchExtensionViewerState = (identifier, multiState) =>
+  public patchExtensionViewerState = (identifier: string, multiState: any) =>
     this.signedRequest(identifier, 'PATCH', 'extension_viewer_state', JSON.stringify(multiState));
 
   /** @ignore */
-  public multiGetExtensionViewerState = (identifier, users) =>
+  public multiGetExtensionViewerState = (identifier: string, users: string[]) =>
     this.signedRequest(identifier, 'GET', `extension_viewer_state?user_ids=${users.join(',')}`);
 
   /** @ignore */
-  public setExtensionSecretState = (identifier, state) =>
+  public setExtensionSecretState = (identifier: string, state: any) =>
     this.postState(identifier, ServerState.EXTENSION_SECRET, JSON.stringify(state));
 
   /** @ignore */
-  public setChannelState = (identifier, state) =>
+  public setChannelState = (identifier: string, state: any) =>
     this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
 
   /** @ignore */
-  public setExtensionState = (identifier, state) =>
+  public setExtensionState = (identifier: string, state: any) =>
     this.postState(identifier, ServerState.EXTENSION, JSON.stringify(state));
 
   /** @ignore */
-  public getAccumulation = (identifier, id, start) =>
+  public getAccumulation = (identifier: string, id: string, start: number) =>
     this.signedRequest(identifier, 'GET', `accumulate?id=${id || 'default'}&start=${start}`);
 
   /** @ignore */
-  public accumulate = (identifier, id, data) =>
+  public accumulate = (identifier: string, id: string, data: any) =>
     this.signedRequest(identifier, 'POST', `accumulate?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  public vote = (identifier, id, data) =>
+  public vote = (identifier: string, id: string, data: any) =>
     this.signedRequest(identifier, 'POST', `vote?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  public getVotes = (identifier, id) => this.signedRequest(identifier, 'GET', `vote?id=${id || 'default'}`);
+  public getVotes = (identifier: string, id: string = 'default') =>
+    this.signedRequest(identifier, 'GET', `vote?id=${id}`);
 
   /** @ignore */
-  public getFullVoteLogs = (identifier, id) => this.signedRequest(identifier, 'GET', `vote_logs?id=${id || 'default'}`);
+  public getFullVoteLogs = (identifier: string, id: string = 'default') =>
+    this.signedRequest(identifier, 'GET', `vote_logs?id=${id}`);
 
   /** @ignore */
-  public rank = (identifier, id, data) =>
+  public rank = (identifier: string, id: string, data: any) =>
     this.signedRequest(identifier, 'POST', `rank?id=${id || 'default'}`, JSON.stringify(data));
 
   /** @ignore */
-  public getRank = (identifier: string, id: string = 'default') =>
+  public getRank = async (identifier: string, id: string = 'default') =>
     this.signedRequest(identifier, 'GET', `rank?id=${id}`);
 
   /** @ignore */
-  public deleteRank = (identifier, id) => this.signedRequest(identifier, 'DELETE', `rank?id=${id || 'default'}`);
+  public deleteRank = (identifier: string, id: string = 'default') =>
+    this.signedRequest(identifier, 'DELETE', `rank?id=${id}`);
 
   /** @ignore */
-  public getJSONStore = (identifier, id) => this.signedRequest(identifier, 'GET', `json_store?id=${id || 'default'}`);
+  public getJSONStore = (identifier: string, id: string = 'default') =>
+    this.signedRequest(identifier, 'GET', `json_store?id=${id}`);
 
   /** @ignore */
-  public validateCode = (identifier, code) =>
+  public validateCode = (identifier: string, code: string) =>
     this.signedRequest(identifier, 'POST', 'validate_pin', JSON.stringify({ pin: code }));
 
   /** @ignore */
-  public pinTokenExists = identifier => this.signedRequest(identifier, 'GET', 'pin_token_exists');
+  public pinTokenExists = (identifier: string) => this.signedRequest(identifier, 'GET', 'pin_token_exists');
 
   /** @ignore */
-  public revokeAllPINCodes = identifier => this.signedRequest(identifier, 'DELETE', 'pin');
+  public revokeAllPINCodes = (identifier: string) => this.signedRequest(identifier, 'DELETE', 'pin');
 
   /** @ignore */
-  public getEligibleCodes = identifier => this.signedRequest(identifier, 'GET', 'codes/eligible');
+  public getEligibleCodes = (identifier: string) => this.signedRequest(identifier, 'GET', 'codes/eligible');
 
   /** @ignore */
-  public getRedeemedCodes = identifier => this.signedRequest(identifier, 'GET', 'codes/redeemed');
+  public getRedeemedCodes = (identifier: string) => this.signedRequest(identifier, 'GET', 'codes/redeemed');
 
   /** @ignore */
-  public redeemCode = (identifier, prizeIndex) =>
+  public redeemCode = (identifier: string, prizeIndex: number) =>
     this.signedRequest(identifier, 'POST', 'codes/redeem', JSON.stringify({ prize: prizeIndex }));
 
   /** @ignore */
-  public getExtensionUsers = (identifier, cursor) =>
+  public getExtensionUsers = (identifier: string, cursor: string) =>
     this.signedRequest(identifier, 'GET', `user_ids?cursor=${cursor || 0}`);
 
   /** @ignore */
-  public joinExtensionTriviaTeam = identifier => this.signedRequest(identifier, 'POST', 'team_membership');
+  public joinExtensionTriviaTeam = (identifier: string) => this.signedRequest(identifier, 'POST', 'team_membership');
 
   /** @ignore */
-  public getExtensionTriviaJoinedTeam = identifier => this.signedRequest(identifier, 'GET', 'team_membership');
+  public getExtensionTriviaJoinedTeam = (identifier: string) =>
+    this.signedRequest(identifier, 'GET', 'team_membership');
 
   /** @ignore */
-  public addExtensionTriviaQuestion = (identifier, triviaQuestion) =>
+  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion) =>
     this.signedRequest(identifier, 'POST', 'curated_poll_edit', JSON.stringify(triviaQuestion));
 
   /** @ignore */
-  public removeExtensionTriviaQuestion = (identifier, triviaQuestionID) =>
+  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string) =>
     this.signedRequest(identifier, 'DELETE', 'curated_poll_edit', JSON.stringify({ id: triviaQuestionID }));
 
   /** @ignore */
-  public addExtensionTriviaOptionToQuestion = (identifier, questionID, option) =>
+  public addExtensionTriviaOptionToQuestion = (identifier: string, questionID: string, option: TriviaOption) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -325,7 +429,7 @@ class StateClient {
     );
 
   /** @ignore */
-  public removeExtensionTriviaOptionFromQuestion = (identifier, questionID, optionID) =>
+  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) =>
     this.signedRequest(
       identifier,
       'DELETE',
@@ -334,7 +438,12 @@ class StateClient {
     );
 
   /** @ignore */
-  public setExtensionTriviaQuestionState = (identifier, questionID, state, winner) =>
+  public setExtensionTriviaQuestionState = (
+    identifier: string,
+    questionID: string,
+    state: TriviaQuestionState,
+    winner: string
+  ) =>
     this.signedRequest(
       identifier,
       'POST',
@@ -343,18 +452,19 @@ class StateClient {
     );
 
   /** @ignore */
-  public setExtensionTriviaQuestionVote = (identifier, questionID, optionID) =>
+  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string) =>
     this.signedRequest(identifier, 'POST', 'curated_poll', JSON.stringify({ question_id: questionID, vote: optionID }));
 
   /** @ignore */
-  public getExtensionTriviaQuestions = identifier => this.signedRequest(identifier, 'GET', 'curated_poll');
+  public getExtensionTriviaQuestions = (identifier: string) => this.signedRequest(identifier, 'GET', 'curated_poll');
 
   /** @ignore */
-  public getExtensionTriviaQuestion = (identifier, questionID) =>
+  public getExtensionTriviaQuestion = (identifier: string, questionID: string) =>
     this.signedRequest(identifier, 'GET', `curated_poll?id=${questionID}`);
 
   /** @ignore */
-  public getExtensionTriviaLeaderboard = identifer => this.signedRequest(identifer, 'GET', 'curated_poll_leaderboard');
+  public getExtensionTriviaLeaderboard = (identifer: string) =>
+    this.signedRequest(identifer, 'GET', 'curated_poll_leaderboard');
 }
 
 export default StateClient;

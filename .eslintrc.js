@@ -1,26 +1,18 @@
 module.exports = {
   root: true,
 
-  parser: 'babel-eslint',
-
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     sourceType: 'module'
   },
 
-  extends: 'airbnb',
+  extends: ['plugin:prettier/recommended', 'prettier/@typescript-eslint'],
+
+  plugins: ['prettier'],
 
   env: {
     browser: true,
     node: true
-  },
-
-  settings: {
-    ecmascript: 6,
-    'import/resolver': {
-      webpack: {
-        config: 'webpack.config.js'
-      }
-    }
   },
 
   rules: {
@@ -37,8 +29,18 @@ module.exports = {
     // Don't allow trailing commas (e.g. ['a',]).
     'comma-dangle': ['error', 'never'],
 
+    // Enforce use of === for comparisons.
+    eqeqeq: 'error',
+
     // Keep spacing around function parens consistent.
-    'space-before-function-paren': ['error', 'never'],
+    'space-before-function-paren': [
+      'error',
+      {
+        anonymous: 'never',
+        named: 'never',
+        asyncArrow: 'always'
+      }
+    ],
 
     // Don't allow reassigning function paramaters.
     'no-param-reassign': 'error',
@@ -58,9 +60,22 @@ module.exports = {
     'jsx-a11y/href-no-hash': 'off',
     'jsx-a11y/anchor-is-valid': 'off',
 
-    'max-len': ["error", {
-      "code": 120,
-      "ignoreComments": true
-    }]
-  }
+    'max-len': [
+      'error',
+      {
+        code: 120,
+        ignoreComments: true
+      }
+    ]
+  },
+
+  overrides: [
+    {
+      files: ['__tests__/**/*.ts'],
+      rules: {
+        'no-console': 'off',
+        'max-len': 'off'
+      }
+    }
+  ]
 };

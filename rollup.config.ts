@@ -8,10 +8,7 @@ const pkg = require('./package.json');
 
 export default {
   input: 'src/muxy.ts',
-  output: [
-    { file: pkg.main, name: 'Muxy', format: 'umd' },
-    { file: pkg.module, format: 'es' }
-  ],
+  output: [{ file: pkg.main, name: 'Muxy', format: 'umd' }, { file: pkg.module, format: 'es' }],
 
   sourcemap: true,
   watch: {
@@ -24,16 +21,12 @@ export default {
     // Compile TypeScript files
     typescript({ useTsconfigDeclarationDir: true }),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs({
-      namedExports: {
-        'node_modules/base-64/base64.js': [ 'decode' ]
-      }
-    }),
+    commonjs(),
     // Allow node_modules resolution, so you can use 'external' to control
     // which external modules to include in the bundle
     // https://github.com/rollup/rollup-plugin-node-resolve#usage
     resolve({
-      browser: true,
+      browser: true
     }),
     // Resolve source maps to the original source
     sourceMaps()

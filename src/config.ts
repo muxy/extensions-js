@@ -1,5 +1,5 @@
-import { Environment, ENVIRONMENTS } from './util';
 import { MessengerType } from './messenger';
+import { Environment, ENVIRONMENTS } from './util';
 
 /**
  * Muxy production API URL.
@@ -19,7 +19,7 @@ const SANDBOX_URL = 'https://sandbox.api.muxy.io';
  */
 const LOCALHOST_URL = 'http://localhost:5000';
 
-interface ServerURLs {
+export interface ServerURLs {
   ServerURL: string;
   FakeAuthURL: string;
 }
@@ -79,25 +79,25 @@ export default class Config {
   public static GetServerURLs(env: Environment): ServerURLs {
     if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH || env === ENVIRONMENTS.SANDBOX_ADMIN) {
       return {
-        ServerURL: SANDBOX_URL,
-        FakeAuthURL: SANDBOX_URL
+        FakeAuthURL: SANDBOX_URL,
+        ServerURL: SANDBOX_URL
       };
     }
 
     if (env === ENVIRONMENTS.TESTING) {
       return {
-        ServerURL: LOCALHOST_URL,
-        FakeAuthURL: LOCALHOST_URL
+        FakeAuthURL: LOCALHOST_URL,
+        ServerURL: LOCALHOST_URL
       };
     }
 
     return {
-      ServerURL: API_URL,
-      FakeAuthURL: SANDBOX_URL
+      FakeAuthURL: SANDBOX_URL,
+      ServerURL: API_URL
     };
   }
 
-  public static OtherEnvironmentCheck(window): Environment | undefined {
+  public static OtherEnvironmentCheck(window: Window | any): Environment | undefined {
     return undefined;
   }
 }

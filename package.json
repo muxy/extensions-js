@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc --module commonjs --skipLibCheck && rollup -c rollup.config.ts",
     "dev": "rollup -c rollup.config.ts -w",
-    "docs": "node ./tools/generate-docs.js",
+    "docs": "typedoc --out dist/docs --target es6 --theme default --mode modules --excludeExternals --skipLibCheck src && node ./tools/generate-docs.js",
     "lint": "npx eslint 'src/**/*.ts' '__tests__/**/*.ts'",
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
@@ -91,6 +91,7 @@
   },
   "dependencies": {
     "eslint-config-prettier": "^6.3.0",
+    "gulp": "^4.0.2",
     "pako": "^1.0.10",
     "pusher-js": "^4.3.1"
   },

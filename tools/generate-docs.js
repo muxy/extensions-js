@@ -38,6 +38,13 @@ converter.convert(doc, apiOptions, async (err, str) => {
       return;
     }
 
-    fs.writeFileSync('./dist/docs/api.html', html, 'utf8');
+    fs.mkdir('./dist/docs', { recursive: true }, (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      fs.writeFileSync('./dist/docs/api.html', html, 'utf8');
+    })
   });
 });

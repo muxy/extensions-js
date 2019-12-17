@@ -958,7 +958,7 @@ export default class SDK {
    *  });
    * }
    */
-  public multiGetExtensionViewerState(users): Promise<object> {
+  public multiGetExtensionViewerState(users: string[]): Promise<object> {
     if (users.length > 1000) {
       throw new Error('Too many users specified in call to multiGetExtensionViewerState');
     }

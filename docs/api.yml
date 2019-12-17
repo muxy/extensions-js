@@ -1,0 +1,726 @@
+openapi: 3.0.2
+info:
+  title: Muxy's Extension Development Kit
+  version: "1.0"
+  termsOfService: https://muxy.io/terms
+
+  contact:
+    name: MEDKit Support
+    email: support@muxy.io
+
+  description: |
+    # Introduction
+    This document describes Muxy's Extension Development Kit (MEDKit) for
+    building powerful and reliable Twitch extensions.
+
+    Twitch extensions give developers an amazing opportunity to put interactive
+    elements in front of viewers in real-time, but building a backend that can
+    handle millions of requests an hour is not easy.
+
+    Muxy's extension backend has been built to withstand Twitch's viewer load
+    and provide convenient functionality that all extensions may need. It's
+    easy to get started and costs nothing to experiment.
+
+    See the complete dev site at [dev.muxy.io](https://dev.muxy.io) for more
+    information about Muxy and our extensions platform.
+
+    # Authentication
+    MEDKit takes an extension client ID and signed JWT combination as a bearer
+    token with each request. The access level and rights are determined by the
+    user information encoded into the JWTs.
+
+
+  x-logo:
+    url: "https://muxy.io/wp-content/themes/muxy-wp-theme/img/logo.png"
+    altText: MEDKit Logo
+
+servers:
+  - url: https://sandbox.api.muxy.io/v1/e
+    description: Sandbox Development Server
+  - url: https://api.muxy.io/v1/e
+    description: Production Server
+
+tags:
+  - name: Testing
+    description: Endpoints for use in testing extensions
+  - name: Extension State
+    description: Storing and retrieving arbitrary data for viewers
+  - name: Admin Extension State
+    description: Admin-only level state endpoints
+  - name: Accumulate
+    description: |
+      Accumulate allows viewers to send arbitrary data to the server, which may later
+      be accessed by the broadcaster and/or extension admin.
+
+x-tagGroups:
+  - name: General
+    tags:
+      - Testing
+  - name: State Store
+    tags:
+      - Extension State
+      - Admin Extension State
+  - name: Accumulate
+    tags:
+      - Accumulate
+
+components:
+  securitySchemes:
+    viewerJWT:
+      description: Any viewer-level or greater signed JWT
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            console.log()
+
+    broadcasterJWT:
+      description: A broadcaster-level or greater signed JWT
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    adminJWT:
+      description: An admin or backend-level signed JWT
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    JWT:
+      type: string
+
+    FakeJWTRequest:
+      type: object
+      properties:
+        extension_id:
+          description: The Extension Client ID provided by Twitch
+          type: string
+        channel_id:
+          description: The Twitch Channel ID the extension is installed and activated one
+          type: string
+        role:
+          description: The access level of the extension user. One of ('viewer', 'broadcaster', 'admin')
+          type: string
+        user_id:
+          description: The Twitch User ID of the user of the extension. May be the same as the Channel ID
+          type: string
+        user_ids:
+          description:
+            One or more Twitch User IDs. If provided, the response will contain an array of
+            tokens, one for each User ID provided.
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+
+paths:
+  ## Testing
+  /authtoken:
+    post:
+      tags:
+        - Testing
+      summary: Get Testing Auth Token
+      description:
+        Creates one or more authentication tokens, suitable for testing. This endpoint is
+        only available on the Sandbox Development server.
+
+      requestBody:
+        description: Testing values describing the simulated Twitch environment.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                extension_id:
+                  description: The Extension Client ID provided by Twitch
+                  type: string
+                channel_id:
+                  description: The Twitch Channel ID the extension is installed and activated one
+                  type: string
+                role:
+                  description: The access level of the extension user. One of ('viewer', 'broadcaster', 'admin')
+                  type: string
+                user_id:
+                  description: The Twitch User ID of the user of the extension. May be the same as the Channel ID
+                  type: string
+                user_ids:
+                  description:
+                    One or more Twitch User IDs. If provided, the response will contain an array of
+                    tokens, one for each User ID provided.
+                  type: string
+            example:
+              extension_id: iu4qc791nxpovyd3m49zskfymab8gp
+              channel_id: 126955211
+              user_id: 126955211
+              role: viewer
+
+      responses:
+        "200":
+          description: One or more valid testing JWTs.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      token:
+                        type: string
+                  - type: object
+                    properties:
+                      tokens:
+                        type: array
+                        items:
+                          type: string
+        "404":
+          description: "Attempted to retrieve a testing JWT on production."
+
+  ## State
+  /all_state:
+    get:
+      tags:
+        - Extension State
+      security:
+        - viewerJWT: []
+
+      summary: Get All State
+      description:
+        Returns a single JSON object with fields for the current
+        viewer/channel combination.
+      responses:
+        "200":
+          description: All types of state for the current viewer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  extension:
+                    type: object
+                    description: State for all viewers and channels for this extension.
+                  channel:
+                    type: object
+                    description: State for all viewers on this channel.
+                  viewer:
+                    type: object
+                    description: State for this viewer on this channel.
+                  extension_viewer:
+                    type: object
+                    description: State for this viewer on any channel using this extension.
+                example:
+                  extension: { "extension_name": "Awesome Extension" }
+                  channel: { "channel_color": "royalpurple" }
+                  viewer: { "last_broadcaster_request": "sing a song" }
+                  extension_viewer: { "accumulated_points": 123456 }
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.getAllState().then((state) => {
+              if (state.channel.broadcasters_mood) {
+                console.log(`Broadcaster set their mood as: ${state.channel.broadcasters_mood}`);
+              }
+              if (state.viewer.favorite_movie) {
+                console.log(`But your favorite movie is: ${state.viewer.favorite_movie}`);
+              }
+            });
+
+  /extension_state:
+    get:
+      tags:
+        - Extension State
+      security:
+        - viewerJWT: []
+
+      summary: Get Extension State
+      description:
+        Returns a JSON object of the extension's state. This is global for all
+        viewers on all channels.
+      responses:
+        "200":
+          description: The extension's state.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Any JSON serializable data
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.getExtensionState().then((state) => {});
+
+    post:
+      tags:
+        - Extension State
+      security:
+        - adminJWT: []
+
+      summary: Set Extension State
+      description: Sets the extension's state. This is global for all viewers on all channels.
+      responses:
+        "200":
+          description: Extension state updated
+        "400":
+          description: JSON data was not able to be parsed
+
+    x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.setExtensionState({
+              favorite_movie: 'Jaws: The Revenge'
+            }).then(() => {
+              console.log('Extension state saved!');
+            }).catch((err) => {
+              console.error(`Failed saving viewer state: ${err}`);
+            });
+
+  /channel_state:
+    get:
+      tags:
+        - Extension State
+      security:
+        - viewerJWT: []
+
+      summary: Get Channel State
+      description:
+        Returns a JSON object of the channels's state. This is the same for all
+        viewers on the current channel.
+      responses:
+        "200":
+          description: The channel's state.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Any JSON serializable data
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.getChannelState().then((state) => {});
+
+
+    post:
+      tags:
+        - Extension State
+      security:
+        - broadcasterJWT: []
+
+      summary: Set Channel State
+      description:
+        Sets the channel's state. This is the same for all viewers on
+        the current channel.
+      responses:
+        "200":
+          description: Channel state updated
+        "400":
+          description: JSON data was not able to be parsed
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.setChannelState({
+              broadcasters_mood: 'sanguine, my brother',
+              chats_mood: 'kreygasm'
+            }).then(() => {
+              // Let viewers know that new channel state is available.
+            }).catch((err) => {
+              console.error(`Failed saving channel state: ${err}`);
+            });
+
+
+  /viewer_state:
+    get:
+      tags:
+        - Extension State
+      security:
+        - viewerJWT: []
+
+      summary: Get Viewer State
+      description: Returns a JSON object of the viewer state for the current
+        channel set by the extension.
+      responses:
+        "200":
+          description: The viewer's extension state.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Any JSON serializable data
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.getViewerState().then((state) => {});
+
+    post:
+      tags:
+        - Extension State
+      security:
+        - viewerJWT: []
+
+      summary: Set Viewer State
+      description: Sets the viewer state for the extension/channel combination.
+      responses:
+        "200":
+          description: Viewer state updated
+        "400":
+          description: JSON data was not able to be parsed
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.setViewerState({
+              favorite_movie: 'Jaws: The Revenge'
+            }).then(() => {
+              console.log('Viewer state saved!');
+            }).catch((err) => {
+              console.error(`Failed saving viewer state: ${err}`);
+            });
+
+  /extension_viewer_state:
+    get:
+      tags:
+        - Admin Extension State
+      security:
+        - viewerJWT: []
+        - adminJWT: []
+
+      summary: Get Extension-wide Viewer State
+      description: |
+        If the request includes a query parameter list of Twitch user IDs and the
+        requesting JWT auth token is admin-level, returns a mapping of those user
+        IDs to their extension-side viewer state, removing any that are not found.
+
+        If no list of IDs is provided and the JWT auth token is viewer-level,
+        returns a JSON object of the viewer's extension-wide state. This is
+        associated with the current viewer, but across all channels.
+
+      parameters:
+        - in: query
+          name: user_ids
+          required: false
+          style: form
+          schema:
+            type: array
+            description:
+              Optional comma-separated list of Twitch user IDs.
+
+      responses:
+        "200":
+          description:
+            One or more viewer state objects depending on request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required:
+                      - user_ids
+                    description: Any JSON serializable data
+                    example:
+                      { "hello": "world" }
+                  - type: object
+                    description: A mapping of user IDs to viewer extension state
+                discriminator:
+                  propertyName: user_ids
+
+      x-code-samples:
+        - lang: JavaScript
+          label: JavaScript (Viewer)
+          source: |
+            sdk.getExtensionViewerState().then((state) => {});
+        - lang: JavaScript
+          label: JavaScript (Admin)
+          source: |
+            sdk.multiGetExtensionViewerState(["valid-viewer-id", "invalid-viewer-id"]).then((viewers) => {
+              console.log(users["valid-viewer-id"]) // Prints that viewer's extension state
+              console.log(users["valid-viewer-id"]) // Prints "undefined"
+            });
+
+    post:
+      tags:
+        - Admin Extension State
+      security:
+        - adminJWT: []
+
+      summary: Set Extension-wide Viewer State
+      description:
+        Sets the viewer state for the entire extension. This is associated with
+        the current viewer, but across all channels.
+      responses:
+        "200":
+          description: Viewer state updated
+        "400":
+          description: JSON data was not able to be parsed
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.setExtensionViewerState({
+              favorite_movie: 'Jaws: The Revenge'
+            }).then(() => {
+              console.log('Viewer state saved!');
+            }).catch((err) => {
+              console.error(`Failed saving viewer state: ${err}`);
+            });
+
+    patch:
+      tags:
+        - Admin Extension State
+      security:
+        - adminJWT: []
+
+      summary: Set Extension-wide Viewer State for Multiple Viewers
+      description: |
+        Allows an admin-level user to set extension-wide viewer state for
+        multiple viewers in a single request.
+
+        Limited to updating 1000 viewers per-call.
+
+      requestBody:
+        description:
+          A JSON object containing a mapping of viewer IDs to patch objects. The viewer
+          ID may either be the opaque or Twitch ID of the viewer. The patch object may
+          be an array of JSONPatch (http://jsonpatch.com/) operations, or a simple JSON
+          object that will be merged with the existing state.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                <viewer id>:
+                  description: An array of JSONPatch operations or a new state object.
+                  oneOf:
+                  - type: array
+                  - type: object
+            example:
+              12345: [
+                { "op": "replace", "path": "/baz", "value": "boo" },
+                { "op": "add", "path": "/hello", "value": ["world"] },
+                { "op": "remove", "path": "/foo" }
+              ]
+              67890: {
+                "baz": "boo",
+                "hello": ["world"]
+              }
+
+      responses:
+        "200":
+          description: State for all viewers updated
+        "400":
+          description: State updates were unparsable for one or more viewers
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.patchExtensionViewerState({
+              "12452": { "hello": "world" },
+              "12422": { "foo": "bar" }
+            });
+
+  /extension_hidden_state:
+    get:
+      tags:
+        - Admin Extension State
+      security:
+        - adminJWT: []
+
+      summary: Get Secret Extension State
+      description:
+        Returns a JSON object of the secret extension state. This is only reachable by
+        an admin or backend signed JWT.
+      responses:
+        "200":
+          description: The secret extension state.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Any JSON serializable data
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.getExtensionSecretState().then((state) => {});
+
+    post:
+      tags:
+        - Admin Extension State
+      security:
+        - adminJWT: []
+
+      summary: Set Secret Extension State
+      description: Sets the secret extension state.
+      responses:
+        "200":
+          description: Secret state updated
+        "400":
+          description: JSON data was not able to be parsed
+
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            sdk.setExtensionSecretState({
+              favorite_movie: 'Twilight: New Moon'
+            }).then(() => {
+              console.log('Extension secrets saved!');
+            }).catch((err) => {
+              console.error(`Failed saving secret state: ${err}`);
+            });
+
+  ## Accumulate
+  /accumulate:
+    get:
+      tags:
+        - Accumulate
+      security:
+        - broadcasterJWT: []
+
+      summary: Get Accumulation Data
+      description: |
+        Returns a JSON object of accumulated viewer data for a given ID. This is only
+        reachable by a broadcaster or admin signed JWTs.
+
+        If the JWT is signed by a broadcaster, only viewer data for the broadcaster's channel
+        will be returned. An admin-signed JWT will return data for all channels.
+
+        The **start** parameter is required.
+
+        Accumulation data expires after one hour.
+
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: The data set ID to return.
+        - in: query
+          name: start
+          schema:
+            type: string
+          description:
+            A UNIX timestamp in milliseconds representing the earliest viewer data entry
+            to include in the response.
+
+      responses:
+        "200":
+          description: The accumulated viewer data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latest:
+                    type: string
+                    description: |
+                      A UNIX timestamp (in milliseconds) of the most recently received viewer data.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        observed:
+                          type: integer
+                          description: A UNIX timestamp (in milliseconds) of when this data object was received.
+                        channel_id:
+                          type: string
+                          description: The Twitch ID of the channel on which this data object was received.
+                        opaque_user_id:
+                          type: string
+                          description: The Opaque User ID of the viewer that submitted this data object.
+                        user_id:
+                          type: string
+                          description: The unique user ID of the viewer that submitted this data object (if available).
+                        data:
+                          type: object
+                          additionalProperties: {}
+              example:
+                latest: 1572290039000
+                data:
+                  - observed: 1572290039000
+                    channel_id: 123456
+                    opaque_user_id: O444444
+                    user_id: U444444
+                    data:
+                      choice_selected: "yes"
+                      favorite_color: "blue"
+                  - observed: 1572290032000
+                    channel_id: 123456
+                    opaque_user_id: O555555
+                    user_id: U555555
+                    data:
+                      choice_selected: "yes"
+                      favorite_color: "red"
+
+      x-code-samples:
+        - lang: cURL
+          source: |
+            curl \
+              -X GET \
+              -H "Authorization: <ext id> <jwt>" \
+              https://api.muxy.io/v1/e/accumulate?id=viewer-data&start=1572290039000
+
+        - lang: JavaScript
+          source: |
+            const oneMinuteAgo = (new Date().getTime()) - (1000 * 60);
+            const resp = await sdk.getAccumulation('viewer-data', oneMinuteAgo);
+            console.log(`${resp.data.length}: ${resp.latest}`);
+            console.log(resp.data); // A list of all accumulate values since `oneMinuteAgo`.
+
+    post:
+      tags:
+        - Accumulate
+      security:
+        - viewerJWT: []
+
+      summary: Add Viewer Data to Accumulation
+      description:
+        Sends an accumulation data set to the server for the current viewer/channel combination.
+
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: The set ID this data belongs to.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+            example:
+              choice_selected: "yes"
+              favorite_color: "blue"
+
+      responses:
+        "400":
+          description: Invalid JSON data submitted by viewer.
+        "200":
+          description: Viewer data submitted successfully.
+
+      x-code-samples:
+        - lang: cURL
+          source: |
+            curl \
+              -X POST \
+              -H "Authorization: <ext id> <jwt>" \
+              -H "Content-Type: application/json" \
+              -d '{ "choice_selected": "yes", "favorite_color": "blue" }'
+              https://api.muxy.io/v1/e/accumulate?id=viewer-data
+
+        - lang: JavaScript
+          source: |
+            sdk.accumulate('viewer-data', {
+              choice_selected: 'yes',
+              favorite_color: 'blue'
+            });

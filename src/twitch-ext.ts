@@ -190,6 +190,16 @@ export default class Ext {
     }
   }
 
+  public static onHighlightChanged(callback: (highlighted: boolean) => void) {
+    if (Config.CanUseTwitchAPIs(CurrentEnvironment())) {
+      window.Twitch.ext.onHighlightChanged(callback);
+    } else {
+      consolePrint(`onHighlightChanged not supported for ${CurrentEnvironment()}`, {
+        type: 'error'
+      });
+    }
+  }
+
   private static authFromJWT(jwt: string): TwitchAuth {
     const claims = JSON.parse(atob(jwt.split('.')[1]));
     const res = new TwitchAuth();

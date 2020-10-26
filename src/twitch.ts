@@ -84,6 +84,7 @@ export interface TwitchSDK {
   onError(cb: (err: string | Error) => void): void;
   onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext | null) => void): void;
   onPositionChanged(callback: (position: Position) => void): void;
+  onHighlightChanged(callback: (highlight: boolean) => void): void;
 
   getAuthData(): any;
 

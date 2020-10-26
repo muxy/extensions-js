@@ -1112,7 +1112,7 @@ export default class SDK {
    *   year: 1997
    * });
    */
-  public send(event, userID, data) {
+  public send(event: string, userID: string | unknown, data?: unknown) {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1300,7 +1300,7 @@ export default class SDK {
    * Sets a function to be used as a callback when entitlements need to be reloaded, i.e. after a
    * purchase has been made.
    *
-   * @param {function} callback - A function to be called to update user entitlements.
+   * @param {Function} callback - A function to be called to update user entitlements.
    */
   public onReloadEntitlements(callback) {
     if (this.SKUs.length === 0) {

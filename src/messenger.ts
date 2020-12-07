@@ -34,13 +34,65 @@ export interface Messenger {
   close(): void;
 }
 
-function parseMessage(msg) {
+function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic: string, msg: string) {
   if (msg.length === 0) {
     return {};
   }
 
-  if (msg[0] === '{' || msg[0] === '[') {
+  if (msg[0] == '{' || msg[0] == '[') {
+    // JSON message
     return JSON.parse(msg);
+  } else if (msg[0] == '<') {
+    // Fragmented multipart message.
+    // A fragmented multipart message has plaintext header <index, count> right
+    // before the data string.
+    const close = msg.indexOf('>');
+    const header = msg.substr(1, close - 1);
+    const parts = header.split(',').map(function(x) {
+      return parseInt(x, 10);
+    });
+
+    if (parts.length != 2) {
+      return {};
+    }
+
+    const index = parts[0];
+    const count = parts[1];
+
+    const fragmentLookupKey = id + ':' + topic;
+    let fragments = messageBuffer[fragmentLookupKey];
+    if (!fragments) {
+      fragments = [];
+      for (let i = 0; i < count; ++i) {
+        fragments.push('');
+      }
+    }
+
+    fragments[index] = msg.substr(close + 1);
+
+    let allFragmentsReceived = true;
+    for (let i = 0; i < count; ++i) {
+      if (fragments[i].length == 0) {
+        allFragmentsReceived = false;
+        break;
+      }
+    }
+
+    messageBuffer[fragmentLookupKey] = fragments;
+
+    if (!allFragmentsReceived) {
+      return null;
+    }
+
+    delete messageBuffer[fragmentLookupKey];
+
+    const fullMessage = fragments.join('');
+    const decoded = atob(fullMessage);
+    const integers = decoded.split('').map(function(x) {
+      return x.charCodeAt(0);
+    });
+    const bytes = new Uint8Array(integers);
+    return JSON.parse(pako.inflate(bytes, { to: 'string' }));
   } else {
     const decoded = atob(msg);
     const integers = decoded.split('').map(function(x) {
@@ -96,9 +148,13 @@ class TwitchMessenger implements Messenger {
    */
   /* eslint-disable class-methods-use-this */
   public listen(id, topic: string, callback): CallbackHandle {
+    const messageBuffer: Record<string, string[]> = {};
     const cb = (t, datatype, message) => {
       try {
-        const parsed = parseMessage(message);
+        const parsed = parseMessage(messageBuffer, id, topic, message);
+        if (parsed == null) {
+          return;
+        }
 
         this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);
@@ -184,9 +240,13 @@ class PusherMessenger implements Messenger {
       this.globalChannel = this.client.subscribe(globalName);
     }
 
+    const messageBuffer: Record<string, string[]> = {};
     const cb = message => {
       try {
-        const parsed = parseMessage(message.message);
+        const parsed = parseMessage(messageBuffer, id, topic, message.message);
+        if (parsed == null) {
+          return;
+        }
 
         this.debug.onPubsubReceive(id, topic, parsed);
         callback(parsed);

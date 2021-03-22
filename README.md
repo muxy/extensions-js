@@ -10,12 +10,12 @@ a Twitch Client and a Google Analytics system.
 Muxy hosts specific versions and latest releases at https://ext-cdn.muxy.io/medkit.
 
 Tagged releases (starting with 2.0.0):
-* https://ext-cdn.muxy.io/medkit/2.0.0/medkit.umd.js
-* https://ext-cdn.muxy.io/medkit/2.0.0/medkit.esm.js
+* https://unpkg.com/@muxy/extensions-js@2.0.0/dist/medkit.umd.js
+* https://unpkg.com/@muxy/extensions-js@2.0.0/dist/medkit.esm.js
 
 Latest production release:
-* https://ext-cdn.muxy.io/medkit/latest/medkit.umd.js
-* https://ext-cdn.muxy.io/medkit/latest/medkit.esm.js
+* https://unpkg.com/@muxy/extensions-js/dist/medkit.umd.js
+* https://unpkg.com/@muxy/extensions-js/dist/medkit.esm.js
 
 ## Building
 

@@ -109,7 +109,10 @@ export default class Util {
    * @param {string[]} lines - An array of strings.
    */
   public static widestLine(lines: string[]): number {
-    return Math.max.apply(null, lines.map(x => x.length));
+    return Math.max.apply(
+      null,
+      lines.map(x => x.length)
+    );
   }
 
   /**

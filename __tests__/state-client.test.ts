@@ -10,7 +10,6 @@ const clientId = 'test-id';
 const expiredJWT =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiMTI2OTU1MjExIiwicm9sZSI6InZpZXdlciIsImV4dGVuc2lvbl9pZCI6ImthM3kyOHJyZ2gyZjUzM214dDltbDM3ZnY2emI4ayIsImV4cCI6MTQ5Nzk5MDQzMiwib3BhcXVlX3VzZXJfaWQiOiJBODk0MzIzNiIsImFsbG93ZWRfc3RhZ2UiOiJ0ZXN0aW5nIiwiYXBwX2lkIjoibXlfYXdlc29tZV9hcHAifQ.s49uwSdy9C7KyubpYQPtJfuN4q_-9a-nuG4MxnIvoBo';
 
-/** @test {StateClient} */
 describe('StateClient', () => {
   const loadedPromise = Promise.resolve();
   const adminClient = new StateClient(loadedPromise, {} as DebugOptions);
@@ -45,27 +44,23 @@ describe('StateClient', () => {
     });
   });
 
-  /** @test {StateClient#validateJWT} */
   it('should fail with invalid JWT', async () => {
     const client = new StateClient(loadedPromise, {});
     await expect(client.getRank(clientId, 'empty')).rejects.toEqual('Your authentication token has expired.');
   });
 
-  /** @test {StateClient#validateJWT} */
   it('should fail with an expired JWT', async () => {
     const client = new StateClient(loadedPromise, {});
     client.updateAuth(expiredJWT);
     await expect(client.getRank(clientId, 'empty')).rejects.toEqual('Your authentication token has expired.');
   });
 
-  /** @test {StateClient#getRank} */
   it('should make a request', async () => {
     await expect(viewerClient.getRank(clientId, 'empty')).resolves.toEqual({
       data: []
     });
   });
 
-  /** @test {StateClient#hooks} */
   it('should use request hooks', async () => {
     const requestHook = jest.fn(x => x);
     viewerClient.hooks.requests.add(requestHook);
@@ -74,7 +69,6 @@ describe('StateClient', () => {
     expect(requestHook.mock.calls.length).toBe(1);
   });
 
-  /** @test {StateClient#hooks} */
   it('should allow removing hooks', async () => {
     const requestHook = jest.fn(x => x);
     const hookId = viewerClient.hooks.requests.add(requestHook);
@@ -88,7 +82,6 @@ describe('StateClient', () => {
     expect(requestHook.mock.calls.length).toBe(1);
   });
 
-  /** @test {StateClient#hooks} */
   it('should use successful response hooks', async () => {
     const responseHook = jest.fn();
     const errResponseHook = jest.fn();
@@ -106,7 +99,6 @@ describe('StateClient', () => {
     });
   });
 
-  /** @test {StateClient#hooks} */
   it('should use error response hooks', async () => {
     const client = new StateClient(loadedPromise, {});
 
@@ -120,7 +112,6 @@ describe('StateClient', () => {
     expect(errResponseHook.mock.calls.length).toBe(1);
   });
 
-  /** @test {StateClient#getViewerState} */
   it('sets and gets viewer state', async () => {
     const client = new StateClient(loadedPromise, {});
     const auth = await StateClient.fetchTestAuth(clientId, {

@@ -16,7 +16,7 @@
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
-    "test": "jest __tests__/*.ts",
+    "test": "TZ=UTC jest __tests__/*.ts",
     "test:watch": "jest --watch",
     "test:prod": "npm run lint && npm run test -- --coverage --no-cache"
   },
@@ -53,10 +53,11 @@
     "browser": true
   },
   "devDependencies": {
-    "@types/jest": "^23.3.5",
+    "@types/jest": "^26.0.22",
     "@types/pusher-js": "^4.2.0",
     "@typescript-eslint/eslint-plugin": "^2.3.0",
     "@typescript-eslint/parser": "^2.3.0",
+    "browser-resolve": "^2.0.0",
     "colors": "^1.3.2",
     "commitizen": "^4.0.3",
     "coveralls": "^3.0.2",
@@ -85,7 +86,7 @@
     "typedoc": "^0.15.0",
     "typedoc-plugin-external-module-name": "^2.1.0",
     "typedoc-plugin-sourcefile-url": "^1.0.4",
-    "typescript": "^3.6.3",
+    "typescript": "^3.9.9",
     "validate-commit-msg": "^2.14.0",
     "widdershins": "^3.6.7"
   },

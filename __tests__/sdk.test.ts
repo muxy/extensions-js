@@ -40,8 +40,6 @@ describe('SDK', () => {
     mxy.loadPromise = prom;
     mxy.SKUs = [];
     mxy.debugOptions = new DefaultDebugOptions();
-
-    const sdk = new SDK('test');
   });
 
   it('should generate a offset date object', () => {
@@ -61,5 +59,13 @@ describe('SDK', () => {
     const curDate = new Date();
 
     expect(newDate.getTime() - curDate.getTime()).toEqual(10);
+  });
+
+  test('should return callback handler', () => {
+    const mockCallback = jest.fn() as jest.MockedFunction<(TwitchContext) => void>;
+
+    const sdk = new SDK('test');
+
+    expect(sdk.onContextUpdate(mockCallback)).toEqual({ cb: mockCallback });
   });
 });

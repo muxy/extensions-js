@@ -7,9 +7,7 @@ function testForceType(value: any, expected: string) {
   };
 }
 
-/** @test {Util} */
 describe('Util', () => {
-  /** @test {Util.errorPromise} */
   describe('errorPromise', () => {
     it('rejects immediately', () => {
       return expect(Util.errorPromise('error string')).rejects.toEqual('error string');
@@ -20,9 +18,13 @@ describe('Util', () => {
     });
   });
 
-  /** @test {Util.currentEnvironment} */
+  describe('widestLine', () => {
+    const testStringAry = ['Test String', 'Test String Two', 'Test String Three'];
+
+    expect(Util.widestLine(testStringAry)).toBe(17);
+  });
+
   describe('currentEnvironment', () => {
-    /** @test {Util.currentEnvironment#SANDBOX_DEV} */
     it('correctly detects a sandbox development environment', () => {
       const sandboxWindow = {
         location: {
@@ -35,7 +37,6 @@ describe('Util', () => {
       expect(Util.currentEnvironment(sandboxWindow)).toEqual(Util.Environments.SandboxDev);
     });
 
-    /** @test {Util.currentEnvironment#SANDBOX_TWITCH} */
     it('correctly detects a sandbox twitch environment', () => {
       const stagingWindow = {
         location: {
@@ -48,7 +49,6 @@ describe('Util', () => {
       expect(Util.currentEnvironment(stagingWindow)).toEqual(Util.Environments.SandboxTwitch);
     });
 
-    /** @test {Util.currentEnvironment#PRODUCTION} */
     it('correctly detects a production environment', () => {
       const productionWindow = {
         location: {
@@ -65,7 +65,6 @@ describe('Util', () => {
     });
   });
 
-  /** @test {eventPatternMatch} */
   describe('eventPatternMatch', () => {
     it('correctly matches valid patterns', () => {
       expect(Util.eventPatternMatch('a:b:c', 'a:b:c')).toBe(true);
@@ -88,7 +87,6 @@ describe('Util', () => {
     });
   });
 
-  /** @test {forceType} */
   describe('forceType', () => {
     it('correctly identifies the basic types', () => {
       const testUndefined = undefined;

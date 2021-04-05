@@ -50,7 +50,7 @@
     },
     "collectCoverage": true,
     "verbose": true,
-    "browser": true
+    "resolver": "./tools/resolver.js"
   },
   "devDependencies": {
     "@types/jest": "^26.0.22",

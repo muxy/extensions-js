@@ -206,8 +206,7 @@ class PusherMessenger implements Messenger {
   constructor(debug: DebugOptions) {
     // @ts-ignore
     this.client = new Pusher('18c26c0d1c7fafb78ba2', {
-      cluster: 'us2',
-      encrypted: true
+      cluster: 'us2'
     });
 
     this.channelID = '';

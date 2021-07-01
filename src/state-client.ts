@@ -34,6 +34,17 @@ export enum ServerState {
   VIEWER = 'viewer_state'
 }
 
+/**
+ * ServerConfig enum maps the subsets of config persisted to the server to
+ * their respective endpoints.
+ * @ignore
+ */
+export enum ServerConfig {
+  ALL = 'config',
+  CHANNEL = 'config/channel',
+  EXTENSION = 'config/extension'
+}
+
 /** @ignore */
 export interface Hook<HookCallback> {
   failure: HookCallback;
@@ -288,11 +299,26 @@ class StateClient {
     this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
 
   /**
+   * getConfig requests a subset of config stored on the server and sets the
+   * local cached version of the config to the response.
+   * @ignore
+   */
+  public getConfig = (identifier: string, subconfig?: ServerConfig): Promise<any> =>
+    this.signedRequest(identifier, 'GET', subconfig || ServerConfig.ALL);
+
+  /**
    * postState sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
   public postState = (identifier: string, substate: ServerState, data: any) =>
     this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
+
+  /**
+   * postConfig sends data to the current EBS substate endpoint for persistence.
+   * @ignore
+   */
+  public postConfig = (identifier: string, subconfig: ServerConfig, data: any) =>
+    this.signedRequest(identifier, 'POST', subconfig || ServerConfig.ALL, data);
 
   /** @ignore */
   public getUserInfo = (identifier: string) => this.getState(identifier, ServerState.USER);
@@ -312,6 +338,15 @@ class StateClient {
 
   /** @ignore */
   public getChannelState = (identifier: string) => this.getState(identifier, ServerState.CHANNEL);
+
+  /** @ignore */
+  public getServerConfig = (identifier: string) => this.getConfig(identifier, ServerConfig.ALL);
+
+  /** @ignore */
+  public getChannelConfig = (identifier: string) => this.getConfig(identifier, ServerConfig.CHANNEL);
+
+  /** @ignore */
+  public getExtensionConfig = (identifier: string) => this.getConfig(identifier, ServerConfig.EXTENSION);
 
   /** @ignore */
   public getExtensionState = (identifier: string) => this.getState(identifier, ServerState.EXTENSION);
@@ -339,6 +374,22 @@ class StateClient {
   /** @ignore */
   public setChannelState = (identifier: string, state: any) =>
     this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
+
+  /** @ignore */
+  public setChannelConfig = (identifier: string, config: any) =>
+    this.postConfig(identifier, ServerConfig.CHANNEL, JSON.stringify(config));
+
+  /** @ignore */
+  public setExtensionConfig = (identifier: string, config: any) =>
+    this.postConfig(identifier, ServerConfig.EXTENSION, JSON.stringify(config));
+
+  /** @ignore */
+  public patchChannelConfig = (identifier: string, multiConfig: any) =>
+    this.signedRequest(identifier, 'PATCH', ServerConfig.CHANNEL, JSON.stringify(multiConfig));
+
+  /** @ignore */
+  public patchExtensionConfig = (identifier: string, multiConfig: any) =>
+    this.signedRequest(identifier, 'PATCH', ServerConfig.EXTENSION, JSON.stringify(multiConfig));
 
   /** @ignore */
   public setExtensionState = (identifier: string, state: any) =>

@@ -708,6 +708,98 @@ export default class SDK {
   }
 
   /**
+   * Server Config
+   */
+
+  /**
+   * Sets the server channel config to a JS object. Future calls to {@link getConfig} or {@link getChannelConfig} by **any**
+   * user on this channel will have a clone of this object in the `channel` field.
+   *
+   * Broadcaster-only functionality.
+   *
+   * @async
+   * @since 1.0.0
+   *
+   * @param {Object} config - A complete JS object representing the current server config.
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setChannelConfig({
+   *   kappa_outdated: true,
+   *   kreygasm_overrated: true,
+   *   waited_duration: "long",
+   *   jebait_timing: "now"
+   * }).then(() => {
+   *   // Let viewers know that new channel config is available.
+   * }).catch((err) => {
+   *   console.error(`Failed saving channel config: ${err}`);
+   * });
+   */
+  public setChannelConfig(config: object): Promise<object> {
+    return this.client.setChannelConfig(this.identifier, config);
+  }
+
+  /**
+   * Sets the server extension config to a JS object. Future calls to {@link getConfig} or {@link getExtensionConfig} by **any**
+   * user on this channel will have a clone of this object in the `extension` field.
+   *
+   * Broadcaster-only functionality.
+   *
+   * @async
+   * @since 1.0.0
+   *
+   * @param {Object} config - A complete JS object representing the current server config.
+   *
+   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   *
+   * @example
+   * sdk.setExtensionConfig({
+   *   kappa_outdated: true,
+   *   kreygasm_overrated: true,
+   *   waited_duration: "long",
+   *   jebait_timing: "now"
+   * }).then(() => {
+   *   // Let viewers know that new extension config is available.
+   * }).catch((err) => {
+   *   console.error(`Failed saving extension config: ${err}`);
+   * });
+   */
+  public setExtensionConfig(config: object): Promise<object> {
+    return this.client.setExtensionConfig(this.identifier, config);
+  }
+
+  /**
+   * Returns the current channel and extension config objects
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with an object populated with channel and extension config objects.
+   */
+  public getConfig(): Promise<object> {
+    return this.client.getConfig(this.identifier);
+  }
+
+  /**
+   * Returns the current channel config object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated channel config object.
+   */
+  public getChannelConfig(): Promise<object> {
+    return this.client.getChannelConfig(this.identifier);
+  }
+
+  /**
+   * Returns the current extension config object
+   * @async
+   *
+   * @return {Promise<Object>} Resolves on successful server request with a populated extension config object.
+   */
+  public getExtensionConfig(): Promise<object> {
+    return this.client.getExtensionConfig(this.identifier);
+  }
+
+  /**
    * User State
    */
 

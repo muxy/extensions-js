@@ -2,7 +2,7 @@
  * @module SDK
  */
 
-import XHRPromise from '../libs/xhr-promise';
+import XHRPromise, { XHROptions } from '../libs/xhr-promise';
 
 import Config from './config';
 import { DebugOptions } from './debug';
@@ -52,8 +52,11 @@ export interface Hook<HookCallback> {
 }
 
 // Request hooks must return the config object, optionally after mutating it.
-export type RequestHook = (config: any) => any;
-export type ResponseHook = (resp: any) => any;
+export type RequestHook = (config: XHROptions) => Promise<XHROptions>;
+// Response hooks take an (optionally) typed object and return an (optinally) typed object.
+export type ResponseHook =
+  <InType = unknown, OutType = unknown>
+  (resp: InType) => Promise<OutType>;
 
 /**
  * HookManager class for adding and removing network request
@@ -203,18 +206,19 @@ class StateClient {
    * request to the EBS with valid auth credentials.
    * @ignore
    */
-  public async signedRequest(
+  public async signedRequest<StateType = unknown>(
     extensionID: string,
     method: string,
     endpoint: string,
-    data?: any,
+    data?: StateType,
     skipPromise?: boolean
-  ): Promise<any> {
-    let promise: Promise<any> = skipPromise ? Promise.resolve() : this.loaded;
+  ): Promise<StateType> {
+    let promise: Promise<XHROptions | StateType | undefined> = skipPromise ? Promise.resolve(undefined) : this.loaded;
 
     // Middle of chain makes the actual server request
-    const chain: any = [
-      async (config: any): Promise<any> => {
+    const chain: [RequestHook | ResponseHook, undefined]  = [
+      // Perform request with mutated config options.
+      async (config: XHROptions): Promise<XHROptions> => {
         if (!this.validateJWT()) {
           return Promise.reject('Your authentication token has expired.');
         }
@@ -234,6 +238,7 @@ class StateClient {
           return Promise.reject(requestErr);
         }
       },
+
       undefined
     ];
 
@@ -249,18 +254,24 @@ class StateClient {
 
     // Start the promise chain with the current config object
     promise = promise.then(() => ({
-      data,
+      data: JSON.stringify(data),
       headers: { Authorization: `${extensionID} ${this.token}` },
       method,
       url: `${SERVER_URL}/v1/e/${endpoint}`
     }));
 
-    // Build promise
+    // Build promise chain
     while (chain.length) {
       promise = promise.then(chain.shift(), chain.shift());
     }
 
-    return promise;
+    // Force last return value to generic state type
+    // If we want to do more explicit type checking, we would need
+    // the developer to provide a discrimator or type identifier.
+    // But I don't know if that's proper for this library to enforce.
+    return promise.then((value: XHROptions | StateType) => {
+      return value as StateType;
+    });
   }
 
   /**
@@ -295,29 +306,29 @@ class StateClient {
    * local cached version of the state to the response.
    * @ignore
    */
-  public getState = (identifier: string, substate?: ServerState): Promise<any> =>
-    this.signedRequest(identifier, 'GET', substate || ServerState.ALL);
+  public getState = <StateType = unknown>(identifier: string, substate?: ServerState): Promise<StateType> =>
+    this.signedRequest<StateType>(identifier, 'GET', substate || ServerState.ALL);
 
   /**
    * getConfig requests a subset of config stored on the server and sets the
    * local cached version of the config to the response.
    * @ignore
    */
-  public getConfig = (identifier: string, subconfig?: ServerConfig): Promise<any> =>
+  public getConfig = (identifier: string, subconfig?: ServerConfig): Promise<unknown> =>
     this.signedRequest(identifier, 'GET', subconfig || ServerConfig.ALL);
 
   /**
    * postState sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  public postState = (identifier: string, substate: ServerState, data: any) =>
+  public postState = <StateType = unknown>(identifier: string, substate: ServerState, data: StateType) =>
     this.signedRequest(identifier, 'POST', substate || ServerState.ALL, data);
 
   /**
    * postConfig sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  public postConfig = (identifier: string, subconfig: ServerConfig, data: any) =>
+  public postConfig = (identifier: string, subconfig: ServerConfig, data: string) =>
     this.signedRequest(identifier, 'POST', subconfig || ServerConfig.ALL, data);
 
   /** @ignore */
@@ -337,7 +348,7 @@ class StateClient {
   public getExtensionSecretState = (identifier: string) => this.getState(identifier, ServerState.EXTENSION_SECRET);
 
   /** @ignore */
-  public getChannelState = (identifier: string) => this.getState(identifier, ServerState.CHANNEL);
+  public getChannelState = <StateType = unknown>(identifier: string) => this.getState<StateType>(identifier, ServerState.CHANNEL);
 
   /** @ignore */
   public getServerConfig = (identifier: string) => this.getConfig(identifier, ServerConfig.ALL);
@@ -368,12 +379,12 @@ class StateClient {
     this.signedRequest(identifier, 'GET', `extension_viewer_state?user_ids=${users.join(',')}`);
 
   /** @ignore */
-  public setExtensionSecretState = (identifier: string, state: any) =>
-    this.postState(identifier, ServerState.EXTENSION_SECRET, JSON.stringify(state));
+  public setExtensionSecretState = <StateType = unknown>(identifier: string, state: StateType) =>
+    this.postState<StateType>(identifier, ServerState.EXTENSION_SECRET, JSON.stringify(state));
 
   /** @ignore */
-  public setChannelState = (identifier: string, state: any) =>
-    this.postState(identifier, ServerState.CHANNEL, JSON.stringify(state));
+  public setChannelState = <StateType = unknown>(identifier: string, state: StateType) =>
+    this.postState<StateType>(identifier, ServerState.CHANNEL, state);
 
   /** @ignore */
   public setChannelConfig = (identifier: string, config: any) =>

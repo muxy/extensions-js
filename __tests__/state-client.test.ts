@@ -21,7 +21,6 @@ describe('StateClient', () => {
   });
 
   beforeEach(async () => {
-    // @ts-ignore
     mockXHR.reset();
 
     await StateClient.fetchTestAuth(clientId, {
@@ -44,75 +43,25 @@ describe('StateClient', () => {
     });
   });
 
-  it('should fail with invalid JWT', async () => {
+  test('fails with invalid JWT', async () => {
     const client = new StateClient(loadedPromise, {});
     await expect(client.getRank(clientId, 'empty')).rejects.toEqual('Your authentication token has expired.');
   });
 
-  it('should fail with an expired JWT', async () => {
+  test('fails with an expired JWT', async () => {
     const client = new StateClient(loadedPromise, {});
     client.updateAuth(expiredJWT);
     await expect(client.getRank(clientId, 'empty')).rejects.toEqual('Your authentication token has expired.');
   });
 
-  it('should make a request', async () => {
+  test('makes a request', async () => {
     await expect(viewerClient.getRank(clientId, 'empty')).resolves.toEqual({
       data: []
     });
   });
 
-  it('should use request hooks', async () => {
-    const requestHook = jest.fn(x => x);
-    viewerClient.hooks.requests.add(requestHook);
 
-    await expect(viewerClient.getViewerState(clientId)).resolves.toEqual({});
-    expect(requestHook.mock.calls.length).toBe(1);
-  });
-
-  it('should allow removing hooks', async () => {
-    const requestHook = jest.fn(x => x);
-    const hookId = viewerClient.hooks.requests.add(requestHook);
-
-    await expect(viewerClient.getViewerState(clientId)).resolves.toEqual({});
-    expect(requestHook.mock.calls.length).toBe(1);
-
-    viewerClient.hooks.requests.remove(hookId);
-
-    await expect(viewerClient.getViewerState(clientId)).resolves.toEqual({});
-    expect(requestHook.mock.calls.length).toBe(1);
-  });
-
-  it('should use successful response hooks', async () => {
-    const responseHook = jest.fn();
-    const errResponseHook = jest.fn();
-    viewerClient.hooks.responses.add(responseHook, errResponseHook);
-
-    // @ts-ignore
-    mockXHR.__queueResponseMock('{"state":"hello"}');
-
-    expect(await viewerClient.getViewerState(clientId)).resolves;
-
-    expect(errResponseHook.mock.calls.length).toBe(0);
-    expect(responseHook.mock.calls.length).toBe(1);
-    expect(responseHook.mock.calls[0][0]).toEqual({
-      state: 'hello'
-    });
-  });
-
-  it('should use error response hooks', async () => {
-    const client = new StateClient(loadedPromise, {});
-
-    const responseHook = jest.fn();
-    const errResponseHook = jest.fn();
-    client.hooks.responses.add(responseHook, errResponseHook);
-
-    expect(await client.getViewerState(clientId)).rejects;
-
-    expect(responseHook.mock.calls.length).toBe(0);
-    expect(errResponseHook.mock.calls.length).toBe(1);
-  });
-
-  it('sets and gets viewer state', async () => {
+  test('sets and gets viewer state', async () => {
     const client = new StateClient(loadedPromise, {});
     const auth = await StateClient.fetchTestAuth(clientId, {
       channelID: '12345',
@@ -126,7 +75,6 @@ describe('StateClient', () => {
       })
     ).resolves;
 
-    // @ts-ignore
     mockXHR.__queueResponseMock('{"state":"hello"}');
 
     await expect(client.getViewerState(clientId)).resolves.toEqual({ state: 'hello' });
@@ -136,5 +84,29 @@ describe('StateClient', () => {
         state: 'hello'
       }
     });
+  });
+
+  test('allows proper typing', async () => {
+    interface ChannelState {
+      stringState: string,
+      numberState: number,
+      booleanState: boolean
+    }
+
+    const channelState = {
+      stringState: "hello",
+      numberState: 123,
+      booleanState: true,
+    };
+
+    // @ts-expect-error
+    await broadcasterClient.setChannelState<ChannelState>(clientId, {
+      // Missing required parameters of ChannelState
+      numberState: 123,
+    });
+
+    mockXHR.__queueResponseMock(JSON.stringify(channelState));
+    expect(await broadcasterClient.getChannelState<ChannelState>(clientId))
+      .toMatchObject(channelState);
   });
 });

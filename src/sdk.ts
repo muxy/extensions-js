@@ -326,6 +326,22 @@ export enum TriviaQuestionState {
 }
 
 /**
+ * Represents user info
+ *
+ * @property {string} ip_address - The id of the question
+ * @property {boolean} registered - The name of the question
+ * @property {number} server_time - The name of the question for smaller displays.
+ * @property {string} visualization_id - A description for the question
+ */
+ export interface UserInfo {
+  ip_address: string;
+  registered: boolean;
+  server_time: number;
+  visualization_id: string;
+}
+
+
+/**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
  *
  * Instances of this class created through the global `Muxy` object can be used to easily
@@ -643,8 +659,8 @@ export default class SDK {
     return new Promise((accept, reject) => {
       this.client
         .getRank(this.identifier, rankID)
-        .then(data => {
-          accept(data.data);
+        .then((data: RankData) => {
+          accept(data);
         })
         .catch(reject);
     });
@@ -711,6 +727,7 @@ export default class SDK {
    * Server Config
    */
 
+  // TODO: determine actual response type
   /**
    * Sets the server channel config to a JS object. Future calls to {@link getConfig} or {@link getChannelConfig} by **any**
    * user on this channel will have a clone of this object in the `channel` field.
@@ -736,8 +753,8 @@ export default class SDK {
    *   console.error(`Failed saving channel config: ${err}`);
    * });
    */
-  public setChannelConfig(config: object): Promise<object> {
-    return this.client.setChannelConfig(this.identifier, config);
+  public setChannelConfig<DataType = unknown, ResponseType = unknown>(config: DataType): Promise<ResponseType> {
+    return this.client.setChannelConfig<DataType, ResponseType>(this.identifier, config);
   }
 
   /**
@@ -765,38 +782,38 @@ export default class SDK {
    *   console.error(`Failed saving extension config: ${err}`);
    * });
    */
-  public setExtensionConfig(config: object): Promise<object> {
-    return this.client.setExtensionConfig(this.identifier, config);
+  public setExtensionConfig<DataType = unknown, ResponseType = unknown>(config: DataType): Promise<ResponseType> {
+    return this.client.setExtensionConfig<DataType, ResponseType>(this.identifier, config);
   }
 
   /**
    * Returns the current channel and extension config objects
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with an object populated with channel and extension config objects.
+   * @return {Promise<ResponseType>} Resolves on successful server request with an object populated with channel and extension config objects.
    */
-  public getConfig(): Promise<object> {
-    return this.client.getConfig(this.identifier);
+  public getConfig<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getConfig<ResponseType>(this.identifier);
   }
 
   /**
    * Returns the current channel config object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated channel config object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated channel config object.
    */
-  public getChannelConfig(): Promise<object> {
-    return this.client.getChannelConfig(this.identifier);
+  public getChannelConfig<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getChannelConfig<ResponseType>(this.identifier);
   }
 
   /**
    * Returns the current extension config object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated extension config object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated extension config object.
    */
-  public getExtensionConfig(): Promise<object> {
-    return this.client.getExtensionConfig(this.identifier);
+  public getExtensionConfig<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getExtensionConfig<ResponseType>(this.identifier);
   }
 
   /**
@@ -899,8 +916,8 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-  public setExtensionState(state: object): Promise<object> {
-    return this.client.setExtensionState(this.identifier, state);
+  public setExtensionState<DataType = unknown, ResponseType = unknown>(state: DataType): Promise<ResponseType> {
+    return this.client.setExtensionState<DataType, ResponseType>(this.identifier, state);
   }
 
   /**
@@ -922,8 +939,8 @@ export default class SDK {
    *   console.error(`Failed saving secret state: ${err}`);
    * });
    */
-  public setExtensionSecretState(state: object): Promise<object> {
-    return this.client.setExtensionSecretState(this.identifier, state);
+  public setExtensionSecretState<DataType = unknown, ResponseType = unknown>(state: DataType): Promise<ResponseType> {
+    return this.client.setExtensionSecretState<DataType, ResponseType>(this.identifier, state);
   }
 
   /**
@@ -949,8 +966,8 @@ export default class SDK {
    *   console.error(`Failed saving channel state: ${err}`);
    * });
    */
-  public setChannelState(state: object): Promise<object> {
-    return this.client.setChannelState(this.identifier, state);
+  public setChannelState<DataType = unknown, ResponseType = unknown>(state: DataType): Promise<ResponseType> {
+    return this.client.setChannelState<DataType, ResponseType>(this.identifier, state);
   }
 
   /**
@@ -982,7 +999,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated extension state object.
    */
-  public getExtensionState(): Promise<object> {
+  public getExtensionState(): Promise<unknown> {
     return this.client.getExtensionState(this.identifier);
   }
 
@@ -1002,7 +1019,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated extension viewer state object.
    */
-  public getExtensionViewerState(): Promise<object> {
+  public getExtensionViewerState(): Promise<unknown> {
     return this.client.getExtensionViewerState(this.identifier);
   }
 
@@ -1012,7 +1029,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated viewer state object.
    */
-  public getViewerState(): Promise<object> {
+  public getViewerState(): Promise<unknown> {
     return this.client.getViewerState(this.identifier);
   }
 
@@ -1022,7 +1039,7 @@ export default class SDK {
    *
    * @return {Promise<Object>} Resolves on successful server request with a populated extension secret state object.
    */
-  public getExtensionSecretState(): Promise<object> {
+  public getExtensionSecretState(): Promise<unknown> {
     return this.client.getExtensionSecretState(this.identifier);
   }
 
@@ -1035,7 +1052,7 @@ export default class SDK {
    *
    * @param users - an array of userIDs to request state for.
    *
-   * @return {Promise<object>} Resolves on successful server request with an object that is a mapping
+   * @return {Promise<ResponseType>} Resolves on successful server request with an object that is a mapping
    *  of userID to state. Rejects on failure.
    *
    * @example
@@ -1050,12 +1067,12 @@ export default class SDK {
    *  });
    * }
    */
-  public multiGetExtensionViewerState(users: string[]): Promise<object> {
+  public multiGetExtensionViewerState<ResponseType = unknown>(users: string[]): Promise<ResponseType> {
     if (users.length > 1000) {
       throw new Error('Too many users specified in call to multiGetExtensionViewerState');
     }
 
-    return this.client.multiGetExtensionViewerState(this.identifier, users);
+    return this.client.multiGetExtensionViewerState<ResponseType>(this.identifier, users);
   }
 
   /**
@@ -1084,7 +1101,7 @@ export default class SDK {
    * @param {string?} key - The lookup key for data in the JSON store. Uses 'default' if no value
    * is provided.
    *
-   * @return {Promise<Object>} Resolves with the stored JSON parsed to a JS Object associated with
+   * @return {Promise<ResponseType>} Resolves with the stored JSON parsed to a JS Object associated with
    * the key. Rejects on server error or if the key has no associated data.
    *
    * @example
@@ -1094,12 +1111,12 @@ export default class SDK {
    *   }
    * });
    */
-  public getJSONStore(key?: string): Promise<object> {
+  public getJSONStore<ResponseType = unknown>(key?: string): Promise<ResponseType> {
     if (key) {
       forceType(key, 'string');
     }
 
-    return this.client.getJSONStore(this.identifier, key);
+    return this.client.getJSONStore<ResponseType>(this.identifier, key);
   }
 
   /**

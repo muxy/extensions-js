@@ -16,7 +16,7 @@ export interface XHRResponse {
   xhr: XMLHttpRequest;
 }
 
-export default class XHRPromise {any
+export default class XHRPromise {
   public options: XHROptions;
   public xhr: XMLHttpRequest;
 

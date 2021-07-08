@@ -324,7 +324,7 @@ class StateClient {
    * @ignore
    */
   public getState = <ResponseType = unknown>(identifier: string, substate?: ServerState): Promise<ResponseType> =>
-    this.signedRequest<ServerState, ResponseType>(identifier, 'GET', substate || ServerState.ALL);
+    this.signedRequest<undefined, ResponseType>(identifier, 'GET', substate || ServerState.ALL);
 
   /**
    * getConfig requests a subset of config stored on the server and sets the
@@ -332,7 +332,7 @@ class StateClient {
    * @ignore
    */
   public getConfig = <ResponseType = unknown>(identifier: string, subconfig?: ServerConfig): Promise<ResponseType> =>
-    this.signedRequest<ServerConfig, ResponseType>(identifier, 'GET', subconfig || ServerConfig.ALL);
+    this.signedRequest<undefined, ResponseType>(identifier, 'GET', subconfig || ServerConfig.ALL);
 
   /**
    * postState sends data to the current EBS substate endpoint for persistence.
@@ -356,16 +356,16 @@ class StateClient {
     this.signedRequest<undefined, UserInfo>(identifier, 'GET', ServerState.USER, undefined, true);
 
   /** @ignore */
-  public getViewerState = (identifier: string) => this.getState<unknown>(identifier, ServerState.VIEWER);
+  public getViewerState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  public getExtensionViewerState = (identifier: string) => this.getState<unknown>(identifier, ServerState.EXTENSION_VIEWER);
+  public getExtensionViewerState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  public getExtensionSecretState = (identifier: string) => this.getState<unknown>(identifier, ServerState.EXTENSION_SECRET);
+  public getExtensionSecretState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION_SECRET);
 
   /** @ignore */
-  public getChannelState = <StateType = unknown>(identifier: string) => this.getState<StateType>(identifier, ServerState.CHANNEL);
+  public getChannelState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.CHANNEL);
 
   /** @ignore */
   public getServerConfig = <ResponseType = unknown>(identifier: string) => this.getConfig<ResponseType>(identifier, ServerConfig.ALL);
@@ -377,7 +377,7 @@ class StateClient {
   public getExtensionConfig = <ResponseType = unknown>(identifier: string) => this.getConfig<ResponseType>(identifier, ServerConfig.EXTENSION);
 
   /** @ignore */
-  public getExtensionState = (identifier: string) => this.getState<unknown>(identifier, ServerState.EXTENSION);
+  public getExtensionState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION);
 
   /** @ignore */
   public setViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
@@ -491,12 +491,16 @@ class StateClient {
     this.signedRequest<undefined, TriviaTeam>(identifier, 'GET', 'team_membership');
 
   /** @ignore */
-  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion) =>
-    this.signedRequest<TriviaQuestion, undefined>(identifier, 'POST', 'curated_poll_edit', triviaQuestion);
+  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion) =>  {
+    // TODO: determine actual response type and replace unknown.
+    this.signedRequest<TriviaQuestion, unknown>(identifier, 'POST', 'curated_poll_edit', triviaQuestion);
+  }
 
   /** @ignore */
-  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string) =>
-    this.signedRequest<{ id: string }, undefined>(identifier, 'DELETE', 'curated_poll_edit', { id: triviaQuestionID });
+  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string) => {
+    // TODO: determine actual response type.
+    this.signedRequest<{ id: string }, unknown>(identifier, 'DELETE', 'curated_poll_edit', { id: triviaQuestionID });
+  }
 
   /** @ignore */
   public addExtensionTriviaOptionToQuestion = (identifier: string, questionID: string, option: TriviaOption) =>
@@ -508,13 +512,15 @@ class StateClient {
     );
 
   /** @ignore */
-  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) =>
-    this.signedRequest<{ question: string, option: string }, undefined>(
+  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) => {
+    // TODO: determine actual response type and replace unknown.
+    this.signedRequest<{ question: string, option: string }, unknown>(
       identifier,
       'DELETE',
       'curated_poll_edit_option',
       { question: questionID, option: optionID }
     );
+  }
 
   /** @ignore */
   public setExtensionTriviaQuestionState = (
@@ -531,8 +537,10 @@ class StateClient {
     );
 
   /** @ignore */
-  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string) =>
-    this.signedRequest<{ question_id: string, vote: string }, undefined>(identifier, 'POST', 'curated_poll', { question_id: questionID, vote: optionID });
+  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string) => {
+    // TODO: determine actual response type and replace unknown.
+    this.signedRequest<{ question_id: string, vote: string }, unknown>(identifier, 'POST', 'curated_poll', { question_id: questionID, vote: optionID });
+  }
 
   /** @ignore */
   public getExtensionTriviaQuestions = (identifier: string) => this.signedRequest<undefined, TriviaQuestionResponse>(identifier, 'GET', 'curated_poll');

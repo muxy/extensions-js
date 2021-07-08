@@ -51,42 +51,80 @@ describe('ConfigClient', () => {
       mockXHR.__queueResponseMock(JSON.stringify(expected));
 
       const resp = await broadcasterClient.postConfig(ClientId, ServerConfig.CHANNEL, expected)
-      console.log(resp);
       expect(resp).resolves;
     });
 
     test.skip('should not be able to set extension config', async () => {
     });
 
-    test.skip('should be able to fetch config', async () => {
+    test('should be able to fetch config', async () => {
+      const expected = {
+        broadcasters_mood: 'sanguine, my brother',
+        chats_mood: 'kreygasm'
+      };
+      mockXHR.__queueResponseMock(JSON.stringify(expected));
 
+      const resp = await broadcasterClient.getConfig(ClientId);
+      expect(resp).toMatchObject(expected);      
     });
   });
 
-  describe.skip('Viewers', () => {
+  describe('Viewers', () => {
     test('should be able to fetch extension config', async () => {
-    });
+      const config = { config: "configValue" };
+
+      mockXHR.__queueResponseMock(JSON.stringify(config));
+
+      expect(viewerClient.getExtensionConfig(ClientId)).resolves.toEqual(config);
+    })
 
     test('should be able to fetch channel config', async () => {
+      const config = { config: "configValue" };
+  
+      mockXHR.__queueResponseMock(JSON.stringify(config));
+  
+      await expect(viewerClient.getChannelConfig(ClientId)).resolves.toEqual(config);
     });
 
     test('should be able to fetch combined config', async () => {
+      const config = { 
+        channel: { config: "channelConfigValue" }, 
+        extension: { config: "extensionConfigValue" }
+      };
+  
+      mockXHR.__queueResponseMock(JSON.stringify(config));
+  
+      await expect(viewerClient.getConfig(ClientId)).resolves.toEqual(config);
     });
 
-    test('should not be allowed to set config', async () => {
+    test.skip('should not be allowed to set config', async () => {
     });
   });
 
   describe('TypeScript', () => {
-    test.skip('should allow the developer to specify a type', async () => {
-      interface ConfigType {
+    test('should allow the developer to specify a type', async () => {
+      class ConfigType {
         enabled: boolean;
         option: string;
         count?: number;
       }
 
+      const expected = {
+        eanbled: true,
+        option: 'test Option',
+        count: 2,
+      };
 
-      await expect(viewerClient.getConfig(ClientId)).rejects.toEqual('Your authentication token has expired.');
+    // @ts-expect-error
+    await viewerClient.setChannelState<ConfigType>(ClientId, {
+      // Missing required parameters of ConfigType
+      enabled: true,
+    });
+
+    mockXHR.__queueResponseMock(JSON.stringify(expected));
+
+    expect(await viewerClient.getChannelState<ConfigType>(ClientId))
+      .toMatchObject(expected);
     })
   });
 });

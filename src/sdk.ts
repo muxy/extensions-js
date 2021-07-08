@@ -530,9 +530,9 @@ export default class SDK {
    * @since 1.0.0
    *
    * @param {string} accumulationID - The identifier that this datum is accumulated with.
-   * @param {Object} data - Any JSON serializable JavaScript object.
+   * @param {DataType} data - Any JSON serializable JavaScript object.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.accumulate('awesomeness_level', {
@@ -543,9 +543,9 @@ export default class SDK {
    *   }
    * });
    */
-  public accumulate(accumulationID: string, data: object): Promise<object> {
+  public accumulate<DataType = unknown, ResponseType = unknown>(accumulationID: string, data: DataType): Promise<ResponseType> {
     forceType(accumulationID, 'string');
-    return this.client.accumulate(this.identifier, accumulationID, data);
+    return this.client.accumulate<DataType, ResponseType>(this.identifier, accumulationID, data);
   }
 
   /**
@@ -702,11 +702,11 @@ export default class SDK {
    *
    * @param {string} rankID - The identifer to fetch associated rank data.
    *
-   * @return {Promise} Will resolve on success. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on success. Rejects on failure.
    */
-  public clearRankData(rankID: string): Promise<object> {
+  public clearRankData(rankID: string): Promise<ResponseType> {
     forceType(rankID, 'string');
-    return this.client.deleteRank(this.identifier, rankID);
+    return this.client.deleteRank<ResponseType>(this.identifier, rankID);
   }
 
   /**
@@ -737,9 +737,9 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {Object} config - A complete JS object representing the current server config.
+   * @param {DataType} config - A complete JS object representing the current server config.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setChannelConfig({
@@ -766,9 +766,9 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {Object} config - A complete JS object representing the current server config.
+   * @param {DataType} config - A complete JS object representing the current server config.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setExtensionConfig({
@@ -828,9 +828,9 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {Object} state - A complete JS object representing the current viewer state.
+   * @param {DataType} state - A complete JS object representing the current viewer state.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setViewerState({
@@ -841,8 +841,8 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-  public setViewerState(state: object): Promise<object> {
-    return this.client.setViewerState(this.identifier, state);
+  public setViewerState<DataType = unknown, ResponseType = unknown>(state: DataType): Promise<ResponseType> {
+    return this.client.setViewerState<DataType, ResponseType>(this.identifier, state);
   }
 
   /**
@@ -853,9 +853,9 @@ export default class SDK {
    * @async
    * @since 1.1.0
    *
-   * @param {Object} state - A complete JS object representing the current viewer state.
+   * @param {DataType} state - A complete JS object representing the current viewer state.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setExtensionViewerState({
@@ -866,8 +866,8 @@ export default class SDK {
    *   console.error(`Failed saving viewer state: ${err}`);
    * });
    */
-  public setExtensionViewerState(state: object): Promise<object> {
-    return this.client.setExtensionViewerState(this.identifier, state);
+  public setExtensionViewerState<DataType = unknown, ResponseType = unknown>(state: DataType): Promise<ResponseType> {
+    return this.client.setExtensionViewerState<DataType, ResponseType>(this.identifier, state);
   }
 
   /**
@@ -891,8 +891,8 @@ export default class SDK {
    *  '12422': { 'foo': 'bar' }
    * });
    */
-  public patchExtensionViewerState(userStates: object): Promise<object> {
-    return this.client.patchExtensionViewerState(this.identifier, userStates);
+  public patchExtensionViewerState<DataType = unknown, ResponseType = unknown>(userStates: DataType): Promise<ResponseType> {
+    return this.client.patchExtensionViewerState<DataType, ResponseType>(this.identifier, userStates);
   }
 
   /**
@@ -903,9 +903,9 @@ export default class SDK {
    * @async
    * @since 1.1.0
    *
-   * @param {Object} state - A complete JS object representing the current extension's state.
+   * @param {DataType} state - A complete JS object representing the current extension's state.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setExtensionState({
@@ -926,9 +926,9 @@ export default class SDK {
    * @async
    * @since 2.0.0
    *
-   * @param {Object} state - A complete JS object
+   * @param {DataType} state - A complete JS object
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setExtensionSecretState({
@@ -952,9 +952,9 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @param {Object} state - A complete JS object representing the current channel state.
+   * @param {DataType} state - A complete JS object representing the current channel state.
    *
-   * @return {Promise} Will resolve on successful server-send. Rejects on failure.
+   * @return {Promise<ResponseType>} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.setChannelState({
@@ -997,9 +997,9 @@ export default class SDK {
    * Returns the current extension state object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated extension state object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated extension state object.
    */
-  public getExtensionState(): Promise<unknown> {
+  public getExtensionState<ResponseType = unknown>(): Promise<ResponseType> {
     return this.client.getExtensionState(this.identifier);
   }
 
@@ -1007,40 +1007,40 @@ export default class SDK {
    * Returns the current channel state object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated channel state object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated channel state object.
    */
-  public getChannelState(): Promise<object> {
-    return this.client.getChannelState(this.identifier);
+  public getChannelState<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getChannelState<ResponseType>(this.identifier);
   }
 
   /**
    * Returns the current extension viewer state object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated extension viewer state object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated extension viewer state object.
    */
-  public getExtensionViewerState(): Promise<unknown> {
-    return this.client.getExtensionViewerState(this.identifier);
+  public getExtensionViewerState<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getExtensionViewerState<ResponseType>(this.identifier);
   }
 
   /**
    * Returns the current viewer state object
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated viewer state object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated viewer state object.
    */
-  public getViewerState(): Promise<unknown> {
-    return this.client.getViewerState(this.identifier);
+  public getViewerState<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getViewerState<ResponseType>(this.identifier);
   }
 
   /**
    * Returns the current extension secret state if the requesting user has access to the secret state.
    * @async
    *
-   * @return {Promise<Object>} Resolves on successful server request with a populated extension secret state object.
+   * @return {Promise<ResponseType>} Resolves on successful server request with a populated extension secret state object.
    */
-  public getExtensionSecretState(): Promise<unknown> {
-    return this.client.getExtensionSecretState(this.identifier);
+  public getExtensionSecretState<ResponseType = unknown>(): Promise<ResponseType> {
+    return this.client.getExtensionSecretState<ResponseType>(this.identifier);
   }
 
   /**
@@ -1159,7 +1159,7 @@ export default class SDK {
    * @async
    * @since 1.0.0
    *
-   * @return {Promise<Object>}
+   * @return {Promise<ResponseType>}
    * @property {boolean} exists - True if an auth token has been validated, false otherwise.
    *
    * @example
@@ -1171,8 +1171,8 @@ export default class SDK {
    *   }
    * });
    */
-  public pinTokenExists() {
-    return this.client.pinTokenExists(this.identifier);
+  public pinTokenExists<ResponseType = unknown>() {
+    return this.client.pinTokenExists<ResponseType>(this.identifier);
   }
 
   /**

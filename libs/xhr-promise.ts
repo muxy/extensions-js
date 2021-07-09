@@ -22,10 +22,10 @@ export default class XHRPromise {
 
   constructor(options: XHROptions = {}) {
     this.options = {
-      data: null,
       headers: {},
       method: 'GET'
     };
+
     Object.assign(this.options, options);
   }
 
@@ -82,7 +82,7 @@ export default class XHRPromise {
 
       this.xhr.open(this.options.method, this.options.url);
 
-      if (this.options.data !== null && !this.options.headers['Content-Type']) {
+      if (this.options.data && !this.options.headers['Content-Type']) {
         this.options.headers['Content-Type'] = DEFAULT_CONTENT_TYPE;
       }
 
@@ -168,3 +168,9 @@ export default class XHRPromise {
     });
   }
 }
+
+// Placeholder functions for testing overrides. Added here
+// for ease of use when adding TypeScript on top of
+// existing code.
+export function __queueResponseMock(response: string) {};
+export function reset() { }

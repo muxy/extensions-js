@@ -6,7 +6,7 @@ import Analytics from './analytics';
 import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';
-import SDK, { TriviaQuestionState } from './sdk';
+import SDK, { TriviaQuestionState, UserInfo } from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
@@ -396,7 +396,7 @@ export class Muxy implements MuxyInterface {
       const onFirstAuth = () => {
         this.client
           .immediateGetUserInfo(extensionID)
-          .then(userinfo => {
+          .then((userinfo: UserInfo) => {
             const offset = userinfo.server_time - new Date().getTime();
 
             const user = new User(auth);

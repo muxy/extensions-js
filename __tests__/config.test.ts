@@ -1,5 +1,4 @@
-import Config from '../src/config';
-import { AuthorizationFlowType } from '../src/config';
+import Config, { AuthorizationFlowType } from '../src/config';
 import { MessengerType } from '../src/messenger';
 import { Environment, ENVIRONMENTS } from '../src/util';
 

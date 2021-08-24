@@ -10,6 +10,7 @@ import { CallbackHandle, Messenger } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
+import { PurchaseClient } from './purchase-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
@@ -367,6 +368,7 @@ export default class SDK {
   public user: User;
   public SKUs: object[];
   public timeOffset: number;
+  public transaction: PurchaseClient;
   public debug: DebugOptions;
   public userObservers: Observer<User>;
   public contextObservers: Observer<TwitchContext>;
@@ -393,10 +395,11 @@ export default class SDK {
         mxy.client,
         mxy.user,
         mxy.messenger,
+        mxy.transaction,
         mxy.analytics,
         mxy.loadPromise,
         mxy.SKUs,
-        mxy.debugOptions
+        mxy.debugOptions,
       );
 
       mxy.SDKClients[identifier] = this;
@@ -1353,6 +1356,75 @@ export default class SDK {
   }
 
   /**
+   * Transaction System
+   */
+
+  /**
+   * Calls for a list of products containing a sku, displayName, and cost.
+   *
+   * @async
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @return {Product[]} An array of {@link Product} 
+   * 
+   * @example
+   * const productList = sdk.getProducts();
+   */
+   public products() {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    return this.transaction.getProducts();
+  }
+
+  /**
+   * Starts transaction for a specific product identifier.
+   *
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @param {string} sku - A product identifier.
+   *
+   * @example
+   * sdk.purchase("XXSKU000");
+   */
+   public purchase(sku: string) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    forceType(sku, 'string');
+    this.transaction.purchase(sku);
+  }
+
+  /**
+   * Sets the callback to be run after a user purchase.
+   *
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @param {function} callback - a function to be run after a purchase transaction.
+   *
+   * @example
+   * sdk.onUserPurchase(() => {
+   *   this.message = "Thanks for your purchase!";
+   * });
+   */
+   public onUserPurchase(callback: (tx) => void) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    forceType(callback, 'function');
+    this.transaction.onUserPurchase(callback);
+  }
+
+  /**
    * Analytics
    */
 
@@ -1629,10 +1701,11 @@ export default class SDK {
     client: StateClient,
     user: User,
     messenger: Messenger,
+    transaction: PurchaseClient,
     analytics: Analytics,
     loadPromise: Promise<void>,
     SKUs: object[],
-    debug: DebugOptions
+    debug: DebugOptions,
   ) {
     /** @ignore */
     this.userObservers = new Observer<User>();
@@ -1667,6 +1740,14 @@ export default class SDK {
     this.messenger = messenger;
 
     /**
+     * The backend transaction client.
+     * @private
+     * @type {Transaction}
+     *
+     */
+    this.transaction = transaction;
+
+     /**
      * The backend analytics client.
      * @private
      * @type {Analytics}

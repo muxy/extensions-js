@@ -14,7 +14,8 @@ import User from './user';
 import Util from './util';
 
 import * as PackageConfig from '../package.json';
-import { TwitchContext } from './twitch';
+import { TwitchBitsTransaction, TwitchContext } from './twitch';
+import { PurchaseClient } from './purchase-client';
 
 export interface SDKMap {
   [key: string]: SDK;
@@ -30,6 +31,7 @@ export interface SDKMap {
  */
 export interface SetupOptions {
   clientID: string;
+  transactionsEnabled: boolean;
   uaString?: string;
   quiet?: boolean;
 }
@@ -197,6 +199,14 @@ export class Muxy implements MuxyInterface {
   public messenger: Messenger;
 
   /**
+   * Internal {@link Transactions}.
+   *
+   * @ignore
+   * @type {Transactions}
+   */
+   public transaction: PurchaseClient;
+
+   /**
    * Internal {@link TwitchClient}.
    *
    * @ignore
@@ -518,6 +528,10 @@ export class Muxy implements MuxyInterface {
 
     if (!options.quiet) {
       Muxy.printInfo();
+    }
+
+    if (options.transactionsEnabled) {
+      this.transaction.onUserPurchase(() => {});  
     }
 
     this.setupCalled = true;

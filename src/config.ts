@@ -1,4 +1,5 @@
 import { MessengerType } from './messenger';
+import { TransactionType } from './purchase-client';
 import { Environment, ENVIRONMENTS } from './util';
 
 /**
@@ -47,6 +48,20 @@ export default class Config {
         return MessengerType.Server;
     }
     return MessengerType.Unknown;
+  }
+
+  public static DefaultTransactionType(env: Environment): TransactionType {
+    switch (env) {
+      case ENVIRONMENTS.SANDBOX_DEV:
+      case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
+      case ENVIRONMENTS.SANDBOX_ADMIN:
+      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case ENVIRONMENTS.PRODUCTION:
+        return TransactionType.Twitch;
+      case ENVIRONMENTS.SERVER:
+        return TransactionType.Server;
+    }
+    return TransactionType.Unknown;
   }
 
   public static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType {

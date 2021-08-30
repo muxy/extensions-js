@@ -10,10 +10,11 @@ import { CallbackHandle, Messenger } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
-import { PurchaseClient } from './purchase-client';
+import { PurchaseClient, PurchaseClientType, Transaction } from './purchase-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
+import Config from './config';
 
 /**
  * The response from {@link getAllState}.
@@ -368,7 +369,7 @@ export default class SDK {
   public user: User;
   public SKUs: object[];
   public timeOffset: number;
-  public transaction: PurchaseClient;
+  public purchaseClient: PurchaseClient;
   public debug: DebugOptions;
   public userObservers: Observer<User>;
   public contextObservers: Observer<TwitchContext>;
@@ -395,7 +396,7 @@ export default class SDK {
         mxy.client,
         mxy.user,
         mxy.messenger,
-        mxy.transaction,
+        mxy.purchaseClient,
         mxy.analytics,
         mxy.loadPromise,
         mxy.SKUs,
@@ -403,6 +404,12 @@ export default class SDK {
       );
 
       mxy.SDKClients[identifier] = this;
+    }
+
+    if (mxy.transactionsEnabled) {
+      this.purchaseClient.onUserPurchase((tx: Transaction) => {
+        this.signedRequest("POST", "bits/transactions", JSON.stringify(tx));
+      });  
     }
 
     return mxy.SDKClients[identifier];
@@ -1367,7 +1374,8 @@ export default class SDK {
    *
    * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
    * 
-   * @return {Product[]} An array of {@link Product} 
+   * @return {Promise<[]Product>} Resolves with an array of {@link Product}
+   * objects for each available sku.
    * 
    * @example
    * const productList = sdk.getProducts();
@@ -1377,7 +1385,7 @@ export default class SDK {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
 
-    return this.transaction.getProducts();
+    return this.purchaseClient.getProducts();
   }
 
   /**
@@ -1398,7 +1406,7 @@ export default class SDK {
     }
 
     forceType(sku, 'string');
-    this.transaction.purchase(sku);
+    this.purchaseClient.purchase(sku);
   }
 
   /**
@@ -1415,13 +1423,13 @@ export default class SDK {
    *   this.message = "Thanks for your purchase!";
    * });
    */
-   public onUserPurchase(callback: (tx) => void) {
+   public onUserPurchase(callback: (tx: Transaction) => void) {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
 
     forceType(callback, 'function');
-    this.transaction.onUserPurchase(callback);
+    this.purchaseClient.onUserPurchase(callback);
   }
 
   /**
@@ -1701,7 +1709,7 @@ export default class SDK {
     client: StateClient,
     user: User,
     messenger: Messenger,
-    transaction: PurchaseClient,
+    purchaseClient: PurchaseClient,
     analytics: Analytics,
     loadPromise: Promise<void>,
     SKUs: object[],
@@ -1742,10 +1750,10 @@ export default class SDK {
     /**
      * The backend transaction client.
      * @private
-     * @type {Transaction}
+     * @type {PurchaseClient}
      *
      */
-    this.transaction = transaction;
+    this.purchaseClient = purchaseClient;
 
      /**
      * The backend analytics client.

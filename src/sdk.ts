@@ -408,8 +408,8 @@ export default class SDK {
 
     if (mxy.transactionsEnabled) {
       this.purchaseClient.onUserPurchase((tx: Transaction) => {
-        this.signedRequest("POST", "bits/transactions", JSON.stringify(tx));
-      });  
+        this.client.sendTransactionToServer(this.identifier, tx);
+      });
     }
 
     return mxy.SDKClients[identifier];
@@ -1378,9 +1378,9 @@ export default class SDK {
    * objects for each available sku.
    * 
    * @example
-   * const productList = sdk.getProducts();
+   * const products = await client.getProducts();
    */
-   public products() {
+   public getProducts() {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1391,6 +1391,7 @@ export default class SDK {
   /**
    * Starts transaction for a specific product identifier.
    *
+   * @async
    * @since 2.4.0
    *
    * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
@@ -1419,7 +1420,7 @@ export default class SDK {
    * @param {function} callback - a function to be run after a purchase transaction.
    *
    * @example
-   * sdk.onUserPurchase(() => {
+   * sdk.onUserPurchase((transaction) => {
    *   this.message = "Thanks for your purchase!";
    * });
    */
@@ -1580,9 +1581,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public addExtensionTriviaQuestion(question: TriviaQuestion): Promise<any> {
+  public addExtensionTriviaQuestion(question: TriviaQuestion): Promise<Record<string, unknown>> {
     return this.client.addExtensionTriviaQuestion(this.identifier, question);
   }
 
@@ -1591,9 +1592,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public removeExtensionTriviaQuestion(triviaQuestionID: string): Promise<any> {
+  public removeExtensionTriviaQuestion(triviaQuestionID: string): Promise<Record<string, unknown>> {
     return this.client.removeExtensionTriviaQuestion(this.identifier, triviaQuestionID);
   }
 
@@ -1613,9 +1614,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<TriviaQuestion>}
    */
-  public removeExtensionTriviaOptionFromQuestion(questionID: string, optionID: string): Promise<any> {
+  public removeExtensionTriviaOptionFromQuestion(questionID: string, optionID: string): Promise<TriviaQuestion> {
     return this.client.removeExtensionTriviaOptionFromQuestion(this.identifier, questionID, optionID);
   }
 
@@ -1638,9 +1639,9 @@ export default class SDK {
    * As a user place a vote on a trivia question
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public setExtensionTriviaQuestionVote(questionID: string, optionID: string): Promise<any> {
+  public setExtensionTriviaQuestionVote(questionID: string, optionID: string): Promise<Record<string, unknown>> {
     return this.client.setExtensionTriviaQuestionVote(this.identifier, questionID, optionID);
   }
 

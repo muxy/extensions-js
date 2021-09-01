@@ -31,7 +31,7 @@ export interface SDKMap {
  */
 export interface SetupOptions {
   clientID: string;
-  transactionsEnabled: boolean;
+  transactionsEnabled?: boolean;
   uaString?: string;
   quiet?: boolean;
 }

@@ -1,6 +1,6 @@
 import { MessengerType } from './messenger';
 import { PurchaseClientType } from './purchase-client';
-import { Environment, ENVIRONMENTS } from './util';
+import Util, { Environment } from './util';
 
 /**
  * Muxy production API URL.
@@ -37,46 +37,50 @@ export default class Config {
 
   public static DefaultMessengerType(env: Environment): MessengerType {
     switch (env) {
-      case ENVIRONMENTS.SANDBOX_DEV:
-      case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
-      case ENVIRONMENTS.SANDBOX_ADMIN:
+      case Util.Environments.SandboxDev:
+      case Util.Environments.Admin : // Currently unable to hook into the twitch pubsub system from admin
+      case Util.Environments.SandboxAdmin:
         return MessengerType.Pusher;
-      case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.PRODUCTION:
+      case Util.Environments.SandboxTwitch:
+      case Util.Environments.Production:
         return MessengerType.Twitch;
-      case ENVIRONMENTS.SERVER:
+      case Util.Environments.Server:
         return MessengerType.Server;
+      case Util.Environments.Testing:
     }
     return MessengerType.Unknown;
   }
 
   public static DefaultPurchaseClientType(env: Environment): PurchaseClientType {
     switch (env) {
-      case ENVIRONMENTS.SANDBOX_DEV:
+      case Util.Environments.SandboxDev:
         return PurchaseClientType.Dev;
-      case ENVIRONMENTS.ADMIN: // Currently unable to hook into the twitch pubsub system from admin
-      case ENVIRONMENTS.SANDBOX_ADMIN:
-      case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.PRODUCTION:
+      case Util.Environments.Admin : // Currently unable to hook into the twitch pubsub system from admin
+      case Util.Environments.SandboxAdmin:
+      case Util.Environments.SandboxTwitch:
+      case Util.Environments.Production:
         return PurchaseClientType.Twitch;
-      case ENVIRONMENTS.SERVER:
+      case Util.Environments.Server:
         return PurchaseClientType.Server;
+      case Util.Environments.Testing:
+        return PurchaseClientType.Test;
     }
+
     return PurchaseClientType.Unknown;
   }
 
   public static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType {
     switch (env) {
-      case ENVIRONMENTS.SANDBOX_DEV:
+      case Util.Environments.SandboxDev:
         return AuthorizationFlowType.TestAuth;
-
-      case ENVIRONMENTS.SANDBOX_ADMIN:
-      case ENVIRONMENTS.ADMIN:
-        return AuthorizationFlowType.AdminAuth;
-
-      case ENVIRONMENTS.SANDBOX_TWITCH:
-      case ENVIRONMENTS.PRODUCTION:
+      case Util.Environments.Admin :
+      case Util.Environments.SandboxAdmin:
+          return AuthorizationFlowType.AdminAuth;
+      case Util.Environments.SandboxTwitch:
+      case Util.Environments.Production:
         return AuthorizationFlowType.TwitchAuth;
+      case Util.Environments.Server:
+      case Util.Environments.Testing:
     }
 
     return AuthorizationFlowType.Unknown;
@@ -84,8 +88,8 @@ export default class Config {
 
   public static CanUseTwitchAPIs(env: Environment): boolean {
     switch (env) {
-      case ENVIRONMENTS.PRODUCTION:
-      case ENVIRONMENTS.SANDBOX_TWITCH:
+      case Util.Environments.Production:
+      case Util.Environments.SandboxTwitch:
         return true;
     }
 
@@ -93,14 +97,14 @@ export default class Config {
   }
 
   public static GetServerURLs(env: Environment): ServerURLs {
-    if (env === ENVIRONMENTS.SANDBOX_DEV || env === ENVIRONMENTS.SANDBOX_TWITCH || env === ENVIRONMENTS.SANDBOX_ADMIN) {
+    if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
       return {
         FakeAuthURL: SANDBOX_URL,
         ServerURL: SANDBOX_URL
       };
     }
 
-    if (env === ENVIRONMENTS.TESTING) {
+    if (env === Util.Environments.Testing) {
       return {
         FakeAuthURL: LOCALHOST_URL,
         ServerURL: LOCALHOST_URL

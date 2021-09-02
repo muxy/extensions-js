@@ -6,6 +6,7 @@ import Analytics from './analytics';
 import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';
+import DefaultPurchaseClient, { PurchaseClient } from './purchase-client';
 import SDK, { TriviaQuestionState, UserInfo } from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
@@ -30,6 +31,7 @@ export interface SDKMap {
  */
 export interface SetupOptions {
   clientID: string;
+  transactionsEnabled?: boolean;
   uaString?: string;
   quiet?: boolean;
 }
@@ -197,6 +199,22 @@ export class Muxy implements MuxyInterface {
   public messenger: Messenger;
 
   /**
+   * Internal {@link PurchaseClient}.
+   *
+   * @ignore
+   * @type {PurchaseClient}
+   */
+   public purchaseClient: PurchaseClient;
+
+  /**
+   * Enables/Disables the PurchaseClient for coin/bits/etc transactions.
+   * 
+   * @ignore
+   * @type {boolean}
+   */
+  public transactionsEnabled: boolean;
+
+   /**
    * Internal {@link TwitchClient}.
    *
    * @ignore
@@ -507,6 +525,7 @@ export class Muxy implements MuxyInterface {
 
     this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
+    this.purchaseClient = DefaultPurchaseClient();
 
     this.twitchClientID = clientID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);

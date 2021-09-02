@@ -6,6 +6,7 @@ import XHRPromise, { XHROptions } from '../libs/xhr-promise';
 
 import Config from './config';
 import { DebugOptions } from './debug';
+import { Transaction } from './purchase-client';
 import { 
           AccumulateData, 
           EligibleCodes, 
@@ -491,16 +492,12 @@ class StateClient {
     this.signedRequest<undefined, TriviaTeam>(identifier, 'GET', 'team_membership');
 
   /** @ignore */
-  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion) =>  {
-    // TODO: determine actual response type and replace unknown.
-    this.signedRequest<TriviaQuestion, unknown>(identifier, 'POST', 'curated_poll_edit', triviaQuestion);
-  }
+  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion): Promise<Record<string, unknown>> =>  
+    this.signedRequest<TriviaQuestion, Record<string, unknown>>(identifier, 'POST', 'curated_poll_edit', triviaQuestion);
 
   /** @ignore */
-  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string) => {
-    // TODO: determine actual response type.
-    this.signedRequest<{ id: string }, unknown>(identifier, 'DELETE', 'curated_poll_edit', { id: triviaQuestionID });
-  }
+  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string): Promise<Record<string, unknown>> => 
+    this.signedRequest<{ id: string }, Record<string, unknown>>(identifier, 'DELETE', 'curated_poll_edit', { id: triviaQuestionID });
 
   /** @ignore */
   public addExtensionTriviaOptionToQuestion = (identifier: string, questionID: string, option: TriviaOption) =>
@@ -512,15 +509,13 @@ class StateClient {
     );
 
   /** @ignore */
-  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) => {
-    // TODO: determine actual response type and replace unknown.
-    this.signedRequest<{ question: string, option: string }, unknown>(
+  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) => 
+    this.signedRequest<{ question: string, option: string }, TriviaQuestion>(
       identifier,
       'DELETE',
       'curated_poll_edit_option',
       { question: questionID, option: optionID }
     );
-  }
 
   /** @ignore */
   public setExtensionTriviaQuestionState = (
@@ -537,10 +532,8 @@ class StateClient {
     );
 
   /** @ignore */
-  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string) => {
-    // TODO: determine actual response type and replace unknown.
-    this.signedRequest<{ question_id: string, vote: string }, unknown>(identifier, 'POST', 'curated_poll', { question_id: questionID, vote: optionID });
-  }
+  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string): Promise<Record<string, unknown>> => 
+    this.signedRequest<{ question_id: string, vote: string }, Record<string, unknown>>(identifier, 'POST', 'curated_poll', { question_id: questionID, vote: optionID });
 
   /** @ignore */
   public getExtensionTriviaQuestions = (identifier: string) => this.signedRequest<undefined, TriviaQuestionResponse>(identifier, 'GET', 'curated_poll');
@@ -552,6 +545,10 @@ class StateClient {
   /** @ignore */
   public getExtensionTriviaLeaderboard = (identifer: string) =>
     this.signedRequest<undefined, TriviaLeaderboard>(identifer, 'GET', 'curated_poll_leaderboard');
+
+  /** @ignore */
+  public sendTransactionToServer = (identifier: string, tx: Transaction) =>
+    this.signedRequest<Transaction, Record<string, unknown>>(identifier, "POST", "bits/transactions", tx);
 }
 
 export default StateClient;

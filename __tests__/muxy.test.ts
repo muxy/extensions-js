@@ -30,6 +30,7 @@ describe('Muxy', () => {
     Muxy.cachedTwitchClient = null;
     Muxy.client = null;
     Muxy.messenger = null;
+    Muxy.purchaseClient = null;
     Muxy.analytics = null;
     Muxy.context = {
       arePlayerControlsVisible: false,
@@ -74,19 +75,16 @@ describe('Muxy', () => {
   });
 
   it('can be set up', () => {
-    // @ts-ignore
     Muxy.setup({
-      extensionID: 'testextensionid',
+      clientID: 'testextensionid',
       quiet: true
     });
   });
 
   it('cannot call setup() twice', () => {
-    // @ts-ignore
-    Muxy.setup({ extensionID: 'testextensionid', quiet: true });
+    Muxy.setup({ clientID: 'testextensionid', quiet: true });
     expect(() => {
-      // @ts-ignore
-      Muxy.setup({ extensionID: 'textextensionid', quiet: true });
+      Muxy.setup({ clientID: 'textextensionid', quiet: true });
     }).toThrow(Error);
   });
 
@@ -101,14 +99,12 @@ describe('Muxy', () => {
   });
 
   it('can create new SDK instances', () => {
-    // @ts-ignore
-    Muxy.setup({ extensionID: 'testextensionid', quiet: true });
+    Muxy.setup({ clientID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });
 
   it('can create new SDK instances with new scope', () => {
-    // @ts-ignore
-    Muxy.setup({ extensionID: 'testextensionid', quiet: true });
+    Muxy.setup({ clientID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });
 });

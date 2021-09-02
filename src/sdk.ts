@@ -10,9 +10,11 @@ import { CallbackHandle, Messenger } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
+import { PurchaseClient, PurchaseClientType, Transaction } from './purchase-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
+import Config from './config';
 
 /**
  * The response from {@link getAllState}.
@@ -367,6 +369,7 @@ export default class SDK {
   public user: User;
   public SKUs: object[];
   public timeOffset: number;
+  public purchaseClient: PurchaseClient;
   public debug: DebugOptions;
   public userObservers: Observer<User>;
   public contextObservers: Observer<TwitchContext>;
@@ -393,13 +396,20 @@ export default class SDK {
         mxy.client,
         mxy.user,
         mxy.messenger,
+        mxy.purchaseClient,
         mxy.analytics,
         mxy.loadPromise,
         mxy.SKUs,
-        mxy.debugOptions
+        mxy.debugOptions,
       );
 
       mxy.SDKClients[identifier] = this;
+    }
+
+    if (mxy.transactionsEnabled) {
+      this.purchaseClient.onUserPurchase((tx: Transaction) => {
+        this.client.sendTransactionToServer(this.identifier, tx);
+      });
     }
 
     return mxy.SDKClients[identifier];
@@ -1353,6 +1363,77 @@ export default class SDK {
   }
 
   /**
+   * Transaction System
+   */
+
+  /**
+   * Calls for a list of products containing a sku, displayName, and cost.
+   *
+   * @async
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @return {Promise<[]Product>} Resolves with an array of {@link Product}
+   * objects for each available sku.
+   * 
+   * @example
+   * const products = await client.getProducts();
+   */
+   public getProducts() {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    return this.purchaseClient.getProducts();
+  }
+
+  /**
+   * Starts transaction for a specific product identifier.
+   *
+   * @async
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @param {string} sku - A product identifier.
+   *
+   * @example
+   * sdk.purchase("XXSKU000");
+   */
+   public purchase(sku: string) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    forceType(sku, 'string');
+    this.purchaseClient.purchase(sku);
+  }
+
+  /**
+   * Sets the callback to be run after a user purchase.
+   *
+   * @since 2.4.0
+   *
+   * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
+   * 
+   * @param {function} callback - a function to be run after a purchase transaction.
+   *
+   * @example
+   * sdk.onUserPurchase((transaction) => {
+   *   this.message = "Thanks for your purchase!";
+   * });
+   */
+   public onUserPurchase(callback: (tx: Transaction) => void) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    forceType(callback, 'function');
+    this.purchaseClient.onUserPurchase(callback);
+  }
+
+  /**
    * Analytics
    */
 
@@ -1500,9 +1581,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public addExtensionTriviaQuestion(question: TriviaQuestion): Promise<any> {
+  public addExtensionTriviaQuestion(question: TriviaQuestion): Promise<Record<string, unknown>> {
     return this.client.addExtensionTriviaQuestion(this.identifier, question);
   }
 
@@ -1511,9 +1592,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public removeExtensionTriviaQuestion(triviaQuestionID: string): Promise<any> {
+  public removeExtensionTriviaQuestion(triviaQuestionID: string): Promise<Record<string, unknown>> {
     return this.client.removeExtensionTriviaQuestion(this.identifier, triviaQuestionID);
   }
 
@@ -1533,9 +1614,9 @@ export default class SDK {
    * Requires extension admin permissions.
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<TriviaQuestion>}
    */
-  public removeExtensionTriviaOptionFromQuestion(questionID: string, optionID: string): Promise<any> {
+  public removeExtensionTriviaOptionFromQuestion(questionID: string, optionID: string): Promise<TriviaQuestion> {
     return this.client.removeExtensionTriviaOptionFromQuestion(this.identifier, questionID, optionID);
   }
 
@@ -1558,9 +1639,9 @@ export default class SDK {
    * As a user place a vote on a trivia question
    * @async
    *
-   * @return {Promise<any>}
+   * @return {Promise<Record<string, unknown>>}
    */
-  public setExtensionTriviaQuestionVote(questionID: string, optionID: string): Promise<any> {
+  public setExtensionTriviaQuestionVote(questionID: string, optionID: string): Promise<Record<string, unknown>> {
     return this.client.setExtensionTriviaQuestionVote(this.identifier, questionID, optionID);
   }
 
@@ -1629,10 +1710,11 @@ export default class SDK {
     client: StateClient,
     user: User,
     messenger: Messenger,
+    purchaseClient: PurchaseClient,
     analytics: Analytics,
     loadPromise: Promise<void>,
     SKUs: object[],
-    debug: DebugOptions
+    debug: DebugOptions,
   ) {
     /** @ignore */
     this.userObservers = new Observer<User>();
@@ -1667,6 +1749,14 @@ export default class SDK {
     this.messenger = messenger;
 
     /**
+     * The backend transaction client.
+     * @private
+     * @type {PurchaseClient}
+     *
+     */
+    this.purchaseClient = purchaseClient;
+
+     /**
      * The backend analytics client.
      * @private
      * @type {Analytics}

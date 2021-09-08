@@ -7,24 +7,24 @@ import XHRPromise, { XHROptions } from '../libs/xhr-promise';
 import Config from './config';
 import { DebugOptions } from './debug';
 import { Transaction } from './purchase-client';
-import { 
-          AccumulateData, 
-          EligibleCodes, 
-          ExtensionUsersResult, 
-          RankResponse, 
-          RedeemedCodes, 
-          RedeemResult, 
-          TriviaLeaderboard, 
-          TriviaOption, 
-          TriviaQuestion, 
-          TriviaQuestionResponse, 
-          TriviaQuestionState, 
-          TriviaStateResponse, 
-          TriviaTeam, 
-          UserInfo, 
-          VoteData, 
-          VoteLog 
-       } from './sdk';
+import {
+  AccumulateData,
+  EligibleCodes,
+  ExtensionUsersResult,
+  RankResponse,
+  RedeemedCodes,
+  RedeemResult,
+  TriviaLeaderboard,
+  TriviaOption,
+  TriviaQuestion,
+  TriviaQuestionResponse,
+  TriviaQuestionState,
+  TriviaStateResponse,
+  TriviaTeam,
+  UserInfo,
+  VoteData,
+  VoteLog
+} from './sdk';
 import { TwitchAuth } from './twitch';
 import { Environment } from './util';
 
@@ -72,9 +72,7 @@ export interface Hook<HookCallback> {
 // Request hooks must return the config object, optionally after mutating it.
 export type RequestHook = (config: XHROptions) => Promise<XHROptions>;
 // Response hooks take an (optionally) typed object and return an (optinally) typed object.
-export type ResponseHook =
-  <InType = unknown, OutType = unknown>
-  (resp: InType) => Promise<OutType>;
+export type ResponseHook = <InType = unknown, OutType = unknown>(resp: InType) => Promise<OutType>;
 
 /**
  * HookManager class for adding and removing network request
@@ -164,7 +162,7 @@ class StateClient {
       url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass role as a param for fixtures
     });
 
-    return xhr.send().then(resp => {
+    return xhr.send().then((resp) => {
       if (resp && resp.status < 400) {
         this.setEnvironment(null, debug);
         // Update the API Server variable to point to test
@@ -231,10 +229,12 @@ class StateClient {
     data?: DataType,
     skipPromise?: boolean
   ): Promise<ResponseType> {
-    let promise: Promise<XHROptions | ResponseType | undefined> = skipPromise ? Promise.resolve(undefined) : this.loaded;
+    let promise: Promise<XHROptions | ResponseType | undefined> = skipPromise
+      ? Promise.resolve(undefined)
+      : this.loaded;
 
     // Middle of chain makes the actual server request
-    const chain: [RequestHook | ResponseHook, undefined]  = [
+    const chain: [RequestHook | ResponseHook, undefined] = [
       // Perform request with mutated config options.
       async (config: XHROptions): Promise<XHROptions> => {
         if (!this.validateJWT()) {
@@ -339,15 +339,21 @@ class StateClient {
    * postState sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  public postState = <DataType = unknown, ResponseType = unknown>(identifier: string, substate: ServerState, data: DataType) =>
-    this.signedRequest<DataType, ResponseType>(identifier, 'POST', substate || ServerState.ALL, data);
+  public postState = <DataType = unknown, ResponseType = unknown>(
+    identifier: string,
+    substate: ServerState,
+    data: DataType
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'POST', substate || ServerState.ALL, data);
 
   /**
    * postConfig sends data to the current EBS substate endpoint for persistence.
    * @ignore
    */
-  public postConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, subconfig: ServerConfig, data: DataType) =>
-    this.signedRequest<DataType, ResponseType>(identifier, 'POST', subconfig || ServerConfig.ALL, data);
+  public postConfig = <DataType = unknown, ResponseType = unknown>(
+    identifier: string,
+    subconfig: ServerConfig,
+    data: DataType
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'POST', subconfig || ServerConfig.ALL, data);
 
   /** @ignore */
   public getUserInfo = (identifier: string) => this.getState(identifier, ServerState.USER);
@@ -357,28 +363,36 @@ class StateClient {
     this.signedRequest<undefined, UserInfo>(identifier, 'GET', ServerState.USER, undefined, true);
 
   /** @ignore */
-  public getViewerState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.VIEWER);
+  public getViewerState = <ResponseType = unknown>(identifier: string) =>
+    this.getState<ResponseType>(identifier, ServerState.VIEWER);
 
   /** @ignore */
-  public getExtensionViewerState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION_VIEWER);
+  public getExtensionViewerState = <ResponseType = unknown>(identifier: string) =>
+    this.getState<ResponseType>(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
-  public getExtensionSecretState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION_SECRET);
+  public getExtensionSecretState = <ResponseType = unknown>(identifier: string) =>
+    this.getState<ResponseType>(identifier, ServerState.EXTENSION_SECRET);
 
   /** @ignore */
-  public getChannelState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.CHANNEL);
+  public getChannelState = <ResponseType = unknown>(identifier: string) =>
+    this.getState<ResponseType>(identifier, ServerState.CHANNEL);
 
   /** @ignore */
-  public getServerConfig = <ResponseType = unknown>(identifier: string) => this.getConfig<ResponseType>(identifier, ServerConfig.ALL);
+  public getServerConfig = <ResponseType = unknown>(identifier: string) =>
+    this.getConfig<ResponseType>(identifier, ServerConfig.ALL);
 
   /** @ignore */
-  public getChannelConfig = <ResponseType = unknown>(identifier: string) => this.getConfig<ResponseType>(identifier, ServerConfig.CHANNEL);
+  public getChannelConfig = <ResponseType = unknown>(identifier: string) =>
+    this.getConfig<ResponseType>(identifier, ServerConfig.CHANNEL);
 
   /** @ignore */
-  public getExtensionConfig = <ResponseType = unknown>(identifier: string) => this.getConfig<ResponseType>(identifier, ServerConfig.EXTENSION);
+  public getExtensionConfig = <ResponseType = unknown>(identifier: string) =>
+    this.getConfig<ResponseType>(identifier, ServerConfig.EXTENSION);
 
   /** @ignore */
-  public getExtensionState = <ResponseType = unknown>(identifier: string) => this.getState<ResponseType>(identifier, ServerState.EXTENSION);
+  public getExtensionState = <ResponseType = unknown>(identifier: string) =>
+    this.getState<ResponseType>(identifier, ServerState.EXTENSION);
 
   /** @ignore */
   public setViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
@@ -389,12 +403,18 @@ class StateClient {
     this.postState<DataType, ResponseType>(identifier, ServerState.EXTENSION_VIEWER, state);
 
   /** @ignore */
-  public patchExtensionViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, multiState: DataType) =>
-    this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', 'extension_viewer_state', multiState);
+  public patchExtensionViewerState = <DataType = unknown, ResponseType = unknown>(
+    identifier: string,
+    multiState: DataType
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', 'extension_viewer_state', multiState);
 
   /** @ignore */
   public multiGetExtensionViewerState = <ResponseType = unknown>(identifier: string, users: string[]) =>
-    this.signedRequest<undefined, ResponseType>(identifier, 'GET', `extension_viewer_state?user_ids=${users.join(',')}`);
+    this.signedRequest<undefined, ResponseType>(
+      identifier,
+      'GET',
+      `extension_viewer_state?user_ids=${users.join(',')}`
+    );
 
   /** @ignore */
   public setExtensionSecretState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
@@ -417,8 +437,10 @@ class StateClient {
     this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerConfig.CHANNEL, multiConfig);
 
   /** @ignore */
-  public patchExtensionConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, multiConfig: DataType) =>
-    this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerConfig.EXTENSION, multiConfig);
+  public patchExtensionConfig = <DataType = unknown, ResponseType = unknown>(
+    identifier: string,
+    multiConfig: DataType
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerConfig.EXTENSION, multiConfig);
 
   /** @ignore */
   public setExtensionState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
@@ -465,20 +487,26 @@ class StateClient {
     this.signedRequest<{ pin: string }, ResponseType>(identifier, 'POST', 'validate_pin', { pin: code });
 
   /** @ignore */
-  public pinTokenExists = <ResponseType = unknown>(identifier: string) => this.signedRequest<undefined, ResponseType>(identifier, 'GET', 'pin_token_exists');
+  public pinTokenExists = <ResponseType = unknown>(identifier: string) =>
+    this.signedRequest<undefined, ResponseType>(identifier, 'GET', 'pin_token_exists');
 
   /** @ignore */
-  public revokeAllPINCodes = <ResponseType = unknown>(identifier: string) => this.signedRequest<undefined, ResponseType>(identifier, 'DELETE', 'pin');
+  public revokeAllPINCodes = <ResponseType = unknown>(identifier: string) =>
+    this.signedRequest<undefined, ResponseType>(identifier, 'DELETE', 'pin');
 
   /** @ignore */
-  public getEligibleCodes = (identifier: string) => this.signedRequest<undefined, EligibleCodes>(identifier, 'GET', 'codes/eligible');
+  public getEligibleCodes = (identifier: string) =>
+    this.signedRequest<undefined, EligibleCodes>(identifier, 'GET', 'codes/eligible');
 
   /** @ignore */
-  public getRedeemedCodes = (identifier: string) => this.signedRequest<undefined, RedeemedCodes>(identifier, 'GET', 'codes/redeemed');
+  public getRedeemedCodes = (identifier: string) =>
+    this.signedRequest<undefined, RedeemedCodes>(identifier, 'GET', 'codes/redeemed');
 
   /** @ignore */
   public redeemCode = (identifier: string, prizeIndex: number) =>
-    this.signedRequest<{ all_prizes: number }, RedeemResult>(identifier, 'POST', 'codes/redeem', { all_prizes: prizeIndex });
+    this.signedRequest<{ all_prizes: number }, RedeemResult>(identifier, 'POST', 'codes/redeem', {
+      all_prizes: prizeIndex
+    });
 
   /** @ignore */
   public getExtensionUsers = (identifier: string, cursor: string) =>
@@ -492,16 +520,29 @@ class StateClient {
     this.signedRequest<undefined, TriviaTeam>(identifier, 'GET', 'team_membership');
 
   /** @ignore */
-  public addExtensionTriviaQuestion = (identifier: string, triviaQuestion: TriviaQuestion): Promise<Record<string, unknown>> =>  
-    this.signedRequest<TriviaQuestion, Record<string, unknown>>(identifier, 'POST', 'curated_poll_edit', triviaQuestion);
+  public addExtensionTriviaQuestion = (
+    identifier: string,
+    triviaQuestion: TriviaQuestion
+  ): Promise<Record<string, unknown>> =>
+    this.signedRequest<TriviaQuestion, Record<string, unknown>>(
+      identifier,
+      'POST',
+      'curated_poll_edit',
+      triviaQuestion
+    );
 
   /** @ignore */
-  public removeExtensionTriviaQuestion = (identifier: string, triviaQuestionID: string): Promise<Record<string, unknown>> => 
-    this.signedRequest<{ id: string }, Record<string, unknown>>(identifier, 'DELETE', 'curated_poll_edit', { id: triviaQuestionID });
+  public removeExtensionTriviaQuestion = (
+    identifier: string,
+    triviaQuestionID: string
+  ): Promise<Record<string, unknown>> =>
+    this.signedRequest<{ id: string }, Record<string, unknown>>(identifier, 'DELETE', 'curated_poll_edit', {
+      id: triviaQuestionID
+    });
 
   /** @ignore */
   public addExtensionTriviaOptionToQuestion = (identifier: string, questionID: string, option: TriviaOption) =>
-    this.signedRequest<{ id: string, option: TriviaOption }, TriviaQuestion>(
+    this.signedRequest<{ id: string; option: TriviaOption }, TriviaQuestion>(
       identifier,
       'POST',
       'curated_poll_edit_option',
@@ -509,8 +550,8 @@ class StateClient {
     );
 
   /** @ignore */
-  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) => 
-    this.signedRequest<{ question: string, option: string }, TriviaQuestion>(
+  public removeExtensionTriviaOptionFromQuestion = (identifier: string, questionID: string, optionID: string) =>
+    this.signedRequest<{ question: string; option: string }, TriviaQuestion>(
       identifier,
       'DELETE',
       'curated_poll_edit_option',
@@ -524,7 +565,7 @@ class StateClient {
     state: TriviaQuestionState,
     winner: string
   ) =>
-    this.signedRequest<{ transition: TriviaQuestionState, winner: string }, TriviaStateResponse>(
+    this.signedRequest<{ transition: TriviaQuestionState; winner: string }, TriviaStateResponse>(
       identifier,
       'POST',
       `curated_poll_state?id=${questionID}`,
@@ -532,11 +573,21 @@ class StateClient {
     );
 
   /** @ignore */
-  public setExtensionTriviaQuestionVote = (identifier: string, questionID: string, optionID: string): Promise<Record<string, unknown>> => 
-    this.signedRequest<{ question_id: string, vote: string }, Record<string, unknown>>(identifier, 'POST', 'curated_poll', { question_id: questionID, vote: optionID });
+  public setExtensionTriviaQuestionVote = (
+    identifier: string,
+    questionID: string,
+    optionID: string
+  ): Promise<Record<string, unknown>> =>
+    this.signedRequest<{ question_id: string; vote: string }, Record<string, unknown>>(
+      identifier,
+      'POST',
+      'curated_poll',
+      { question_id: questionID, vote: optionID }
+    );
 
   /** @ignore */
-  public getExtensionTriviaQuestions = (identifier: string) => this.signedRequest<undefined, TriviaQuestionResponse>(identifier, 'GET', 'curated_poll');
+  public getExtensionTriviaQuestions = (identifier: string) =>
+    this.signedRequest<undefined, TriviaQuestionResponse>(identifier, 'GET', 'curated_poll');
 
   /** @ignore */
   public getExtensionTriviaQuestion = (identifier: string, questionID: string) =>
@@ -548,7 +599,7 @@ class StateClient {
 
   /** @ignore */
   public sendTransactionToServer = (identifier: string, tx: Transaction) =>
-    this.signedRequest<Transaction, Record<string, unknown>>(identifier, "POST", "bits/transactions", tx);
+    this.signedRequest<Transaction, Record<string, unknown>>(identifier, 'POST', 'bits/transactions', tx);
 }
 
 export default StateClient;

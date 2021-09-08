@@ -335,13 +335,12 @@ export enum TriviaQuestionState {
  * @property {number} server_time - The name of the question for smaller displays.
  * @property {string} visualization_id - A description for the question
  */
- export interface UserInfo {
+export interface UserInfo {
   ip_address: string;
   registered: boolean;
   server_time: number;
   visualization_id: string;
 }
-
 
 /**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
@@ -400,7 +399,7 @@ export default class SDK {
         mxy.analytics,
         mxy.loadPromise,
         mxy.SKUs,
-        mxy.debugOptions,
+        mxy.debugOptions
       );
 
       mxy.SDKClients[identifier] = this;
@@ -491,8 +490,8 @@ export default class SDK {
   /**
    * Invokes a request to the backend.
    */
-  public signedRequest(method, endpoint, data) {
-    return this.client.signedRequest(this.identifier, method, endpoint, data);
+  public signedRequest<DataType = unknown, ResponseType = unknown>(method, endpoint, data) {
+    return this.client.signedRequest<DataType, ResponseType>(this.identifier, method, endpoint, data);
   }
 
   /**
@@ -553,7 +552,10 @@ export default class SDK {
    *   }
    * });
    */
-  public accumulate<DataType = unknown, ResponseType = unknown>(accumulationID: string, data: DataType): Promise<ResponseType> {
+  public accumulate<DataType = unknown, ResponseType = unknown>(
+    accumulationID: string,
+    data: DataType
+  ): Promise<ResponseType> {
     forceType(accumulationID, 'string');
     return this.client.accumulate<DataType, ResponseType>(this.identifier, accumulationID, data);
   }
@@ -901,7 +903,9 @@ export default class SDK {
    *  '12422': { 'foo': 'bar' }
    * });
    */
-  public patchExtensionViewerState<DataType = unknown, ResponseType = unknown>(userStates: DataType): Promise<ResponseType> {
+  public patchExtensionViewerState<DataType = unknown, ResponseType = unknown>(
+    userStates: DataType
+  ): Promise<ResponseType> {
     return this.client.patchExtensionViewerState<DataType, ResponseType>(this.identifier, userStates);
   }
 
@@ -1296,15 +1300,12 @@ export default class SDK {
 
     let messageBuffer = [];
 
-    const cb = msg => {
+    const cb = (msg) => {
       try {
         // Production messages may be unprefixed.
         if (CurrentEnvironment().environment === 'production') {
           if (eventPatternMatch(msg.event, `${this.identifier}:${inEvent}`)) {
-            const truncatedEvent = msg.event
-              .split(':')
-              .slice(1)
-              .join(':');
+            const truncatedEvent = msg.event.split(':').slice(1).join(':');
             callback(msg.data, truncatedEvent);
             return;
           }
@@ -1313,16 +1314,13 @@ export default class SDK {
         if (eventPatternMatch(msg.event, realEvent)) {
           // Consumers of the SDK only ever interact with events
           // without the app-id or extension-id prefix.
-          const truncatedEvent = msg.event
-            .split(':')
-            .slice(2)
-            .join(':');
+          const truncatedEvent = msg.event.split(':').slice(2).join(':');
 
           const serialized = JSON.stringify(msg);
           const now = new Date().valueOf();
           let deduped = false;
 
-          messageBuffer.forEach(b => {
+          messageBuffer.forEach((b) => {
             if (b.content === serialized) {
               if (now - b.timestamp < 5 * 1000) {
                 deduped = true;
@@ -1373,14 +1371,14 @@ export default class SDK {
    * @since 2.4.0
    *
    * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
-   * 
+   *
    * @return {Promise<[]Product>} Resolves with an array of {@link Product}
    * objects for each available sku.
-   * 
+   *
    * @example
    * const products = await client.getProducts();
    */
-   public getProducts() {
+  public getProducts() {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1395,13 +1393,13 @@ export default class SDK {
    * @since 2.4.0
    *
    * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
-   * 
+   *
    * @param {string} sku - A product identifier.
    *
    * @example
    * sdk.purchase("XXSKU000");
    */
-   public purchase(sku: string) {
+  public purchase(sku: string) {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1416,7 +1414,7 @@ export default class SDK {
    * @since 2.4.0
    *
    * @throws {SDKError} Will throw an error if the MuxySDK didn't load.
-   * 
+   *
    * @param {function} callback - a function to be run after a purchase transaction.
    *
    * @example
@@ -1424,7 +1422,7 @@ export default class SDK {
    *   this.message = "Thanks for your purchase!";
    * });
    */
-   public onUserPurchase(callback: (tx: Transaction) => void) {
+  public onUserPurchase(callback: (tx: Transaction) => void) {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1479,8 +1477,8 @@ export default class SDK {
     if (this.SKUs.length === 0) {
       throw new Error('getPrices() cannot be used unless SKUs are provided.');
     }
-    return new Promise(resolve => {
-      Ext.getPrices(prices => {
+    return new Promise((resolve) => {
+      Ext.getPrices((prices) => {
         resolve(prices);
       });
     });
@@ -1714,7 +1712,7 @@ export default class SDK {
     analytics: Analytics,
     loadPromise: Promise<void>,
     SKUs: object[],
-    debug: DebugOptions,
+    debug: DebugOptions
   ) {
     /** @ignore */
     this.userObservers = new Observer<User>();
@@ -1756,7 +1754,7 @@ export default class SDK {
      */
     this.purchaseClient = purchaseClient;
 
-     /**
+    /**
      * The backend analytics client.
      * @private
      * @type {Analytics}

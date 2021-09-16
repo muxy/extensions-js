@@ -1,7 +1,7 @@
 {
   "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "2.4.1",
+  "version": "2.4.3",
   "license": "ISC",
   "repository": "https://github.com/muxy/extensions-js",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
@@ -14,7 +14,7 @@
     "docs": "typedoc --out dist/docs --target es6 --theme default --mode modules --excludeExternals --skipLibCheck src && node ./tools/generate-docs.js",
     "lint": "npx eslint 'src/**/*.ts' '__tests__/**/*.ts'",
     "prebuild": "rimraf dist",
-    "prepublish": "npm run build",
+    "prepack": "npm run build",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "test": "TZ=UTC jest __tests__/*.ts",
     "test:watch": "jest --watch",

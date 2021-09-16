@@ -208,7 +208,7 @@ export class Muxy implements MuxyInterface {
 
   /**
    * Enables/Disables the PurchaseClient for coin/bits/etc transactions.
-   * 
+   *
    * @ignore
    * @type {boolean}
    */
@@ -526,6 +526,8 @@ export class Muxy implements MuxyInterface {
     this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
     this.purchaseClient = DefaultPurchaseClient();
+
+    this.transactionsEnabled = options.transactionsEnabled;
 
     this.twitchClientID = clientID;
     this.cachedTwitchClient = new TwitchClient(this.twitchClientID);

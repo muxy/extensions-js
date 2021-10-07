@@ -51,7 +51,6 @@ export interface TwitchBitsCost {
 }
 
 // Twitch SDK Interfaces
-
 export interface TwitchActionsSDK {
   followChannel(chan: string): void;
   onFollow(cb: (didFollow: boolean, chan: string) => void): void;
@@ -66,6 +65,13 @@ export interface TwitchBitsSDK {
   setUseLoopback: (useLoopback: boolean) => void;
 }
 
+export interface TwitchFeaturesSDK {
+  isBitsEnabled: boolean;
+  isChatEnabled: boolean;
+  isSubscriptionStatusAvailable: boolean;
+  onChanged: (callback: (changes: string[]) => void) => void;
+}
+
 export interface TwitchPurchasesSDK {
   beginPurchase(sku: string): void;
   getPrices(): Promise<any>;
@@ -76,6 +82,7 @@ export interface TwitchPurchasesSDK {
 export interface TwitchSDK {
   actions: TwitchActionsSDK;
   bits: TwitchBitsSDK;
+  features: TwitchFeaturesSDK;
   purchases: TwitchPurchasesSDK;
   settings: any;
 

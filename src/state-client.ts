@@ -371,6 +371,13 @@ class StateClient {
     this.getState<ResponseType>(identifier, ServerState.EXTENSION_VIEWER);
 
   /** @ignore */
+  public multiGetExtensionViewerState = <ResponseType = unknown>(identifier: string, users: string[]) =>
+    this.signedRequest<undefined, ResponseType>(
+      identifier,
+      'GET',
+      `extension_viewer_state?user_ids=${users.join(',')}`
+    );
+  /** @ignore */
   public getExtensionSecretState = <ResponseType = unknown>(identifier: string) =>
     this.getState<ResponseType>(identifier, ServerState.EXTENSION_SECRET);
 
@@ -395,8 +402,20 @@ class StateClient {
     this.getState<ResponseType>(identifier, ServerState.EXTENSION);
 
   /** @ignore */
+  public setExtensionState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
+    this.postState<DataType, ResponseType>(identifier, ServerState.EXTENSION, state);
+
+  /** @ignore */
+  public patchExtensionState = <DataType = unknown, ResponseType = unknown>(identifier: string, multiState: DataType) =>
+    this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerState.EXTENSION, multiState);
+
+  /** @ignore */
   public setViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
     this.postState<DataType, ResponseType>(identifier, ServerState.VIEWER, state);
+
+  /** @ignore */
+  public patchViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, multiState: DataType) =>
+    this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerState.VIEWER, multiState);
 
   /** @ignore */
   public setExtensionViewerState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
@@ -406,45 +425,43 @@ class StateClient {
   public patchExtensionViewerState = <DataType = unknown, ResponseType = unknown>(
     identifier: string,
     multiState: DataType
-  ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', 'extension_viewer_state', multiState);
-
-  /** @ignore */
-  public multiGetExtensionViewerState = <ResponseType = unknown>(identifier: string, users: string[]) =>
-    this.signedRequest<undefined, ResponseType>(
-      identifier,
-      'GET',
-      `extension_viewer_state?user_ids=${users.join(',')}`
-    );
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerState.EXTENSION_VIEWER, multiState);
 
   /** @ignore */
   public setExtensionSecretState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
     this.postState<DataType, ResponseType>(identifier, ServerState.EXTENSION_SECRET, state);
 
   /** @ignore */
+  public patchExtensionSecretState = <DataType = unknown, ResponseType = unknown>(
+    identifier: string,
+    multiState: DataType
+  ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerState.EXTENSION_SECRET, multiState);
+
+  /** @ignore */
   public setChannelState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
     this.postState<DataType, ResponseType>(identifier, ServerState.CHANNEL, state);
+
+  /** @ignore */
+  public patchChannelState = <DataType = unknown, ResponseType = unknown>(identifier: string, multiState: DataType) =>
+    this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerState.CHANNEL, multiState);
 
   /** @ignore */
   public setChannelConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, config: DataType) =>
     this.postConfig<DataType, ResponseType>(identifier, ServerConfig.CHANNEL, config);
 
   /** @ignore */
-  public setExtensionConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, config: DataType) =>
-    this.postConfig<DataType, ResponseType>(identifier, ServerConfig.EXTENSION, config);
-
-  /** @ignore */
   public patchChannelConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, multiConfig: DataType) =>
     this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerConfig.CHANNEL, multiConfig);
+
+  /** @ignore */
+  public setExtensionConfig = <DataType = unknown, ResponseType = unknown>(identifier: string, config: DataType) =>
+    this.postConfig<DataType, ResponseType>(identifier, ServerConfig.EXTENSION, config);
 
   /** @ignore */
   public patchExtensionConfig = <DataType = unknown, ResponseType = unknown>(
     identifier: string,
     multiConfig: DataType
   ) => this.signedRequest<DataType, ResponseType>(identifier, 'PATCH', ServerConfig.EXTENSION, multiConfig);
-
-  /** @ignore */
-  public setExtensionState = <DataType = unknown, ResponseType = unknown>(identifier: string, state: DataType) =>
-    this.postState<DataType, ResponseType>(identifier, ServerState.EXTENSION, state);
 
   /** @ignore */
   public getAccumulation = (identifier: string, id: string, start: number) =>

@@ -61,6 +61,7 @@ export interface TwitchBitsSDK {
   getProducts: () => Promise<TwitchBitsProduct[]>;
   useBits: (sku: string) => void;
   onTransactionComplete: (callback: (transaction: TwitchBitsTransaction) => void) => void;
+  onTransactionCancelled: (callback: () => void) => void;
   showBitsBalance: () => void;
   setUseLoopback: (useLoopback: boolean) => void;
 }

@@ -2,19 +2,18 @@
  * @module SDK
  */
 
-import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
+import Util, { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
 
 import Analytics from './analytics';
 import { DebugOptions } from './debug';
-import { CallbackHandle, Messenger } from './messenger';
+import { Messenger } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
-import { PurchaseClient, PurchaseClientType, Transaction } from './purchase-client';
+import { PurchaseClient, Transaction } from './purchase-client';
 import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
-import Config from './config';
 
 /**
  * The response from {@link getAllState}.
@@ -405,7 +404,7 @@ export default class SDK {
       mxy.SDKClients[identifier] = this;
     }
 
-    if (mxy.transactionsEnabled) {
+    if (mxy.transactionsEnabled && CurrentEnvironment() === Util.Environments.Production) {
       this.purchaseClient.onUserPurchase((tx: Transaction) => {
         this.client.sendTransactionToServer(this.identifier, tx);
       });
@@ -1431,6 +1430,28 @@ export default class SDK {
     this.purchaseClient.onUserPurchase(callback);
   }
 
+  /**
+   * Sets the callback to be run after a user cancels a purchase.
+   *
+   * @since 2.4.5
+   *
+   * @throws {SDKError} Will throw an error if MEDKit isn't loaded.
+   *
+   * @param {function} callback - a function to be run after a failed transaction.
+   *
+   * @example
+   * sdk.onUserPurchaseCanceled(() => {
+   *   this.message = "Changed your mind?";
+   * });
+   */
+  public onUserPurchaseCanceled(callback: () => void) {
+    if (!mxy.didLoad) {
+      throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
+    }
+
+    forceType(callback, 'function');
+    this.purchaseClient.onUserPurchaseCanceled(callback);
+  }
   /**
    * Analytics
    */

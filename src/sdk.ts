@@ -404,11 +404,7 @@ export default class SDK {
       mxy.SDKClients[identifier] = this;
     }
 
-    const runningOnTwitch =
-      CurrentEnvironment() === Util.Environments.Production ||
-      CurrentEnvironment() === Util.Environments.SandboxTwitchEnvironment;
-
-    if (mxy.transactionsEnabled && runningOnTwitch) {
+    if (mxy.transactionsEnabled) {
       this.purchaseClient.onUserPurchase((tx: Transaction) => {
         this.client.sendTransactionToServer(this.identifier, tx);
       });

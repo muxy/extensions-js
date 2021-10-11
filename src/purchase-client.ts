@@ -48,6 +48,26 @@ export interface Transaction {
 // TwitchPurchaseClient implements the basic 'purchase client' interface.
 // This is used by SDK to provide low-level access to twitch bits transactions.
 export class TwitchPurchaseClient implements PurchaseClient {
+  private purchaseCallbacks: Array<(tx: Transaction) => void> = [];
+  private cancelationCallbacks: Array<() => void> = [];
+
+  constructor() {
+    if (!window?.Twitch?.ext?.bits) {
+      throw new Error('Twitch helper is required for bits transactions not loaded.');
+    }
+
+    // Twitch only allows one handler for complete/cancel
+    window.Twitch.ext.bits.onTransactionComplete((tx: TwitchBitsTransaction) => {
+      if (tx.initiator.toLowerCase() === 'current_user') {
+        this.purchaseCallbacks.forEach((cb) => cb(tx));
+      }
+    });
+
+    window.Twitch.ext.bits.onTransactionCancelled(() => {
+      this.cancelationCallbacks.forEach((cb) => cb());
+    });
+  }
+
   /**
    * purchase will start the twitch bits transaction.
    *
@@ -61,10 +81,6 @@ export class TwitchPurchaseClient implements PurchaseClient {
    * client.purchase("XXSKU000");
    */
   public purchase(sku: string) {
-    if (!window.Twitch?.ext?.bits) {
-      throw new Error('Twitch helper was not loaded.');
-    }
-
     window.Twitch.ext.bits.useBits(sku);
   }
 
@@ -83,10 +99,6 @@ export class TwitchPurchaseClient implements PurchaseClient {
    * const products = client.getProducts();
    */
   public getProducts(): Promise<TwitchBitsProduct[]> {
-    if (!window.Twitch?.ext?.bits) {
-      throw new Error('Twitch helper was not loaded.');
-    }
-
     return window.Twitch.ext.bits.getProducts();
   }
 
@@ -105,15 +117,7 @@ export class TwitchPurchaseClient implements PurchaseClient {
    * });
    */
   public onUserPurchase(callback: (tx: Transaction) => void): void {
-    if (!window.Twitch?.ext?.bits) {
-      throw new Error('Twitch helper was not loaded.');
-    }
-
-    window.Twitch.ext.bits.onTransactionComplete((tx: TwitchBitsTransaction) => {
-      if (tx.initiator.toLowerCase() === 'current_user') {
-        callback(tx);
-      }
-    });
+    this.purchaseCallbacks.push(callback);
   }
 
   /**
@@ -131,11 +135,7 @@ export class TwitchPurchaseClient implements PurchaseClient {
    * });
    */
   public onUserPurchaseCanceled(callback: () => void): void {
-    if (!window.Twitch?.ext?.bits) {
-      throw new Error('Twitch helper was not loaded.');
-    }
-
-    window.Twitch.ext.bits.onTransactionCancelled(callback);
+    this.cancelationCallbacks.push(callback);
   }
 }
 

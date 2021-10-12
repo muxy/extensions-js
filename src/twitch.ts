@@ -127,6 +127,19 @@ export class ContextUpdateCallbackHandle extends ObserverHandler<TwitchContext> 
   }
 }
 
+export class HighlightChangedCallbackHandle extends ObserverHandler<boolean> {
+  private cb: (isHighlighted: boolean) => void;
+
+  constructor(cb: (isHighlighted: boolean) => void) {
+    super();
+    this.cb = cb;
+  }
+
+  public notify(isHighlighted: boolean): void {
+    this.cb(isHighlighted);
+  }
+}
+
 export interface TwitchContext {
   arePlayerControlsVisible: boolean;
   bitrate: number;

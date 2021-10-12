@@ -204,7 +204,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {PurchaseClient}
    */
-   public purchaseClient: PurchaseClient;
+  public purchaseClient: PurchaseClient;
 
   /**
    * Enables/Disables the PurchaseClient for coin/bits/etc transactions.
@@ -214,7 +214,7 @@ export class Muxy implements MuxyInterface {
    */
   public transactionsEnabled: boolean;
 
-   /**
+  /**
    * Internal {@link TwitchClient}.
    *
    * @ignore
@@ -387,7 +387,7 @@ export class Muxy implements MuxyInterface {
     Ext.extensionID = extensionID;
 
     // Auth callback handler
-    Ext.onAuthorized(this.debugOptions, auth => {
+    Ext.onAuthorized(this.debugOptions, (auth) => {
       if (!auth) {
         this.loadReject('Received invalid authorization from Twitch');
         return;
@@ -398,7 +398,7 @@ export class Muxy implements MuxyInterface {
       this.messenger.channelID = auth.channelId;
       this.client.updateAuth(auth.token);
 
-      const resolvePromise = user => {
+      const resolvePromise = (user) => {
         this.user = user;
 
         const keys = Object.keys(this.SDKClients);
@@ -435,7 +435,7 @@ export class Muxy implements MuxyInterface {
             resolvePromise(user);
             this.loadResolve();
           })
-          .catch(err => {
+          .catch((err) => {
             this.loadReject(err);
           });
       };
@@ -448,7 +448,7 @@ export class Muxy implements MuxyInterface {
       }
     });
 
-    Ext.onContext(context => {
+    Ext.onContext((context) => {
       this.context = context;
 
       if (this.user) {

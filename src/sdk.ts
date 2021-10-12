@@ -2,7 +2,7 @@
  * @module SDK
  */
 
-import Util, { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
+import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from './util';
 
 import Analytics from './analytics';
 import { DebugOptions } from './debug';
@@ -11,7 +11,7 @@ import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
 import { PurchaseClient, Transaction } from './purchase-client';
-import { ContextUpdateCallbackHandle, Position, TwitchContext } from './twitch';
+import { ContextUpdateCallbackHandle, HighlightChangedCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
 
@@ -371,6 +371,7 @@ export default class SDK {
   public debug: DebugOptions;
   public userObservers: Observer<User>;
   public contextObservers: Observer<TwitchContext>;
+  public highlightObservers: Observer<boolean>;
 
   /** @ignore */
   constructor(id?: string) {
@@ -463,6 +464,15 @@ export default class SDK {
   public onContextUpdate(callback: (context: TwitchContext) => void): ContextUpdateCallbackHandle {
     const handler = new ContextUpdateCallbackHandle(callback);
     this.contextObservers.register(handler);
+    return handler;
+  }
+
+  /**
+   * Registers a new callback for when the highlight is updated.
+   */
+  public onHighlightChanged(callback: (isHighlighted: boolean) => void): HighlightChangedCallbackHandle {
+    const handler = new HighlightChangedCallbackHandle(callback);
+    this.highlightObservers.register(handler);
     return handler;
   }
 

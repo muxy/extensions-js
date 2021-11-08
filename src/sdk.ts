@@ -748,7 +748,6 @@ export default class SDK {
    * Server Config
    */
 
-  // TODO: determine actual response type
   /**
    * Sets the server channel config to a JS object. Future calls to {@link getConfig} or {@link getChannelConfig} by **any**
    * user on this channel will have a clone of this object in the `channel` field.

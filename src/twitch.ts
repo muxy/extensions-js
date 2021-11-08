@@ -4,7 +4,6 @@
 
 // TwitchAuth is the object that you get back from the onAuth callback
 import { ObserverHandler } from './observer';
-import User from './user';
 
 // Twitch types
 export class TwitchAuth {
@@ -140,6 +139,11 @@ export class HighlightChangedCallbackHandle extends ObserverHandler<boolean> {
   }
 }
 
+export interface HostingInfo {
+  hostedChannelId: string;
+  hostingChannelId: string;
+}
+
 export interface TwitchContext {
   arePlayerControlsVisible: boolean;
   bitrate: number;
@@ -147,6 +151,7 @@ export interface TwitchContext {
   displayResolution: string;
   game: string;
   hlsLatencyBroadcaster: number;
+  hostingInfo?: HostingInfo;
   isFullScreen: boolean;
   isMuted: boolean;
   isPaused: boolean;

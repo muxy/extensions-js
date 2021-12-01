@@ -198,19 +198,19 @@ export default class TwitchClient {
    * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
    * @param {string} endpoint - The Twitch helix API endpoint.
    * @param {string?} data - A string-encoded JSON payload to send with the request.
-   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
+   * @param {Object} helixToken - Signed JWT, accessible from sdk.user.helixToken.
    *
    * @return {Promise} Resolves with the AJAX payload on response < 400.
    * Rejects otherwise.
    */
-  public signedTwitchHelixRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
+  public signedTwitchHelixRequest(method: string, endpoint: string, data?: string, helixToken?: string): Promise<any> {
     const headers = {
       Authorization: undefined,
       'Client-ID': this.extensionId
     };
 
-    if (JWT) {
-      headers.Authorization = `Bearer ${JWT}`;
+    if (helixToken) {
+      headers.Authorization = `Extension ${helixToken}`;
     }
 
     return new Promise((resolve, reject) => {

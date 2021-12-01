@@ -1330,7 +1330,7 @@ export default class SDK {
 
           messageBuffer.forEach((b) => {
             if (b.content === serialized) {
-              if (now - b.timestamp < 5 * 1000) {
+              if (now - b.timestamp < 500) {
                 deduped = true;
               }
             }

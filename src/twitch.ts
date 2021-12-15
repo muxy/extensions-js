@@ -11,6 +11,7 @@ export class TwitchAuth {
   public token: string;
   public channelId: string;
   public userId: string;
+  public helixToken: string;
 }
 
 export class JWT {

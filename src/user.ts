@@ -27,6 +27,7 @@ export default class User {
   public twitchJWT: string;
   public twitchOpaqueID: string;
   public twitchID: string;
+  public helixToken: string;
   public muxyID: string;
   public registeredWithMuxy: boolean;
   public visualizationID: string;
@@ -101,6 +102,14 @@ export default class User {
      * @type {string}
      */
     this.twitchOpaqueID = auth.userId;
+
+    /**
+     * helixToken is a Twitch generated helix token that allows the current user
+     * to preform authorized helix calls.
+     *
+     * @since 2.5.0
+     */
+    this.helixToken = auth.helixToken;
 
     /**
      * twitchID is this viewer's actual Twitch ID. Used to coordinate access to
@@ -259,6 +268,7 @@ export default class User {
    */
   public updateAuth(auth: TwitchAuth) {
     this.twitchJWT = auth.token;
+    this.helixToken = auth.helixToken;
     this.extractJWTInfo(auth.token);
   }
 

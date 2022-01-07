@@ -2,6 +2,7 @@ import { CurrentEnvironment } from './util';
 import Config from './config';
 
 import { TwitchBitsProduct, TwitchBitsTransaction } from './twitch';
+import mxy from './muxy';
 
 // Muxy dev variable
 declare global {
@@ -18,10 +19,13 @@ export enum PurchaseClientType {
   Unknown
 }
 
+export type TransactionResponse = Record<string, never>;
+
 export interface PurchaseClient {
   getProducts(): Promise<Product[]>;
   purchase(sku: string): void;
-  onUserPurchase(callback: (transaction: Transaction) => void): void;
+
+  onUserPurchase(callback: (transaction: Transaction, sendToServerPromise: Promise<TransactionResponse>) => void): void;
   onUserPurchaseCanceled(callback: () => void): void;
 }
 
@@ -48,18 +52,27 @@ export interface Transaction {
 // TwitchPurchaseClient implements the basic 'purchase client' interface.
 // This is used by SDK to provide low-level access to twitch bits transactions.
 export class TwitchPurchaseClient implements PurchaseClient {
-  private purchaseCallbacks: Array<(tx: Transaction) => void> = [];
+  private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
   private cancelationCallbacks: Array<() => void> = [];
+  private identifier: string = "";
 
-  constructor() {
+  constructor(id: string) {
     if (!window?.Twitch?.ext?.bits) {
       throw new Error('Twitch helper is required for bits transactions not loaded.');
     }
 
+    this.identifier = id;
+
     // Twitch only allows one handler for complete/cancel
     window.Twitch.ext.bits.onTransactionComplete((tx: TwitchBitsTransaction) => {
       if (tx.initiator.toLowerCase() === 'current_user') {
-        this.purchaseCallbacks.forEach((cb) => cb(tx));
+
+        let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});
+        if (mxy.transactionsEnabled) {
+          promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
+        }
+
+        this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
       }
     });
 
@@ -116,7 +129,7 @@ export class TwitchPurchaseClient implements PurchaseClient {
    *  console.log("Transaction finished!");
    * });
    */
-  public onUserPurchase(callback: (tx: Transaction) => void): void {
+  public onUserPurchase(callback: (tx: Transaction, promise: Promise<TransactionResponse>) => void): void {
     this.purchaseCallbacks.push(callback);
   }
 
@@ -142,7 +155,12 @@ export class TwitchPurchaseClient implements PurchaseClient {
 // DevPurchaseClient implements the basic 'purchase client' interface.
 // This is used by SDK to provide low-level access to stubbed transactions.
 export class DevPurchaseClient implements PurchaseClient {
-  private purchaseCallbacks: Array<(tx: Transaction) => void> = [];
+  private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
+  private identifier: string = "";
+
+  public constructor(id: string) {
+    this.identifier = id;
+  }
 
   /**
    * purchase will start the Dev purchase transaction.
@@ -170,7 +188,12 @@ export class DevPurchaseClient implements PurchaseClient {
             transactionReceipt: 'transaction-receipt'
           };
 
-          this.purchaseCallbacks.forEach((cb) => cb(tx));
+          let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});
+          if (mxy.transactionsEnabled) {
+            promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
+          }
+
+          this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
         } else {
           throw new Error(`Product with SKU "${sku}" not found in product list.`);
         }
@@ -225,7 +248,7 @@ export class DevPurchaseClient implements PurchaseClient {
    *  console.log("Transaction finished!");
    * });
    */
-  public onUserPurchase(callback: (tx: Transaction) => void): void {
+  public onUserPurchase(callback: (tx: Transaction, promise: Promise<TransactionResponse>) => void): void {
     this.purchaseCallbacks.push(callback);
   }
 
@@ -249,9 +272,13 @@ export class DevPurchaseClient implements PurchaseClient {
 // TestPurchaseClient implements the basic 'purchase client' interface.
 // This is used by the test of the SDK to provide low-level access to stubbed transactions.
 export class TestPurchaseClient implements PurchaseClient {
-  private purchaseCallbacks: Array<(tx: Transaction) => void> = [];
+  private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
   private purchaseCanceledCallbacks: Array<(tx: Transaction) => void> = [];
+  private identifier: string = "";
 
+  public constructor(id: string) {
+    this.identifier = id;
+  }
   /**
    * purchase will start the Test purchase transaction.
    *
@@ -280,8 +307,13 @@ export class TestPurchaseClient implements PurchaseClient {
             transactionReceipt: 'transaction-receipt'
           };
 
+          let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});
+          if (mxy.transactionsEnabled) {
+            promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
+          }
+
           this.purchaseCallbacks.forEach(function (callback) {
-            callback(tx);
+            callback(tx, promise);
           });
         } else {
           throw new Error(`Product with SKU ${sku} not found in product list.`);
@@ -337,7 +369,7 @@ export class TestPurchaseClient implements PurchaseClient {
    *  console.log("Transaction finished!");
    * });
    */
-  public onUserPurchase(callback: (tx: Transaction) => void): void {
+  public onUserPurchase(callback: (tx: Transaction, promise: Promise<TransactionResponse>) => void): void {
     this.purchaseCallbacks.push(callback);
   }
 
@@ -358,15 +390,15 @@ export class TestPurchaseClient implements PurchaseClient {
   }
 }
 
-export default function DefaultPurchaseClient(): PurchaseClient {
+export default function DefaultPurchaseClient(identifier: string): PurchaseClient {
   const type = Config.DefaultPurchaseClientType(CurrentEnvironment());
   switch (type) {
     case PurchaseClientType.Dev:
-      return new DevPurchaseClient();
+      return new DevPurchaseClient(identifier);
     case PurchaseClientType.Test:
-      return new TestPurchaseClient();
+      return new TestPurchaseClient(identifier);
     case PurchaseClientType.Twitch:
-      return new TwitchPurchaseClient();
+      return new TwitchPurchaseClient(identifier);
     default:
       throw new Error('Could not determine proper transaction type for environment.');
   }

@@ -525,7 +525,7 @@ export class Muxy implements MuxyInterface {
 
     this.client = new StateClient(this.loadPromise, this.debugOptions);
     this.messenger = DefaultMessenger(this.debugOptions);
-    this.purchaseClient = DefaultPurchaseClient();
+    this.purchaseClient = DefaultPurchaseClient(clientID);
 
     this.transactionsEnabled = options.transactionsEnabled;
 

@@ -10,7 +10,7 @@ import { Messenger } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
-import { PurchaseClient, Transaction } from './purchase-client';
+import { PurchaseClient, Transaction, TransactionResponse } from './purchase-client';
 import { ContextUpdateCallbackHandle, HighlightChangedCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
@@ -403,12 +403,6 @@ export default class SDK {
       );
 
       mxy.SDKClients[identifier] = this;
-    }
-
-    if (mxy.transactionsEnabled) {
-      this.purchaseClient.onUserPurchase((tx: Transaction) => {
-        this.client.sendTransactionToServer(this.identifier, tx);
-      });
     }
 
     return mxy.SDKClients[identifier];
@@ -1330,7 +1324,7 @@ export default class SDK {
 
           messageBuffer.forEach((b) => {
             if (b.content === serialized) {
-              if (now - b.timestamp < 500) {
+              if (now - b.timestamp < 5 * 1000) {
                 deduped = true;
               }
             }
@@ -1430,7 +1424,7 @@ export default class SDK {
    *   this.message = "Thanks for your purchase!";
    * });
    */
-  public onUserPurchase(callback: (tx: Transaction) => void) {
+  public onUserPurchase(callback: (tx: Transaction, promise: Promise<TransactionResponse>) => void) {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }

@@ -1741,6 +1741,7 @@ var Analytics = /** @class */ (function () {
             cid: opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
             cm2: latency,
             cm3: bitrate,
+            cu: 'USD',
             dh: pd.hostName,
             dl: pd.url,
             dp: pd.path,

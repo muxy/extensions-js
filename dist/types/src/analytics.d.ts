@@ -24,6 +24,7 @@ export default class Analytics {
         cid: any;
         cm2: any;
         cm3: any;
+        cu: string;
         dh: any;
         dl: any;
         dp: any;

@@ -104,6 +104,7 @@ export default class Analytics {
       cid: opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
       cm2: latency,
       cm3: bitrate,
+      cu: 'USD',
       dh: pd.hostName,
       dl: pd.url,
       dp: pd.path,
@@ -152,21 +153,19 @@ export default class Analytics {
    * @param {*} value - (optional) A value to associate with this event (defaults to 1).
    * @param {string} label - (optional) A human-readable label for this event.
    */
-  public sendEvent(category: string, name: string, value: any = 1, label: string = '') {
+  public sendEvent(
+    category: string,
+    name: string,
+    value: any = 1,
+    label: string = '',
+    additional: Record<string, unknown> = {}
+  ) {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }
 
-<<<<<<< HEAD
-    const data = { name, value, label };
-    this.gumshoe.send(category, data);
-||||||| parent of f982423 (Update versions and include dist files)
-    const data = { name, value, label, ...additional };
-    this.gumshoe.send(category, data);
-=======
     const data = { name, value, label };
     this.gumshoe.send(category, data, additional);
->>>>>>> f982423 (Update versions and include dist files)
   }
 
   /**

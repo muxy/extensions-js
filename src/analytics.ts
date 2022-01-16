@@ -66,7 +66,7 @@ export default class Analytics {
    * Internal function to map event data to GA format.
    * @private
    */
-  public mapData(data) {
+  public mapData(data, additional: Record<string, unknown> = {}) {
     const appName = 'Muxy';
 
     let ip = '<unknown ip>';
@@ -117,6 +117,13 @@ export default class Analytics {
       sr: pd.screenResolution,
       t: 'event',
       tid: this.uaString,
+      ti: additional.transactionId,
+      tr: additional.transactionRevenue,
+      in: additional.itemName,
+      ip: additional.itemPrice,
+      iq: additional.itemQuantity,
+      ic: additional.itemCode,
+      iv: additional.itemCategory,
       ua: pd.userAgent,
       uid: userID,
       uip: ip,
@@ -150,8 +157,16 @@ export default class Analytics {
       throw new Error('muxy.Analytics used before ready');
     }
 
+<<<<<<< HEAD
     const data = { name, value, label };
     this.gumshoe.send(category, data);
+||||||| parent of f982423 (Update versions and include dist files)
+    const data = { name, value, label, ...additional };
+    this.gumshoe.send(category, data);
+=======
+    const data = { name, value, label };
+    this.gumshoe.send(category, data, additional);
+>>>>>>> f982423 (Update versions and include dist files)
   }
 
   /**

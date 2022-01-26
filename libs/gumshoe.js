@@ -3,10 +3,10 @@
 // polyfill for String.prototype.trim for IE8
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim
 if (!String.prototype.trim) {
-  (function() {
+  (function () {
     // Make sure we trim BOM and NBSP
     var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
-    String.prototype.trim = function() {
+    String.prototype.trim = function () {
       return this.replace(rtrim, '');
     };
   })();
@@ -15,7 +15,7 @@ if (!String.prototype.trim) {
 // Production steps of ECMA-262, Edition 5, 15.4.4.21
 // Reference: http://es5.github.io/#x15.4.4.21
 if (!Array.prototype.reduce) {
-  Array.prototype.reduce = function(callback /*, initialValue*/) {
+  Array.prototype.reduce = function (callback /*, initialValue*/) {
     'use strict';
     if (this == null) {
       throw new TypeError('Array.prototype.reduce called on null or undefined');
@@ -23,11 +23,14 @@ if (!Array.prototype.reduce) {
     if (typeof callback !== 'function') {
       throw new TypeError(callback + ' is not a function');
     }
-    var t = Object(this), len = t.length >>> 0, k = 0, value;
+    var t = Object(this),
+      len = t.length >>> 0,
+      k = 0,
+      value;
     if (arguments.length == 2) {
       value = arguments[1];
     } else {
-      while (k < len && ! k in t) {
+      while (k < len && !k in t) {
         k++;
       }
       if (k >= len) {
@@ -50,18 +53,20 @@ if (!Array.prototype.reduce) {
  */
 function perfnow() {
   var perf = window.performance || {};
-  perf.now = perf.now ||
+  perf.now =
+    perf.now ||
     perf.mozNow ||
     perf.msNow ||
     perf.oNow ||
     perf.webkitNow ||
     // fallback to Date
-    Date.now || function () {
+    Date.now ||
+    function () {
       return new Date().getTime();
     };
 
   return perf;
-};
+}
 
 function gumshoeFactory() {
   'use strict';
@@ -88,7 +93,7 @@ function gumshoeFactory() {
 	    MIT License
     */
     (function (c) {
-	    'use strict';
+      'use strict';
       var queryString = {};
 
       queryString.parse = function (str) {
@@ -102,45 +107,53 @@ function gumshoeFactory() {
           return {};
         }
 
-        return str.trim().split('&').reduce(function (ret, param) {
-          var parts = param.replace(/\+/g, ' ').split('=');
-          var key = parts[0];
-          var val = parts[1];
+        return str
+          .trim()
+          .split('&')
+          .reduce(function (ret, param) {
+            var parts = param.replace(/\+/g, ' ').split('=');
+            var key = parts[0];
+            var val = parts[1];
 
-          key = decodeURIComponent(key);
-          // missing `=` should be `null`:
-          // http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
-          val = val === undefined ? null : decodeURIComponent(val);
+            key = decodeURIComponent(key);
+            // missing `=` should be `null`:
+            // http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
+            val = val === undefined ? null : decodeURIComponent(val);
 
-          if (!ret.hasOwnProperty(key)) {
-            ret[key] = val;
-          } else if (Array.isArray(ret[key])) {
-            ret[key].push(val);
-          } else {
-            ret[key] = [ret[key], val];
-          }
+            if (!ret.hasOwnProperty(key)) {
+              ret[key] = val;
+            } else if (Array.isArray(ret[key])) {
+              ret[key].push(val);
+            } else {
+              ret[key] = [ret[key], val];
+            }
 
-          return ret;
-        }, {});
+            return ret;
+          }, {});
       };
 
       queryString.stringify = function (obj) {
-        return obj ? Object.keys(obj).map(function (key) {
-          var val = obj[key];
+        return obj
+          ? Object.keys(obj)
+              .map(function (key) {
+                var val = obj[key];
 
-          if (Array.isArray(val)) {
-            return val.map(function (val2) {
-              return encodeURIComponent(key) + '=' + encodeURIComponent(val2);
-            }).join('&');
-          }
+                if (Array.isArray(val)) {
+                  return val
+                    .map(function (val2) {
+                      return encodeURIComponent(key) + '=' + encodeURIComponent(val2);
+                    })
+                    .join('&');
+                }
 
-          return encodeURIComponent(key) + '=' + encodeURIComponent(val);
-        }).join('&') : '';
+                return encodeURIComponent(key) + '=' + encodeURIComponent(val);
+              })
+              .join('&')
+          : '';
       };
 
       c.queryString = queryString;
     })(this);
-
 
     /*!
      * Reqwest! A general purpose XHR connection manager
@@ -148,68 +161,65 @@ function gumshoeFactory() {
      * https://github.com/ded/reqwest
      */
 
-    !function (name, context, definition) {
-      context[name] = definition()
-    }('reqwest', this, function () {
-
-      var win = window
-        , doc = document
-        , httpsRe = /^http/
-        , protocolRe = /(^\w+):\/\//
-        , twoHundo = /^(20\d|1223)$/ //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
-        , byTag = 'getElementsByTagName'
-        , readyState = 'readyState'
-        , contentType = 'Content-Type'
-        , requestedWith = 'X-Requested-With'
-        , head = doc[byTag]('head')[0]
-        , uniqid = 0
-        , callbackPrefix = 'reqwest_' + (+new Date())
-        , lastValue // data stored by the most recent JSONP callback
-        , xmlHttpRequest = 'XMLHttpRequest'
-        , xDomainRequest = 'XDomainRequest'
-        , noop = function () {}
-
-        , isArray = typeof Array.isArray == 'function'
+    !(function (name, context, definition) {
+      context[name] = definition();
+    })('reqwest', this, function () {
+      var win = window,
+        doc = document,
+        httpsRe = /^http/,
+        protocolRe = /(^\w+):\/\//,
+        twoHundo = /^(20\d|1223)$/, //http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+        byTag = 'getElementsByTagName',
+        readyState = 'readyState',
+        contentType = 'Content-Type',
+        requestedWith = 'X-Requested-With',
+        head = doc[byTag]('head')[0],
+        uniqid = 0,
+        callbackPrefix = 'reqwest_' + +new Date(),
+        lastValue, // data stored by the most recent JSONP callback
+        xmlHttpRequest = 'XMLHttpRequest',
+        xDomainRequest = 'XDomainRequest',
+        noop = function () {},
+        isArray =
+          typeof Array.isArray == 'function'
             ? Array.isArray
             : function (a) {
-                return a instanceof Array
-              }
-
-        , defaultHeaders = {
-              'contentType': 'application/x-www-form-urlencoded'
-            , 'requestedWith': xmlHttpRequest
-            , 'accept': {
-                  '*':  'text/javascript, text/html, application/xml, text/xml, */*'
-                , 'xml':  'application/xml, text/xml'
-                , 'html': 'text/html'
-                , 'text': 'text/plain'
-                , 'json': 'application/json, text/javascript'
-                , 'js':   'application/javascript, text/javascript'
-              }
+                return a instanceof Array;
+              },
+        defaultHeaders = {
+          contentType: 'application/x-www-form-urlencoded',
+          requestedWith: xmlHttpRequest,
+          accept: {
+            '*': 'text/javascript, text/html, application/xml, text/xml, */*',
+            xml: 'application/xml, text/xml',
+            html: 'text/html',
+            text: 'text/plain',
+            json: 'application/json, text/javascript',
+            js: 'application/javascript, text/javascript'
           }
-
-        , xhr = function(o) {
-            // is it x-domain
-            if (o['crossOrigin'] === true) {
-              var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null
-              if (xhr && 'withCredentials' in xhr) {
-                return xhr
-              } else if (win[xDomainRequest]) {
-                return new XDomainRequest()
-              } else {
-                throw new Error('Browser does not support cross-origin requests')
-              }
-            } else if (win[xmlHttpRequest]) {
-              return new XMLHttpRequest()
+        },
+        xhr = function (o) {
+          // is it x-domain
+          if (o['crossOrigin'] === true) {
+            var xhr = win[xmlHttpRequest] ? new XMLHttpRequest() : null;
+            if (xhr && 'withCredentials' in xhr) {
+              return xhr;
+            } else if (win[xDomainRequest]) {
+              return new XDomainRequest();
             } else {
-              return new ActiveXObject('Microsoft.XMLHTTP')
+              throw new Error('Browser does not support cross-origin requests');
             }
+          } else if (win[xmlHttpRequest]) {
+            return new XMLHttpRequest();
+          } else {
+            return new ActiveXObject('Microsoft.XMLHTTP');
           }
-        , globalSetupOptions = {
-            dataFilter: function (data) {
-              return data
-            }
+        },
+        globalSetupOptions = {
+          dataFilter: function (data) {
+            return data;
           }
+        };
 
       function succeed(r) {
         var protocol = protocolRe.exec(r.url);
@@ -221,293 +231,291 @@ function gumshoeFactory() {
         return function () {
           // use _aborted to mitigate against IE err c00c023f
           // (can't read props on aborted request objects)
-          if (r._aborted) return error(r.request)
-          if (r._timedOut) return error(r.request, 'Request is aborted: timeout')
+          if (r._aborted) return error(r.request);
+          if (r._timedOut) return error(r.request, 'Request is aborted: timeout');
           if (r.request && r.request[readyState] == 4) {
-            r.request.onreadystatechange = noop
-            if (succeed(r)) success(r.request)
-            else
-              error(r.request)
+            r.request.onreadystatechange = noop;
+            if (succeed(r)) success(r.request);
+            else error(r.request);
           }
-        }
+        };
       }
 
       function setHeaders(http, o) {
-        var headers = o['headers'] || {}
-          , h
+        var headers = o['headers'] || {},
+          h;
 
-        headers['Accept'] = headers['Accept']
-          || defaultHeaders['accept'][o['type']]
-          || defaultHeaders['accept']['*']
+        headers['Accept'] = headers['Accept'] || defaultHeaders['accept'][o['type']] || defaultHeaders['accept']['*'];
 
-        var isAFormData = typeof FormData === 'function' && (o['data'] instanceof FormData);
+        var isAFormData = typeof FormData === 'function' && o['data'] instanceof FormData;
         // breaks cross-origin requests with legacy browsers
-        if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith']
-        if (!headers[contentType] && !isAFormData) headers[contentType] = o['contentType'] || defaultHeaders['contentType']
+        if (!o['crossOrigin'] && !headers[requestedWith]) headers[requestedWith] = defaultHeaders['requestedWith'];
+        if (!headers[contentType] && !isAFormData)
+          headers[contentType] = o['contentType'] || defaultHeaders['contentType'];
         for (h in headers)
-          headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h])
+          headers.hasOwnProperty(h) && 'setRequestHeader' in http && http.setRequestHeader(h, headers[h]);
       }
 
       function setCredentials(http, o) {
         if (typeof o['withCredentials'] !== 'undefined' && typeof http.withCredentials !== 'undefined') {
-          http.withCredentials = !!o['withCredentials']
+          http.withCredentials = !!o['withCredentials'];
         }
       }
 
       function generalCallback(data) {
-        lastValue = data
+        lastValue = data;
       }
 
-      function urlappend (url, s) {
-        return url + (/\?/.test(url) ? '&' : '?') + s
+      function urlappend(url, s) {
+        return url + (/\?/.test(url) ? '&' : '?') + s;
       }
 
       function handleJsonp(o, fn, err, url) {
-        var reqId = uniqid++
-          , cbkey = o['jsonpCallback'] || 'callback' // the 'callback' key
-          , cbval = o['jsonpCallbackName'] || reqwest.getcallbackPrefix(reqId)
-          , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
-          , match = url.match(cbreg)
-          , script = doc.createElement('script')
-          , loaded = 0
-          , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
+        var reqId = uniqid++,
+          cbkey = o['jsonpCallback'] || 'callback', // the 'callback' key
+          cbval = o['jsonpCallbackName'] || reqwest.getcallbackPrefix(reqId),
+          cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)'),
+          match = url.match(cbreg),
+          script = doc.createElement('script'),
+          loaded = 0,
+          isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1;
 
         if (match) {
           if (match[3] === '?') {
-            url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
+            url = url.replace(cbreg, '$1=' + cbval); // wildcard callback func name
           } else {
-            cbval = match[3] // provided callback func name
+            cbval = match[3]; // provided callback func name
           }
         } else {
-          url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
+          url = urlappend(url, cbkey + '=' + cbval); // no callback details, add 'em
         }
 
-        win[cbval] = generalCallback
+        win[cbval] = generalCallback;
 
-        script.type = 'text/javascript'
-        script.src = url
-        script.async = true
+        script.type = 'text/javascript';
+        script.src = url;
+        script.async = true;
         if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
           // need this for IE due to out-of-order onreadystatechange(), binding script
           // execution to an event listener gives us control over when the script
           // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-          script.htmlFor = script.id = '_reqwest_' + reqId
+          script.htmlFor = script.id = '_reqwest_' + reqId;
         }
 
         script.onload = script.onreadystatechange = function () {
           if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-            return false
+            return false;
           }
-          script.onload = script.onreadystatechange = null
-          script.onclick && script.onclick()
+          script.onload = script.onreadystatechange = null;
+          script.onclick && script.onclick();
           // Call the user callback with the last value stored and clean up values and scripts.
-          fn(lastValue)
-          lastValue = undefined
-          head.removeChild(script)
-          loaded = 1
-        }
+          fn(lastValue);
+          lastValue = undefined;
+          head.removeChild(script);
+          loaded = 1;
+        };
 
         // Add the script to the DOM head
-        head.appendChild(script)
+        head.appendChild(script);
 
         // Enable JSONP timeout
         return {
           abort: function () {
-            script.onload = script.onreadystatechange = null
-            err({}, 'Request is aborted: timeout', {})
-            lastValue = undefined
-            head.removeChild(script)
-            loaded = 1
+            script.onload = script.onreadystatechange = null;
+            err({}, 'Request is aborted: timeout', {});
+            lastValue = undefined;
+            head.removeChild(script);
+            loaded = 1;
           }
-        }
+        };
       }
 
       function getRequest(fn, err) {
-        var o = this.o
-          , method = (o['method'] || 'GET').toUpperCase()
-          , url = typeof o === 'string' ? o : o['url']
+        var o = this.o,
+          method = (o['method'] || 'GET').toUpperCase(),
+          url = typeof o === 'string' ? o : o['url'],
           // convert non-string objects to query-string form unless o['processData'] is false
-          , data = (o['processData'] !== false && o['data'] && typeof o['data'] !== 'string')
-            ? reqwest.toQueryString(o['data'])
-            : (o['data'] || null)
-          , http
-          , sendWait = false
+          data =
+            o['processData'] !== false && o['data'] && typeof o['data'] !== 'string'
+              ? reqwest.toQueryString(o['data'])
+              : o['data'] || null,
+          http,
+          sendWait = false;
 
         // if we're working on a GET request and we have data then we should append
         // query string to end of URL and not post data
         if ((o['type'] == 'jsonp' || method == 'GET') && data) {
-          url = urlappend(url, data)
-          data = null
+          url = urlappend(url, data);
+          data = null;
         }
 
-        if (o['type'] == 'jsonp') return handleJsonp(o, fn, err, url)
+        if (o['type'] == 'jsonp') return handleJsonp(o, fn, err, url);
 
         // get the xhr from the factory if passed
         // if the factory returns null, fall-back to ours
-        http = (o.xhr && o.xhr(o)) || xhr(o)
+        http = (o.xhr && o.xhr(o)) || xhr(o);
 
-        http.open(method, url, o['async'] === false ? false : true)
-        setHeaders(http, o)
-        setCredentials(http, o)
+        http.open(method, url, o['async'] === false ? false : true);
+        setHeaders(http, o);
+        setCredentials(http, o);
         if (win[xDomainRequest] && http instanceof win[xDomainRequest]) {
-            http.onload = fn
-            http.onerror = err
-            // NOTE: see
-            // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
-            http.onprogress = function() {}
-            sendWait = true
+          http.onload = fn;
+          http.onerror = err;
+          // NOTE: see
+          // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/30ef3add-767c-4436-b8a9-f1ca19b4812e
+          http.onprogress = function () {};
+          sendWait = true;
         } else {
-          http.onreadystatechange = handleReadyState(this, fn, err)
+          http.onreadystatechange = handleReadyState(this, fn, err);
         }
-        o['before'] && o['before'](http)
+        o['before'] && o['before'](http);
         if (sendWait) {
           setTimeout(function () {
-            http.send(data)
-          }, 200)
+            http.send(data);
+          }, 200);
         } else {
-          http.send(data)
+          http.send(data);
         }
-        return http
+        return http;
       }
 
       function Reqwest(o, fn) {
-        this.o = o
-        this.fn = fn
+        this.o = o;
+        this.fn = fn;
 
-        init.apply(this, arguments)
+        init.apply(this, arguments);
       }
 
       function setType(header) {
         // json, javascript, text/plain, text/html, xml
-        if (header.match('json')) return 'json'
-        if (header.match('javascript')) return 'js'
-        if (header.match('text')) return 'html'
-        if (header.match('xml')) return 'xml'
+        if (header.match('json')) return 'json';
+        if (header.match('javascript')) return 'js';
+        if (header.match('text')) return 'html';
+        if (header.match('xml')) return 'xml';
       }
 
       function init(o, fn) {
-
-        this.url = typeof o == 'string' ? o : o['url']
-        this.timeout = null
+        this.url = typeof o == 'string' ? o : o['url'];
+        this.timeout = null;
 
         // whether request has been fulfilled for purpose
         // of tracking the Promises
-        this._fulfilled = false
+        this._fulfilled = false;
         // success handlers
-        this._successHandler = function(){}
-        this._fulfillmentHandlers = []
+        this._successHandler = function () {};
+        this._fulfillmentHandlers = [];
         // error handlers
-        this._errorHandlers = []
+        this._errorHandlers = [];
         // complete (both success and fail) handlers
-        this._completeHandlers = []
-        this._erred = false
-        this._responseArgs = {}
+        this._completeHandlers = [];
+        this._erred = false;
+        this._responseArgs = {};
 
-        var self = this
+        var self = this;
 
-        fn = fn || function () {}
+        fn = fn || function () {};
 
         if (o['timeout']) {
           this.timeout = setTimeout(function () {
-            timedOut()
-          }, o['timeout'])
+            timedOut();
+          }, o['timeout']);
         }
 
         if (o['success']) {
           this._successHandler = function () {
-            o['success'].apply(o, arguments)
-          }
+            o['success'].apply(o, arguments);
+          };
         }
 
         if (o['error']) {
           this._errorHandlers.push(function () {
-            o['error'].apply(o, arguments)
-          })
+            o['error'].apply(o, arguments);
+          });
         }
 
         if (o['complete']) {
           this._completeHandlers.push(function () {
-            o['complete'].apply(o, arguments)
-          })
+            o['complete'].apply(o, arguments);
+          });
         }
 
-        function complete (resp) {
-          o['timeout'] && clearTimeout(self.timeout)
-          self.timeout = null
+        function complete(resp) {
+          o['timeout'] && clearTimeout(self.timeout);
+          self.timeout = null;
           while (self._completeHandlers.length > 0) {
-            self._completeHandlers.shift()(resp)
+            self._completeHandlers.shift()(resp);
           }
         }
 
-        function success (resp) {
-          var type = o['type'] || resp && setType(resp.getResponseHeader('Content-Type')) // resp can be undefined in IE
-          resp = (type !== 'jsonp') ? self.request : resp
+        function success(resp) {
+          var type = o['type'] || (resp && setType(resp.getResponseHeader('Content-Type'))); // resp can be undefined in IE
+          resp = type !== 'jsonp' ? self.request : resp;
           // use global data filter on response text
-          var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-            , r = filteredResponse
+          var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type),
+            r = filteredResponse;
           try {
-            resp.responseText = r
+            resp.responseText = r;
           } catch (e) {
             // can't assign this in IE<=8, just ignore
           }
           if (r) {
             switch (type) {
-            case 'json':
-              try {
-                resp = win.JSON.parse(r);
-              } catch (err) {
-                return error(resp, 'Could not parse JSON in response', err)
-              }
-              break;
+              case 'json':
+                try {
+                  resp = win.JSON.parse(r);
+                } catch (err) {
+                  return error(resp, 'Could not parse JSON in response', err);
+                }
+                break;
             }
           }
 
-          self._responseArgs.resp = resp
-          self._fulfilled = true
-          fn(resp)
-          self._successHandler(resp)
+          self._responseArgs.resp = resp;
+          self._fulfilled = true;
+          fn(resp);
+          self._successHandler(resp);
           while (self._fulfillmentHandlers.length > 0) {
-            resp = self._fulfillmentHandlers.shift()(resp)
+            resp = self._fulfillmentHandlers.shift()(resp);
           }
 
-          complete(resp)
+          complete(resp);
         }
 
         function timedOut() {
-          self._timedOut = true
-          if(typeof self.request !== 'undefined' && typeof self.request.abort === 'function') {
+          self._timedOut = true;
+          if (typeof self.request !== 'undefined' && typeof self.request.abort === 'function') {
             self.request.abort();
           }
         }
 
         function error(resp, msg, t) {
-          resp = self.request
-          self._responseArgs.resp = resp
-          self._responseArgs.msg = msg
-          self._responseArgs.t = t
-          self._erred = true
+          resp = self.request;
+          self._responseArgs.resp = resp;
+          self._responseArgs.msg = msg;
+          self._responseArgs.t = t;
+          self._erred = true;
           while (self._errorHandlers.length > 0) {
-            self._errorHandlers.shift()(resp, msg, t)
+            self._errorHandlers.shift()(resp, msg, t);
           }
-          complete(resp)
+          complete(resp);
         }
 
-        this.request = getRequest.call(this, success, error)
+        this.request = getRequest.call(this, success, error);
       }
 
       Reqwest.prototype = {
         abort: function () {
-          this._aborted = true
-          if(typeof this.request !== 'undefined' && typeof this.request.abort === 'function') {
+          this._aborted = true;
+          if (typeof this.request !== 'undefined' && typeof this.request.abort === 'function') {
             this.request.abort();
           }
-        }
+        },
 
-      , retry: function () {
-          this._aborted=false;
-          this._timedOut=false;
-          init.call(this, this.o, this.fn)
-        }
+        retry: function () {
+          this._aborted = false;
+          this._timedOut = false;
+          init.call(this, this.o, this.fn);
+        },
 
         /**
          * Small deviation from the Promises A CommonJs specification
@@ -517,93 +525,99 @@ function gumshoeFactory() {
         /**
          * `then` will execute upon successful requests
          */
-      , then: function (success, fail) {
-          success = success || function () {}
-          fail = fail || function () {}
+        then: function (success, fail) {
+          success = success || function () {};
+          fail = fail || function () {};
           if (this._fulfilled) {
-            this._responseArgs.resp = success(this._responseArgs.resp)
+            this._responseArgs.resp = success(this._responseArgs.resp);
           } else if (this._erred) {
-            fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+            fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t);
           } else {
-            this._fulfillmentHandlers.push(success)
-            this._errorHandlers.push(fail)
+            this._fulfillmentHandlers.push(success);
+            this._errorHandlers.push(fail);
           }
-          return this
-        }
+          return this;
+        },
 
         /**
          * `always` will execute whether the request succeeds or fails
          */
-      , always: function (fn) {
+        always: function (fn) {
           if (this._fulfilled || this._erred) {
-            fn(this._responseArgs.resp)
+            fn(this._responseArgs.resp);
           } else {
-            this._completeHandlers.push(fn)
+            this._completeHandlers.push(fn);
           }
-          return this
-        }
+          return this;
+        },
 
         /**
          * `fail` will execute when the request fails
          */
-      , fail: function (fn) {
+        fail: function (fn) {
           if (this._erred) {
-            fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+            fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t);
           } else {
-            this._errorHandlers.push(fn)
+            this._errorHandlers.push(fn);
           }
-          return this
+          return this;
+        },
+        catch: function (fn) {
+          return this.fail(fn);
         }
-      , 'catch': function (fn) {
-          return this.fail(fn)
-        }
-      }
+      };
 
       function reqwest(o, fn) {
-        return new Reqwest(o, fn)
+        return new Reqwest(o, fn);
       }
 
       // normalize newline variants according to spec -> CRLF
       function normalize(s) {
-        return s ? s.replace(/\r?\n/g, '\r\n') : ''
+        return s ? s.replace(/\r?\n/g, '\r\n') : '';
       }
 
       function serial(el, cb) {
-        var n = el.name
-          , t = el.tagName.toLowerCase()
-          , optCb = function (o) {
-              // IE gives value="" even where there is no value attribute
-              // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
-              if (o && !o['disabled'])
-                cb(n, normalize(o['attributes']['value'] && o['attributes']['value']['specified'] ? o['value'] : o['text']))
-            }
-          , ch, ra, val, i
+        var n = el.name,
+          t = el.tagName.toLowerCase(),
+          optCb = function (o) {
+            // IE gives value="" even where there is no value attribute
+            // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
+            if (o && !o['disabled'])
+              cb(
+                n,
+                normalize(o['attributes']['value'] && o['attributes']['value']['specified'] ? o['value'] : o['text'])
+              );
+          },
+          ch,
+          ra,
+          val,
+          i;
 
         // don't serialize elements that are disabled or without a name
-        if (el.disabled || !n) return
+        if (el.disabled || !n) return;
 
         switch (t) {
-        case 'input':
-          if (!/reset|button|image|file/i.test(el.type)) {
-            ch = /checkbox/i.test(el.type)
-            ra = /radio/i.test(el.type)
-            val = el.value
-            // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
-            ;(!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
-          }
-          break
-        case 'textarea':
-          cb(n, normalize(el.value))
-          break
-        case 'select':
-          if (el.type.toLowerCase() === 'select-one') {
-            optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
-          } else {
-            for (i = 0; el.length && i < el.length; i++) {
-              el.options[i].selected && optCb(el.options[i])
+          case 'input':
+            if (!/reset|button|image|file/i.test(el.type)) {
+              ch = /checkbox/i.test(el.type);
+              ra = /radio/i.test(el.type);
+              val = el.value;
+              // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
+              (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val));
             }
-          }
-          break
+            break;
+          case 'textarea':
+            cb(n, normalize(el.value));
+            break;
+          case 'select':
+            if (el.type.toLowerCase() === 'select-one') {
+              optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null);
+            } else {
+              for (i = 0; el.length && i < el.length; i++) {
+                el.options[i].selected && optCb(el.options[i]);
+              }
+            }
+            break;
         }
       }
 
@@ -611,380 +625,440 @@ function gumshoeFactory() {
       // the way down to child elements; pass a '<form>' or form fields.
       // called with 'this'=callback to use for serial() on each element
       function eachFormElement() {
-        var cb = this
-          , e, i
-          , serializeSubtags = function (e, tags) {
-              var i, j, fa
-              for (i = 0; i < tags.length; i++) {
-                fa = e[byTag](tags[i])
-                for (j = 0; j < fa.length; j++) serial(fa[j], cb)
-              }
+        var cb = this,
+          e,
+          i,
+          serializeSubtags = function (e, tags) {
+            var i, j, fa;
+            for (i = 0; i < tags.length; i++) {
+              fa = e[byTag](tags[i]);
+              for (j = 0; j < fa.length; j++) serial(fa[j], cb);
             }
+          };
 
         for (i = 0; i < arguments.length; i++) {
-          e = arguments[i]
-          if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
-          serializeSubtags(e, [ 'input', 'select', 'textarea' ])
+          e = arguments[i];
+          if (/input|select|textarea/i.test(e.tagName)) serial(e, cb);
+          serializeSubtags(e, ['input', 'select', 'textarea']);
         }
       }
 
       // standard query string style serialization
       function serializeQueryString() {
-        return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
+        return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments));
       }
 
       // { 'name': 'value', ... } style serialization
       function serializeHash() {
-        var hash = {}
+        var hash = {};
         eachFormElement.apply(function (name, value) {
           if (name in hash) {
-            hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
-            hash[name].push(value)
-          } else hash[name] = value
-        }, arguments)
-        return hash
+            hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]]);
+            hash[name].push(value);
+          } else hash[name] = value;
+        }, arguments);
+        return hash;
       }
 
       // [ { name: 'name', value: 'value' }, ... ] style serialization
       reqwest.serializeArray = function () {
-        var arr = []
+        var arr = [];
         eachFormElement.apply(function (name, value) {
-          arr.push({name: name, value: value})
-        }, arguments)
-        return arr
-      }
+          arr.push({ name: name, value: value });
+        }, arguments);
+        return arr;
+      };
 
       reqwest.serialize = function () {
-        if (arguments.length === 0) return ''
-        var opt, fn
-          , args = Array.prototype.slice.call(arguments, 0)
+        if (arguments.length === 0) return '';
+        var opt,
+          fn,
+          args = Array.prototype.slice.call(arguments, 0);
 
-        opt = args.pop()
-        opt && opt.nodeType && args.push(opt) && (opt = null)
-        opt && (opt = opt.type)
+        opt = args.pop();
+        opt && opt.nodeType && args.push(opt) && (opt = null);
+        opt && (opt = opt.type);
 
-        if (opt == 'map') fn = serializeHash
-        else if (opt == 'array') fn = reqwest.serializeArray
-        else fn = serializeQueryString
+        if (opt == 'map') fn = serializeHash;
+        else if (opt == 'array') fn = reqwest.serializeArray;
+        else fn = serializeQueryString;
 
-        return fn.apply(null, args)
-      }
+        return fn.apply(null, args);
+      };
 
       reqwest.toQueryString = function (o, trad) {
-        var prefix, i
-          , traditional = trad || false
-          , s = []
-          , enc = encodeURIComponent
-          , add = function (key, value) {
-              // If value is a function, invoke it and return its value
-              value = ('function' === typeof value) ? value() : (value == null ? '' : value)
-              s[s.length] = enc(key) + '=' + enc(value)
-            }
+        var prefix,
+          i,
+          traditional = trad || false,
+          s = [],
+          enc = encodeURIComponent,
+          add = function (key, value) {
+            // If value is a function, invoke it and return its value
+            value = 'function' === typeof value ? value() : value == null ? '' : value;
+            s[s.length] = enc(key) + '=' + enc(value);
+          };
         // If an array was passed in, assume that it is an array of form elements.
         if (isArray(o)) {
-          for (i = 0; o && i < o.length; i++) add(o[i]['name'], o[i]['value'])
+          for (i = 0; o && i < o.length; i++) add(o[i]['name'], o[i]['value']);
         } else {
           // If traditional, encode the "old" way (the way 1.3.2 or older
           // did it), otherwise encode params recursively.
           for (prefix in o) {
-            if (o.hasOwnProperty(prefix)) buildParams(prefix, o[prefix], traditional, add)
+            if (o.hasOwnProperty(prefix)) buildParams(prefix, o[prefix], traditional, add);
           }
         }
 
         // spaces should be + according to spec
-        return s.join('&').replace(/%20/g, '+')
-      }
+        return s.join('&').replace(/%20/g, '+');
+      };
 
       function buildParams(prefix, obj, traditional, add) {
-        var name, i, v
-          , rbracket = /\[\]$/
+        var name,
+          i,
+          v,
+          rbracket = /\[\]$/;
 
         if (isArray(obj)) {
           // Serialize array item.
           for (i = 0; obj && i < obj.length; i++) {
-            v = obj[i]
+            v = obj[i];
             if (traditional || rbracket.test(prefix)) {
               // Treat each array item as a scalar.
-              add(prefix, v)
+              add(prefix, v);
             } else {
-              buildParams(prefix + '[' + (typeof v === 'object' ? i : '') + ']', v, traditional, add)
+              buildParams(prefix + '[' + (typeof v === 'object' ? i : '') + ']', v, traditional, add);
             }
           }
         } else if (obj && obj.toString() === '[object Object]') {
           // Serialize object item.
           for (name in obj) {
-            buildParams(prefix + '[' + name + ']', obj[name], traditional, add)
+            buildParams(prefix + '[' + name + ']', obj[name], traditional, add);
           }
-
         } else {
           // Serialize scalar item.
-          add(prefix, obj)
+          add(prefix, obj);
         }
       }
 
       reqwest.getcallbackPrefix = function () {
-        return callbackPrefix
-      }
+        return callbackPrefix;
+      };
 
       // jQuery and Zepto compatibility, differences can be remapped here so you can call
       // .ajax.compat(options, callback)
       reqwest.compat = function (o, fn) {
         if (o) {
-          o['type'] && (o['method'] = o['type']) && delete o['type']
-          o['dataType'] && (o['type'] = o['dataType'])
-          o['jsonpCallback'] && (o['jsonpCallbackName'] = o['jsonpCallback']) && delete o['jsonpCallback']
-          o['jsonp'] && (o['jsonpCallback'] = o['jsonp'])
+          o['type'] && (o['method'] = o['type']) && delete o['type'];
+          o['dataType'] && (o['type'] = o['dataType']);
+          o['jsonpCallback'] && (o['jsonpCallbackName'] = o['jsonpCallback']) && delete o['jsonpCallback'];
+          o['jsonp'] && (o['jsonpCallback'] = o['jsonp']);
         }
-        return new Reqwest(o, fn)
-      }
+        return new Reqwest(o, fn);
+      };
 
       reqwest.ajaxSetup = function (options) {
-        options = options || {}
+        options = options || {};
         for (var k in options) {
-          globalSetupOptions[k] = options[k]
+          globalSetupOptions[k] = options[k];
         }
-      }
+      };
 
-      return reqwest
+      return reqwest;
     });
-
 
     /*! store2 - v2.3.0 - 2015-05-22
      * Copyright (c) 2015 Nathan Bubna; Licensed MIT, GPL */
-    ;(function(window, define) {
-        var _ = {
-            version: "2.3.0",
-            areas: {},
-            apis: {},
+    (function (window, define) {
+      var _ = {
+        version: '2.3.0',
+        areas: {},
+        apis: {},
 
-            // utilities
-            inherit: function(api, o) {
-                for (var p in api) {
-                    if (!o.hasOwnProperty(p)) {
-                        o[p] = api[p];
-                    }
+        // utilities
+        inherit: function (api, o) {
+          for (var p in api) {
+            if (!o.hasOwnProperty(p)) {
+              o[p] = api[p];
+            }
+          }
+          return o;
+        },
+        stringify: function (d) {
+          return d === undefined || typeof d === 'function' ? d + '' : JSON.stringify(d);
+        },
+        parse: function (s) {
+          // if it doesn't parse, return as is
+          try {
+            return JSON.parse(s);
+          } catch (e) {
+            return s;
+          }
+        },
+
+        // extension hooks
+        fn: function (name, fn) {
+          _.storeAPI[name] = fn;
+          for (var api in _.apis) {
+            _.apis[api][name] = fn;
+          }
+        },
+        get: function (area, key) {
+          return area.getItem(key);
+        },
+        set: function (area, key, string) {
+          area.setItem(key, string);
+        },
+        remove: function (area, key) {
+          area.removeItem(key);
+        },
+        key: function (area, i) {
+          return area.key(i);
+        },
+        length: function (area) {
+          return area.length;
+        },
+        clear: function (area) {
+          area.clear();
+        },
+
+        // core functions
+        Store: function (id, area, namespace) {
+          var store = _.inherit(_.storeAPI, function (key, data, overwrite) {
+            if (arguments.length === 0) {
+              return store.getAll();
+            }
+            if (data !== undefined) {
+              return store.set(key, data, overwrite);
+            }
+            if (typeof key === 'string') {
+              return store.get(key);
+            }
+            if (!key) {
+              return store.clear();
+            }
+            return store.setAll(key, data); // overwrite=data, data=key
+          });
+          store._id = id;
+          try {
+            var testKey = '_safariPrivate_';
+            area.setItem(testKey, 'sucks');
+            store._area = area;
+            area.removeItem(testKey);
+          } catch (e) {}
+          if (!store._area) {
+            store._area = _.inherit(_.storageAPI, { items: {}, name: 'fake' });
+          }
+          store._ns = namespace || '';
+          if (!_.areas[id]) {
+            _.areas[id] = store._area;
+          }
+          if (!_.apis[store._ns + store._id]) {
+            _.apis[store._ns + store._id] = store;
+          }
+          return store;
+        },
+        storeAPI: {
+          // admin functions
+          area: function (id, area) {
+            var store = this[id];
+            if (!store || !store.area) {
+              store = _.Store(id, area, this._ns); //new area-specific api in this namespace
+              if (!this[id]) {
+                this[id] = store;
+              }
+            }
+            return store;
+          },
+          namespace: function (namespace, noSession) {
+            if (!namespace) {
+              return this._ns ? this._ns.substring(0, this._ns.length - 1) : '';
+            }
+            var ns = namespace,
+              store = this[ns];
+            if (!store || !store.namespace) {
+              store = _.Store(this._id, this._area, this._ns + ns + '.'); //new namespaced api
+              if (!this[ns]) {
+                this[ns] = store;
+              }
+              if (!noSession) {
+                store.area('session', _.areas.session);
+              }
+            }
+            return store;
+          },
+          isFake: function () {
+            return this._area.name === 'fake';
+          },
+          toString: function () {
+            return 'store' + (this._ns ? '.' + this.namespace() : '') + '[' + this._id + ']';
+          },
+
+          // storage functions
+          has: function (key) {
+            if (this._area.has) {
+              return this._area.has(this._in(key)); //extension hook
+            }
+            return !!(this._in(key) in this._area);
+          },
+          size: function () {
+            return this.keys().length;
+          },
+          each: function (fn, and) {
+            for (var i = 0, m = _.length(this._area); i < m; i++) {
+              var key = this._out(_.key(this._area, i));
+              if (key !== undefined) {
+                if (fn.call(this, key, and || this.get(key)) === false) {
+                  break;
                 }
-                return o;
-            },
-            stringify: function(d) {
-                return d === undefined || typeof d === "function" ? d+'' : JSON.stringify(d);
-            },
-            parse: function(s) {
-                // if it doesn't parse, return as is
-                try{ return JSON.parse(s); }catch(e){ return s; }
-            },
+              }
+              if (m > _.length(this._area)) {
+                m--;
+                i--;
+              } // in case of removeItem
+            }
+            return and || this;
+          },
+          keys: function () {
+            return this.each(function (k, list) {
+              list.push(k);
+            }, []);
+          },
+          get: function (key, alt) {
+            var s = _.get(this._area, this._in(key));
+            return s !== null ? _.parse(s) : alt || s; // support alt for easy default mgmt
+          },
+          getAll: function () {
+            return this.each(function (k, all) {
+              all[k] = this.get(k);
+            }, {});
+          },
+          set: function (key, data, overwrite) {
+            var d = this.get(key);
+            if (d != null && overwrite === false) {
+              return data;
+            }
+            return _.set(this._area, this._in(key), _.stringify(data), overwrite) || d;
+          },
+          setAll: function (data, overwrite) {
+            var changed, val;
+            for (var key in data) {
+              val = data[key];
+              if (this.set(key, val, overwrite) !== val) {
+                changed = true;
+              }
+            }
+            return changed;
+          },
+          remove: function (key) {
+            var d = this.get(key);
+            _.remove(this._area, this._in(key));
+            return d;
+          },
+          clear: function () {
+            if (!this._ns) {
+              _.clear(this._area);
+            } else {
+              this.each(function (k) {
+                _.remove(this._area, this._in(k));
+              }, 1);
+            }
+            return this;
+          },
+          clearAll: function () {
+            var area = this._area;
+            for (var id in _.areas) {
+              if (_.areas.hasOwnProperty(id)) {
+                this._area = _.areas[id];
+                this.clear();
+              }
+            }
+            this._area = area;
+            return this;
+          },
 
-            // extension hooks
-            fn: function(name, fn) {
-                _.storeAPI[name] = fn;
-                for (var api in _.apis) {
-                    _.apis[api][name] = fn;
-                }
-            },
-            get: function(area, key){ return area.getItem(key); },
-            set: function(area, key, string){ area.setItem(key, string); },
-            remove: function(area, key){ area.removeItem(key); },
-            key: function(area, i){ return area.key(i); },
-            length: function(area){ return area.length; },
-            clear: function(area){ area.clear(); },
+          // internal use functions
+          _in: function (k) {
+            if (typeof k !== 'string') {
+              k = _.stringify(k);
+            }
+            return this._ns ? this._ns + k : k;
+          },
+          _out: function (k) {
+            return this._ns
+              ? k && k.indexOf(this._ns) === 0
+                ? k.substring(this._ns.length)
+                : undefined // so each() knows to skip it
+              : k;
+          }
+        }, // end _.storeAPI
+        storageAPI: {
+          length: 0,
+          has: function (k) {
+            return this.items.hasOwnProperty(k);
+          },
+          key: function (i) {
+            var c = 0;
+            for (var k in this.items) {
+              if (this.has(k) && i === c++) {
+                return k;
+              }
+            }
+          },
+          setItem: function (k, v) {
+            if (!this.has(k)) {
+              this.length++;
+            }
+            this.items[k] = v;
+          },
+          removeItem: function (k) {
+            if (this.has(k)) {
+              delete this.items[k];
+              this.length--;
+            }
+          },
+          getItem: function (k) {
+            return this.has(k) ? this.items[k] : null;
+          },
+          clear: function () {
+            for (var k in this.list) {
+              this.removeItem(k);
+            }
+          },
+          toString: function () {
+            return this.length + ' items in ' + this.name + 'Storage';
+          }
+        } // end _.storageAPI
+      };
 
-            // core functions
-            Store: function(id, area, namespace) {
-                var store = _.inherit(_.storeAPI, function(key, data, overwrite) {
-                    if (arguments.length === 0){ return store.getAll(); }
-                    if (data !== undefined){ return store.set(key, data, overwrite); }
-                    if (typeof key === "string"){ return store.get(key); }
-                    if (!key){ return store.clear(); }
-                    return store.setAll(key, data);// overwrite=data, data=key
-                });
-                store._id = id;
-                try {
-                    var testKey = '_safariPrivate_';
-                    area.setItem(testKey, 'sucks');
-                    store._area = area;
-                    area.removeItem(testKey);
-                } catch (e) {}
-                if (!store._area) {
-                    store._area = _.inherit(_.storageAPI, { items: {}, name: 'fake' });
-                }
-                store._ns = namespace || '';
-                if (!_.areas[id]) {
-                    _.areas[id] = store._area;
-                }
-                if (!_.apis[store._ns+store._id]) {
-                    _.apis[store._ns+store._id] = store;
-                }
-                return store;
-            },
-            storeAPI: {
-                // admin functions
-                area: function(id, area) {
-                    var store = this[id];
-                    if (!store || !store.area) {
-                        store = _.Store(id, area, this._ns);//new area-specific api in this namespace
-                        if (!this[id]){ this[id] = store; }
-                    }
-                    return store;
-                },
-                namespace: function(namespace, noSession) {
-                    if (!namespace){
-                        return this._ns ? this._ns.substring(0,this._ns.length-1) : '';
-                    }
-                    var ns = namespace, store = this[ns];
-                    if (!store || !store.namespace) {
-                        store = _.Store(this._id, this._area, this._ns+ns+'.');//new namespaced api
-                        if (!this[ns]){ this[ns] = store; }
-                        if (!noSession){ store.area('session', _.areas.session); }
-                    }
-                    return store;
-                },
-                isFake: function(){ return this._area.name === 'fake'; },
-                toString: function() {
-                    return 'store'+(this._ns?'.'+this.namespace():'')+'['+this._id+']';
-                },
+      // setup the primary store fn
+      if (window.store) {
+        _.conflict = window.store;
+      }
+      var store =
+        // safely set this up (throws error in IE10/32bit mode for local files)
+        _.Store('local');
+      store.local = store; // for completeness
+      store._ = _; // for extenders and debuggers...
+      // safely setup store.session (throws exception in FF for file:/// urls)
+      store.area('session');
 
-                // storage functions
-                has: function(key) {
-                    if (this._area.has) {
-                        return this._area.has(this._in(key));//extension hook
-                    }
-                    return !!(this._in(key) in this._area);
-                },
-                size: function(){ return this.keys().length; },
-                each: function(fn, and) {
-                    for (var i=0, m=_.length(this._area); i<m; i++) {
-                        var key = this._out(_.key(this._area, i));
-                        if (key !== undefined) {
-                            if (fn.call(this, key, and || this.get(key)) === false) {
-                                break;
-                            }
-                        }
-                        if (m > _.length(this._area)) { m--; i--; }// in case of removeItem
-                    }
-                    return and || this;
-                },
-                keys: function() {
-                    return this.each(function(k, list){ list.push(k); }, []);
-                },
-                get: function(key, alt) {
-                    var s = _.get(this._area, this._in(key));
-                    return s !== null ? _.parse(s) : alt || s;// support alt for easy default mgmt
-                },
-                getAll: function() {
-                    return this.each(function(k, all){ all[k] = this.get(k); }, {});
-                },
-                set: function(key, data, overwrite) {
-                    var d = this.get(key);
-                    if (d != null && overwrite === false) {
-                        return data;
-                    }
-                    return _.set(this._area, this._in(key), _.stringify(data), overwrite) || d;
-                },
-                setAll: function(data, overwrite) {
-                    var changed, val;
-                    for (var key in data) {
-                        val = data[key];
-                        if (this.set(key, val, overwrite) !== val) {
-                            changed = true;
-                        }
-                    }
-                    return changed;
-                },
-                remove: function(key) {
-                    var d = this.get(key);
-                    _.remove(this._area, this._in(key));
-                    return d;
-                },
-                clear: function() {
-                    if (!this._ns) {
-                        _.clear(this._area);
-                    } else {
-                        this.each(function(k){ _.remove(this._area, this._in(k)); }, 1);
-                    }
-                    return this;
-                },
-                clearAll: function() {
-                    var area = this._area;
-                    for (var id in _.areas) {
-                        if (_.areas.hasOwnProperty(id)) {
-                            this._area = _.areas[id];
-                            this.clear();
-                        }
-                    }
-                    this._area = area;
-                    return this;
-                },
+      //Expose store to the global object
+      window.store = store;
 
-                // internal use functions
-                _in: function(k) {
-                    if (typeof k !== "string"){ k = _.stringify(k); }
-                    return this._ns ? this._ns + k : k;
-                },
-                _out: function(k) {
-                    return this._ns ?
-                        k && k.indexOf(this._ns) === 0 ?
-                            k.substring(this._ns.length) :
-                            undefined : // so each() knows to skip it
-                        k;
-                }
-            },// end _.storeAPI
-            storageAPI: {
-                length: 0,
-                has: function(k){ return this.items.hasOwnProperty(k); },
-                key: function(i) {
-                    var c = 0;
-                    for (var k in this.items){
-                        if (this.has(k) && i === c++) {
-                            return k;
-                        }
-                    }
-                },
-                setItem: function(k, v) {
-                    if (!this.has(k)) {
-                        this.length++;
-                    }
-                    this.items[k] = v;
-                },
-                removeItem: function(k) {
-                    if (this.has(k)) {
-                        delete this.items[k];
-                        this.length--;
-                    }
-                },
-                getItem: function(k){ return this.has(k) ? this.items[k] : null; },
-                clear: function(){ for (var k in this.list){ this.removeItem(k); } },
-                toString: function(){ return this.length+' items in '+this.name+'Storage'; }
-            }// end _.storageAPI
-        };
-
-        // setup the primary store fn
-        if (window.store){ _.conflict = window.store; }
-        var store =
-            // safely set this up (throws error in IE10/32bit mode for local files)
-            _.Store("local");
-        store.local = store;// for completeness
-        store._ = _;// for extenders and debuggers...
-        // safely setup store.session (throws exception in FF for file:/// urls)
-        store.area("session");
-
-        //Expose store to the global object
-        window.store = store;
-
-        if (typeof define === 'function' && define.amd !== undefined) {
-            define(function () {
-                return store;
-            });
-        } else if (typeof module !== 'undefined' && module.exports) {
-            module.exports = store;
-        }
-
+      if (typeof define === 'function' && define.amd !== undefined) {
+        define(function () {
+          return store;
+        });
+      } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = store;
+      }
     })(this, this.define);
-  }).call(context);
+  }.call(context));
 
   queryString = context.queryString;
   store = context.store;
 
-  function extend (obj) {
+  function extend(obj) {
     if (!isObject(obj)) {
       return obj;
     }
@@ -998,30 +1072,33 @@ function gumshoeFactory() {
     return obj;
   }
 
-  function isArray (obj) {
+  function isArray(obj) {
     return '[object Array]' === Object.prototype.toString.call(obj);
   }
 
-  function isFunction (obj) {
-    return ('' + typeof obj) === 'function';
+  function isFunction(obj) {
+    return '' + typeof obj === 'function';
   }
 
-  function isObject (obj) {
+  function isObject(obj) {
     var type = typeof obj;
-    return type === 'function' || type === 'object' && !!obj;
+    return type === 'function' || (type === 'object' && !!obj);
   }
 
-  function isString (value) {
-    return typeof value == 'string' || (value && typeof value == 'object' &&
-      Object.prototype.toString.call(value) == '[object String]') || false;
+  function isString(value) {
+    return (
+      typeof value == 'string' ||
+      (value && typeof value == 'object' && Object.prototype.toString.call(value) == '[object String]') ||
+      false
+    );
   }
 
-  function uuidv4 (){
+  function uuidv4() {
     var d = perfnow().now();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = (d + Math.random()*16)%16 | 0;
-      d = Math.floor(d/16);
-      return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = (d + Math.random() * 16) % 16 | 0;
+      d = Math.floor(d / 16);
+      return (c == 'x' ? r : (r & 0x3) | 0x8).toString(16);
     });
     return uuid;
   }
@@ -1039,7 +1116,7 @@ function gumshoeFactory() {
     queue = [];
   }
 
-  function gumshoe (options) {
+  function gumshoe(options) {
     var clientUuid = localStore('clientUuid');
 
     options = extend({}, defaults, options);
@@ -1047,8 +1124,7 @@ function gumshoeFactory() {
     // always ensure options.transport is an array.
     if (isString(options.transport)) {
       options.transport = [options.transport];
-    }
-    else if (!isArray(options.transport)) {
+    } else if (!isArray(options.transport)) {
       throw 'Gumeshoe: Transport property must be a [String] or [Array].';
     }
 
@@ -1067,22 +1143,20 @@ function gumshoeFactory() {
     gumshoe.options = options;
   }
 
-  function each (obj, iterator, context) {
+  function each(obj, iterator, context) {
     if (obj === null) {
       return;
     }
 
     if (Array.prototype.forEach && obj.forEach === Array.prototype.forEach) {
       obj.forEach(iterator, context);
-    }
-    else if (obj.length === +obj.length) {
+    } else if (obj.length === +obj.length) {
       for (var i = 0, l = obj.length; i < l; i++) {
         if (iterator.call(context, obj[i], i, obj) === {}) {
           return;
         }
       }
-    }
-    else {
+    } else {
       for (var key in obj) {
         if (obj.hasOwnProperty(key)) {
           if (iterator.call(context, obj[key], key, obj) === {}) {
@@ -1093,7 +1167,7 @@ function gumshoeFactory() {
     }
   }
 
-  function map (obj, iterator, context) {
+  function map(obj, iterator, context) {
     var results = [];
 
     if (!obj) {
@@ -1104,14 +1178,14 @@ function gumshoeFactory() {
       return obj.map(iterator, context);
     }
 
-    each(obj, function(value, index, list) {
+    each(obj, function (value, index, list) {
       results[results.length] = iterator.call(context, value, index, list);
     });
 
     return results;
   }
 
-  function collectPlugins () {
+  function collectPlugins() {
     var result,
       plugins = navigator.plugins || [];
 
@@ -1137,15 +1211,15 @@ function gumshoeFactory() {
     return result;
   }
 
-  function collect () {
-
+  function collect() {
     function getViewport() {
-      var e = window, a = 'inner';
-      if (!('innerWidth' in window )) {
+      var e = window,
+        a = 'inner';
+      if (!('innerWidth' in window)) {
         a = 'client';
         e = document.documentElement || document.body;
       }
-      return { width : e[ a+'Width' ] , height : e[ a+'Height' ] };
+      return { width: e[a + 'Width'], height: e[a + 'Height'] };
     }
 
     var viewport = getViewport(),
@@ -1221,10 +1295,15 @@ function gumshoeFactory() {
         viewportResolution: viewport.width + 'x' + viewport.height,
         viewportWidth: viewport.width
       },
-
       intFields = [
-        'port', 'screenAvailHeight', 'screenAvailWidth', 'screenHeight',
-        'screenOrientationAngle', 'screenWidth', 'viewportHeight', 'viewportWidth'
+        'port',
+        'screenAvailHeight',
+        'screenAvailWidth',
+        'screenHeight',
+        'screenOrientationAngle',
+        'screenWidth',
+        'viewportHeight',
+        'viewportWidth'
       ],
       prop,
       value;
@@ -1273,10 +1352,9 @@ function gumshoeFactory() {
    *  3. User has visited withinin the same session, but a UTM
    *     query string parameter has changed.
    */
-  function session (fn) {
-
+  function session(fn) {
     // returns a simple object containing utm parameters
-    function getUtm () {
+    function getUtm() {
       return {
         campaign: query.utm_campaign || '',
         medium: query.utm_medium || '',
@@ -1285,7 +1363,7 @@ function gumshoeFactory() {
       };
     }
 
-    var now = (new Date()).getTime(),
+    var now = new Date().getTime(),
       query = queryString.parse(location.search),
       lastUtm = storage('utm') || getUtm(),
       utm = getUtm(),
@@ -1299,8 +1377,7 @@ function gumshoeFactory() {
     if (!storage('uuid')) {
       storage('uuid', uuidv4());
       storage('timestamp', now);
-    }
-    else {
+    } else {
       timestamp = storage('timestamp');
       difference = now - timestamp;
 
@@ -1309,14 +1386,13 @@ function gumshoeFactory() {
         if (fn.call(this, timestamp, difference, query)) {
           storage('uuid', uuidv4());
         }
-      }
-      else if (JSON.stringify(lastUtm) !== JSON.stringify(utm) || difference > (1000 * 60 * 30)) {
+      } else if (JSON.stringify(lastUtm) !== JSON.stringify(utm) || difference > 1000 * 60 * 30) {
         storage('uuid', uuidv4());
       }
     }
   }
 
-  function send(eventName, eventData) {
+  function send(eventName, eventData, additional) {
     var pageData = collect(),
       baseData = {
         clientUuid: gumshoe.options.clientUuid,
@@ -1325,8 +1401,8 @@ function gumshoeFactory() {
         gumshoe: '0.8.1',
         pageData: pageData,
         sessionUuid: storage('uuid'),
-        timestamp: (new Date()).getTime(),
-        timezoneOffset: (new Date()).getTimezoneOffset(),
+        timestamp: new Date().getTime(),
+        timezoneOffset: new Date().getTimezoneOffset(),
         uuid: uuidv4()
       },
       transportFound = false;
@@ -1348,7 +1424,7 @@ function gumshoeFactory() {
           // allow each transport to extend the data with more information
           // or transform it how they'd like. transports cannot however,
           // modify eventData sent from the client.
-          data = transport.map ? transport.map(baseData) : baseData;
+          data = transport.map ? transport.map(baseData, additional) : baseData;
 
           // extend our data with whatever came back from the transport
           data = extend(baseData, data);
@@ -1369,9 +1445,8 @@ function gumshoeFactory() {
           }
 
           pushEvent(eventName, transportName, data);
-        }
-        else {
-          throw 'Gumshoe: The transport name: ' + transportName + ', doesn\'t map to a valid transport.';
+        } else {
+          throw 'Gumshoe: The transport name: ' + transportName + ", doesn't map to a valid transport.";
         }
       }
     }
@@ -1381,8 +1456,7 @@ function gumshoeFactory() {
     }*/
   }
 
-  function nextEvent () {
-
+  function nextEvent() {
     if (!queue.length) {
       return;
     }
@@ -1396,7 +1470,12 @@ function gumshoeFactory() {
       // we care if an error was thrown, created, or captured
       // if there is an error, add the item back into the queue
       if (err) {
-        console.warn('Gumshoe: Retrying. Error received from transport: ' + nevent.transportName + ', for event: ' + nevent.eventName);
+        console.warn(
+          'Gumshoe: Retrying. Error received from transport: ' +
+            nevent.transportName +
+            ', for event: ' +
+            nevent.eventName
+        );
         queue.push(nevent);
       }
     });
@@ -1404,7 +1483,7 @@ function gumshoeFactory() {
     setTimeout(nextEvent, gumshoe.options.queueTimeout);
   }
 
-  function pushEvent (eventName, transportName, data) {
+  function pushEvent(eventName, transportName, data) {
     var transport;
 
     // if we're dealing with a fake storage object
@@ -1430,7 +1509,7 @@ function gumshoeFactory() {
     setTimeout(nextEvent, gumshoe.options.queueTimeout);
   }
 
-  function transport (tp) {
+  function transport(tp) {
     if (!tp.name) {
       throw 'Gumshoe: Transport [Object] must have a name defined.';
     }
@@ -1478,7 +1557,6 @@ function gumshoeFactory() {
     root.gumshoe = gumshoe;
   }
   */
-
 }
 
 module.exports = gumshoeFactory;

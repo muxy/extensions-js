@@ -1,9 +1,7 @@
 /**
  * @module SDK
  */
-// The pusher types have no default export, ignore that error since we are using the namespace
-// @ts-ignore
-import Pusher from 'pusher-js';
+import Pusher, { Channel } from 'pusher-js';
 import pako from 'pako';
 
 import { DebugOptions } from './debug';
@@ -48,7 +46,7 @@ function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic
     // before the data string.
     const close = msg.indexOf('>');
     const header = msg.substr(1, close - 1);
-    const parts = header.split(',').map(function(x) {
+    const parts = header.split(',').map(function (x) {
       return parseInt(x, 10);
     });
 
@@ -88,14 +86,14 @@ function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic
 
     const fullMessage = fragments.join('');
     const decoded = atob(fullMessage);
-    const integers = decoded.split('').map(function(x) {
+    const integers = decoded.split('').map(function (x) {
       return x.charCodeAt(0);
     });
     const bytes = new Uint8Array(integers);
     return JSON.parse(pako.inflate(bytes, { to: 'string' }));
   } else {
     const decoded = atob(msg);
-    const integers = decoded.split('').map(function(x) {
+    const integers = decoded.split('').map(function (x) {
       return x.charCodeAt(0);
     });
     const bytes = new Uint8Array(integers);
@@ -199,9 +197,9 @@ class PusherMessenger implements Messenger {
   public extensionID: string;
   public debug: DebugOptions;
 
-  public client: Pusher.Pusher;
-  public channel: Pusher.Channel;
-  public globalChannel: Pusher.Channel;
+  public client: Pusher;
+  public channel: Channel;
+  public globalChannel: Channel;
 
   constructor(debug: DebugOptions) {
     // @ts-ignore
@@ -240,7 +238,7 @@ class PusherMessenger implements Messenger {
     }
 
     const messageBuffer: Record<string, string[]> = {};
-    const cb = message => {
+    const cb = (message) => {
       try {
         const parsed = parseMessage(messageBuffer, id, topic, message.message);
         if (parsed == null) {

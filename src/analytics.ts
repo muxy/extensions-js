@@ -66,7 +66,7 @@ export default class Analytics {
    * Internal function to map event data to GA format.
    * @private
    */
-  public mapData(data) {
+  public mapData(data, additional: Record<string, unknown> = {}) {
     const appName = 'Muxy';
 
     let ip = '<unknown ip>';
@@ -104,6 +104,7 @@ export default class Analytics {
       cid: opaqueID || data.clientUuid || data.sessionUuid || '00000000-0000-0000-0000-000000000000',
       cm2: latency,
       cm3: bitrate,
+      cu: 'USD',
       dh: pd.hostName,
       dl: pd.url,
       dp: pd.path,
@@ -117,6 +118,13 @@ export default class Analytics {
       sr: pd.screenResolution,
       t: 'event',
       tid: this.uaString,
+      ti: additional.transactionId,
+      tr: additional.transactionRevenue,
+      in: additional.itemName,
+      ip: additional.itemPrice,
+      iq: additional.itemQuantity,
+      ic: additional.itemCode,
+      iv: additional.itemCategory,
       ua: pd.userAgent,
       uid: userID,
       uip: ip,
@@ -145,13 +153,19 @@ export default class Analytics {
    * @param {*} value - (optional) A value to associate with this event (defaults to 1).
    * @param {string} label - (optional) A human-readable label for this event.
    */
-  public sendEvent(category: string, name: string, value: any = 1, label: string = '') {
+  public sendEvent(
+    category: string,
+    name: string,
+    value: any = 1,
+    label: string = '',
+    additional: Record<string, unknown> = {}
+  ) {
     if (!this.ready) {
       throw new Error('muxy.Analytics used before ready');
     }
 
     const data = { name, value, label };
-    this.gumshoe.send(category, data);
+    this.gumshoe.send(category, data, additional);
   }
 
   /**

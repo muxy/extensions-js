@@ -230,7 +230,7 @@ export default class Util {
       }
 
       // Not on Twitch but with their referrer, assume sandbox twitch.
-      if (vWindow.document.referrer && vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
+      if (vWindow.Twitch) {
         return ENVIRONMENTS.SANDBOX_TWITCH;
       }
 

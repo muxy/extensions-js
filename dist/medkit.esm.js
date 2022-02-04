@@ -1812,7 +1812,7 @@ var Analytics = /** @class */ (function () {
 
 var pusher = createCommonjsModule(function (module, exports) {
 /*!
- * Pusher JavaScript Library v7.0.3
+ * Pusher JavaScript Library v7.0.4
  * https://pusher.com/
  *
  * Copyright 2020, Pusher
@@ -2358,6 +2358,7 @@ module.exports = __webpack_require__(3).default;
 /***/ }),
 /* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/runtimes/web/dom/script_receiver_factory.ts
@@ -2392,7 +2393,7 @@ var ScriptReceivers = new ScriptReceiverFactory('_pusher_script_', 'Pusher.Scrip
 
 // CONCATENATED MODULE: ./src/core/defaults.ts
 var Defaults = {
-    VERSION: "7.0.3",
+    VERSION: "7.0.4",
     PROTOCOL: 7,
     wsPort: 80,
     wssPort: 443,
@@ -6364,6 +6365,7 @@ runtime.setup(pusher_Pusher);
 /***/ })
 /******/ ]);
 });
+
 });
 
 var Pusher = unwrapExports(pusher);
@@ -13284,7 +13286,7 @@ var Util = /** @class */ (function () {
                 return ENVIRONMENTS.PRODUCTION;
             }
             // Not on Twitch but with their referrer, assume sandbox twitch.
-            if (vWindow.document.referrer && vWindow.document.referrer.indexOf('twitch.tv') !== -1) {
+            if (vWindow.Twitch) {
                 return ENVIRONMENTS.SANDBOX_TWITCH;
             }
             // Explicity set testing variable, assume testing.
@@ -16993,7 +16995,7 @@ var TwitchClient = /** @class */ (function () {
 }());
 
 var author = "Muxy, Inc.";
-var version = "2.4.8";
+var version = "2.4.10";
 var repository = "https://github.com/muxy/extensions-js";
 
 /**

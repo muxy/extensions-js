@@ -117,23 +117,6 @@ export default class TwitchClient {
      */
     loaded(): Promise<any>;
     /**
-     * Wraps an AJAX request to Twitch's kraken API. Used internally by the API
-     * convenience methods.
-     *
-     * @async
-     * @since 1.0.0
-     * @ignore
-     *
-     * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-     * @param {string} endpoint - The Twitch kraken API endpoint.
-     * @param {string?} data - A string-encoded JSON payload to send with the request.
-     * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-     *
-     * @return {Promise} Resolves with the AJAX payload on response < 400.
-     * Rejects otherwise.
-     */
-    signedTwitchRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any>;
-    /**
      * Wraps an AJAX request to Twitch's helix API. Used internally by the API
      * convenience methods.
      *
@@ -150,22 +133,6 @@ export default class TwitchClient {
      */
     signedTwitchHelixRequest(method: string, endpoint: string, data?: string, helixToken?: string): Promise<any>;
     /**
-     * Wraps an AJAX request to Twitch's Extension API. Used internally by the API
-     * convenience methods.
-     *
-     * @async
-     * @ignore
-     *
-     * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-     * @param {string} endpoint - The Twitch Extension API endpoint.
-     * @param {string?} data - A string-encoded JSON payload to send with the request.
-     * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-     *
-     * @return {Promise} Resolves with the AJAX payload on response < 400.
-     * Rejects otherwise.
-     */
-    signedTwitchExtensionRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any>;
-    /**
      * Returns a list of Twitch User objects for a given list of usernames.
      *
      * @async
@@ -174,6 +141,7 @@ export default class TwitchClient {
      * @throws {TypeError} Will throw an error if users is not an array of strings.
      *
      * @param {[]string} usernames - A list of usernames to lookup on Twitch.
+     * @param {string} jwt - The bearer token for the current user, obtained from sdk.user.helixToken.
      *
      * @return {Promise<[]TwitchUser>} Resolves with a list of {@link TwitchUser}
      * objects for each of the usernames provided.
@@ -183,7 +151,7 @@ export default class TwitchClient {
      *  console.log(response.users[0].display_name);
      * });
      */
-    getTwitchUsers(usernames: string[]): Promise<TwitchUser[]>;
+    getTwitchUsers(usernames: string[], jwt: string): Promise<TwitchUser[]>;
     /**
      * Returns a list of Twitch User objects for a given list of user IDs.
      *
@@ -202,29 +170,6 @@ export default class TwitchClient {
      * });
      */
     getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]>;
-    /**
-     * Monetization
-     */
-    /**
-     * Gets a list of the digital goods the current user has.
-     *
-     * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-     *
-     * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
-     * each of the goods the user is entitled to.
-     */
-    getUserGoods(jwt: any): Promise<any>;
-    /**
-     * Sets the fulfillment status for the specified receipts (purchases).
-     *
-     * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-     * @param {[]Receipt} receipts - List of {@link Receipt} objects detailing which goods need to be
-     * updated.
-     *
-     * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
-     * Receipts parameter.
-     */
-    updateFulfilledGoods(jwt: any, receipts: any): Promise<any>;
     /**
      * Sets the required configuration string enabling an extension to be enabled
      *

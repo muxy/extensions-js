@@ -1829,7 +1829,7 @@ var Analytics = /** @class */ (function () {
 
 var pusher = createCommonjsModule(function (module, exports) {
 /*!
- * Pusher JavaScript Library v7.0.4
+ * Pusher JavaScript Library v7.0.3
  * https://pusher.com/
  *
  * Copyright 2020, Pusher
@@ -2375,7 +2375,6 @@ module.exports = __webpack_require__(3).default;
 /***/ }),
 /* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
-// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/runtimes/web/dom/script_receiver_factory.ts
@@ -2410,7 +2409,7 @@ var ScriptReceivers = new ScriptReceiverFactory('_pusher_script_', 'Pusher.Scrip
 
 // CONCATENATED MODULE: ./src/core/defaults.ts
 var Defaults = {
-    VERSION: "7.0.4",
+    VERSION: "7.0.3",
     PROTOCOL: 7,
     wsPort: 80,
     wssPort: 443,
@@ -6382,7 +6381,6 @@ runtime.setup(pusher_Pusher);
 /***/ })
 /******/ ]);
 });
-
 });
 
 var Pusher = unwrapExports(pusher);
@@ -16812,49 +16810,6 @@ var TwitchClient = /** @class */ (function () {
         return this.promise;
     };
     /**
-     * Wraps an AJAX request to Twitch's kraken API. Used internally by the API
-     * convenience methods.
-     *
-     * @async
-     * @since 1.0.0
-     * @ignore
-     *
-     * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-     * @param {string} endpoint - The Twitch kraken API endpoint.
-     * @param {string?} data - A string-encoded JSON payload to send with the request.
-     * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-     *
-     * @return {Promise} Resolves with the AJAX payload on response < 400.
-     * Rejects otherwise.
-     */
-    TwitchClient.prototype.signedTwitchRequest = function (method, endpoint, data, JWT) {
-        var headers = {
-            Accept: 'application/vnd.twitchtv.v5+json',
-            'Client-ID': this.extensionId,
-            Authorization: undefined
-        };
-        if (JWT) {
-            headers.Authorization = "Bearer ".concat(JWT);
-        }
-        return new Promise(function (resolve, reject) {
-            var xhrPromise = new XHRPromise({
-                data: data,
-                headers: headers,
-                method: method,
-                url: "https://api.twitch.tv/kraken/".concat(endpoint)
-            });
-            return xhrPromise
-                .send()
-                .catch(reject)
-                .then(function (resp) {
-                if (resp.status < 400) {
-                    resolve(resp.responseText);
-                }
-                reject(resp.responseText);
-            });
-        });
-    };
-    /**
      * Wraps an AJAX request to Twitch's helix API. Used internally by the API
      * convenience methods.
      *
@@ -16908,47 +16863,6 @@ var TwitchClient = /** @class */ (function () {
         });
     };
     /**
-     * Wraps an AJAX request to Twitch's Extension API. Used internally by the API
-     * convenience methods.
-     *
-     * @async
-     * @ignore
-     *
-     * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-     * @param {string} endpoint - The Twitch Extension API endpoint.
-     * @param {string?} data - A string-encoded JSON payload to send with the request.
-     * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-     *
-     * @return {Promise} Resolves with the AJAX payload on response < 400.
-     * Rejects otherwise.
-     */
-    TwitchClient.prototype.signedTwitchExtensionRequest = function (method, endpoint, data, JWT) {
-        var headers = {
-            'Client-ID': this.extensionId,
-            Authorization: undefined
-        };
-        if (JWT) {
-            headers.Authorization = "Bearer ".concat(JWT);
-        }
-        return new Promise(function (resolve, reject) {
-            var xhrPromise = new XHRPromise({
-                data: data,
-                headers: headers,
-                method: method,
-                url: "https://api.twitch.tv/extensions/".concat(endpoint)
-            });
-            return xhrPromise
-                .send()
-                .catch(reject)
-                .then(function (resp) {
-                if (resp.status < 400) {
-                    resolve(resp.responseText);
-                }
-                reject(resp.responseText);
-            });
-        });
-    };
-    /**
      * Returns a list of Twitch User objects for a given list of usernames.
      *
      * @async
@@ -16957,6 +16871,7 @@ var TwitchClient = /** @class */ (function () {
      * @throws {TypeError} Will throw an error if users is not an array of strings.
      *
      * @param {[]string} usernames - A list of usernames to lookup on Twitch.
+     * @param {string} jwt - The bearer token for the current user, obtained from sdk.user.helixToken.
      *
      * @return {Promise<[]TwitchUser>} Resolves with a list of {@link TwitchUser}
      * objects for each of the usernames provided.
@@ -16966,11 +16881,11 @@ var TwitchClient = /** @class */ (function () {
      *  console.log(response.users[0].display_name);
      * });
      */
-    TwitchClient.prototype.getTwitchUsers = function (usernames) {
+    TwitchClient.prototype.getTwitchUsers = function (usernames, jwt) {
         if (usernames.length === 0) {
             return Promise.resolve([]);
         }
-        return this.signedTwitchRequest('GET', "users?login=".concat(usernames.join(',')));
+        return this.signedTwitchHelixRequest('GET', "users?login=".concat(usernames.join('&login=')), jwt);
     };
     /**
      * Returns a list of Twitch User objects for a given list of user IDs.
@@ -16996,33 +16911,6 @@ var TwitchClient = /** @class */ (function () {
         return this.signedTwitchHelixRequest('GET', "users?id=".concat(userIDs.join(',')));
     };
     /**
-     * Monetization
-     */
-    /**
-     * Gets a list of the digital goods the current user has.
-     *
-     * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-     *
-     * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
-     * each of the goods the user is entitled to.
-     */
-    TwitchClient.prototype.getUserGoods = function (jwt) {
-        return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', jwt);
-    };
-    /**
-     * Sets the fulfillment status for the specified receipts (purchases).
-     *
-     * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-     * @param {[]Receipt} receipts - List of {@link Receipt} objects detailing which goods need to be
-     * updated.
-     *
-     * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
-     * Receipts parameter.
-     */
-    TwitchClient.prototype.updateFulfilledGoods = function (jwt, receipts) {
-        return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, jwt);
-    };
-    /**
      * Sets the required configuration string enabling an extension to be enabled
      *
      * SEE: https://dev.twitch.tv/docs/extensions/reference/#set-extension-required-configuration
@@ -17032,15 +16920,14 @@ var TwitchClient = /** @class */ (function () {
      */
     TwitchClient.prototype.setExtensionRequiredConfiguration = function (jwt, configurationString) {
         var environment = Util.getTwitchEnvironment();
-        var data = { required_configuration: configurationString };
         var token = Util.extractJWTInfo(jwt);
-        return this.signedTwitchExtensionRequest('PUT', "".concat(this.extensionId, "/").concat(environment.version, "/required_configuration?channel_id=").concat(token.channel_id), JSON.stringify(data), jwt);
+        return this.signedTwitchHelixRequest("PUT", "extensions/".concat(this.extensionId, "/").concat(environment.version, "/required_configuration?channel_id=").concat(token.channel_id), '{}', jwt);
     };
     return TwitchClient;
 }());
 
 var author = "Muxy, Inc.";
-var version = "2.4.13";
+var version = "2.4.14";
 var repository = "https://github.com/muxy/extensions-js";
 
 /**
@@ -17215,12 +17102,6 @@ var Muxy = /** @class */ (function () {
                     if (keys_1_1 && !keys_1_1.done && (_a = keys_1.return)) _a.call(keys_1);
                 }
                 finally { if (e_1) throw e_1.error; }
-            }
-            // If buffer size goes to 0, send an analytics event that
-            // this user's video is buffering.
-            if (_this.context.bufferSize < 1 && _this.analytics) {
-                _this.analytics.user = _this.user;
-                _this.analytics.sendEvent('video', 'buffer', 1);
             }
         };
         Ext.extensionID = extensionID;

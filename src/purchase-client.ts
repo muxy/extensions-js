@@ -3,6 +3,7 @@ import Config from './config';
 
 import { TwitchBitsProduct, TwitchBitsTransaction } from './twitch';
 import mxy from './muxy';
+import Ext from './twitch-ext';
 
 // Muxy dev variable
 declare global {
@@ -177,15 +178,50 @@ export class DevPurchaseClient implements PurchaseClient {
       const products = await this.getProducts();
       const item = products.find((p: Product) => p.sku === sku);
 
+      const testDate = new Date();
+
+      const [date, time] = testDate.toISOString().split(/T|Z/);
+      const golangDate = `${date} ${time} +0000 UTC`;
+
+      const jwtHeader = {
+        "alg": "HS256",
+        "typ": "JWT"
+      };
+
+      const jwtPayload = {
+        "topic": "bits_transaction_receipt",
+        "exp": Math.round((testDate.getTime() + 10000) / 1000),
+        "data": {
+          "transactionId": `test:${testDate.getTime()}`,
+          "time": golangDate,
+          "userId": mxy.user.twitchID,
+          "product": {
+            "domainId": `twitch.ext.${Ext.extensionID}`,
+            "sku": item.sku,
+            "displayName": item.displayName,
+            "cost": {
+              "amount": item.cost.amount,
+              "type": item.cost.type,
+            }
+          }
+        }
+      };
+
+      const encodedHeader = btoa(JSON.stringify(jwtHeader));
+      const encodedPayload = btoa(JSON.stringify(jwtPayload));
+
+      // End of signature intentionally doesn't match.
+      const testEncodedJWT = `${encodedHeader}.${encodedPayload}.DK02m0j0HQMKsPeFIrAuVdFh5X8f0hknjEKHAjGt6B0`;
+
       setTimeout(() => {
         if (item) {
           const tx: Transaction = {
-            transactionId: 'dev-transaction-id',
+            transactionId: `test:${testDate.getTime()}`,
             product: item,
-            userId: 'dev-test-user',
+            userId: mxy.user.twitchID,
             displayName: 'DevTestUser',
             initiator: 'current_user',
-            transactionReceipt: 'transaction-receipt'
+            transactionReceipt: testEncodedJWT,
           };
 
           let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});

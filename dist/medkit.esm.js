@@ -90,6 +90,23 @@ function __values(o) {
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
 
+function __read(o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+}
+
 function unwrapExports (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
@@ -13723,596 +13740,6 @@ function DefaultMessenger(debug) {
     }
 }
 
-var PurchaseClientType;
-(function (PurchaseClientType) {
-    PurchaseClientType[PurchaseClientType["Dev"] = 0] = "Dev";
-    PurchaseClientType[PurchaseClientType["Server"] = 1] = "Server";
-    PurchaseClientType[PurchaseClientType["Test"] = 2] = "Test";
-    PurchaseClientType[PurchaseClientType["Twitch"] = 3] = "Twitch";
-    PurchaseClientType[PurchaseClientType["Unknown"] = 4] = "Unknown";
-})(PurchaseClientType || (PurchaseClientType = {}));
-// TwitchPurchaseClient implements the basic 'purchase client' interface.
-// This is used by SDK to provide low-level access to twitch bits transactions.
-var TwitchPurchaseClient = /** @class */ (function () {
-    function TwitchPurchaseClient(id) {
-        var _this = this;
-        var _a, _b;
-        this.purchaseCallbacks = [];
-        this.cancelationCallbacks = [];
-        this.identifier = "";
-        if (!((_b = (_a = window === null || window === void 0 ? void 0 : window.Twitch) === null || _a === void 0 ? void 0 : _a.ext) === null || _b === void 0 ? void 0 : _b.bits)) {
-            throw new Error('Twitch helper is required for bits transactions not loaded.');
-        }
-        this.identifier = id;
-        // Twitch only allows one handler for complete/cancel
-        window.Twitch.ext.bits.onTransactionComplete(function (tx) {
-            if (tx.initiator.toLowerCase() === 'current_user') {
-                var promise_1 = Promise.resolve({});
-                if (mxy.transactionsEnabled) {
-                    promise_1 = mxy.client.sendTransactionToServer(_this.identifier, tx);
-                }
-                _this.purchaseCallbacks.forEach(function (cb) { return cb(tx, promise_1); });
-            }
-        });
-        window.Twitch.ext.bits.onTransactionCancelled(function () {
-            _this.cancelationCallbacks.forEach(function (cb) { return cb(); });
-        });
-    }
-    /**
-     * purchase will start the twitch bits transaction.
-     *
-     * @since 2.4.0
-     *
-     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
-     *
-     * @param sku the twitch sku of the item to be purchased.
-     *
-     * @example
-     * client.purchase("XXSKU000");
-     */
-    TwitchPurchaseClient.prototype.purchase = function (sku) {
-        window.Twitch.ext.bits.useBits(sku);
-    };
-    /**
-     * Returns a list of Twitch Bits Products for the current channel.
-     *
-     * @async
-     * @since 2.4.0
-     *
-     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
-     *
-     * @return {Promise<[]TwitchBitsProduct>} Resolves with an array of {@link TwitchBitsProduct}
-     * objects for each available sku.
-     *
-     * @example
-     * const products = client.getProducts();
-     */
-    TwitchPurchaseClient.prototype.getProducts = function () {
-        return window.Twitch.ext.bits.getProducts();
-    };
-    /**
-     * onUserPurchase is the interface for adding a post transaction callback.
-     *
-     * @since 2.4.0
-     *
-     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchase(() => {
-     *  console.log("Transaction finished!");
-     * });
-     */
-    TwitchPurchaseClient.prototype.onUserPurchase = function (callback) {
-        this.purchaseCallbacks.push(callback);
-    };
-    /**
-     * onUserPurchaseCancelled is the interface for adding a post transaction failure callback.
-     *
-     * @since 2.4.5
-     *
-     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchaseCanceled(() => {
-     *  console.log("Transaction cancelled!");
-     * });
-     */
-    TwitchPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
-        this.cancelationCallbacks.push(callback);
-    };
-    return TwitchPurchaseClient;
-}());
-// DevPurchaseClient implements the basic 'purchase client' interface.
-// This is used by SDK to provide low-level access to stubbed transactions.
-var DevPurchaseClient = /** @class */ (function () {
-    function DevPurchaseClient(id) {
-        this.purchaseCallbacks = [];
-        this.identifier = "";
-        this.identifier = id;
-    }
-    /**
-     * purchase will start the Dev purchase transaction.
-     *
-     * @since 2.4.0
-     *
-     * @param sku the sku of the item to be purchased.
-     *
-     * @example
-     * client.purchase("TESTSKU00");
-     */
-    DevPurchaseClient.prototype.purchase = function (sku) {
-        return __awaiter(this, void 0, void 0, function () {
-            var products, item_1;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!('MEDKIT_PURCHASABLE_ITEMS' in window)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.getProducts()];
-                    case 1:
-                        products = _a.sent();
-                        item_1 = products.find(function (p) { return p.sku === sku; });
-                        setTimeout(function () {
-                            if (item_1) {
-                                var tx_1 = {
-                                    transactionId: 'dev-transaction-id',
-                                    product: item_1,
-                                    userId: 'dev-test-user',
-                                    displayName: 'DevTestUser',
-                                    initiator: 'current_user',
-                                    transactionReceipt: 'transaction-receipt'
-                                };
-                                var promise_2 = Promise.resolve({});
-                                if (mxy.transactionsEnabled) {
-                                    promise_2 = mxy.client.sendTransactionToServer(_this.identifier, tx_1);
-                                }
-                                _this.purchaseCallbacks.forEach(function (cb) { return cb(tx_1, promise_2); });
-                            }
-                            else {
-                                throw new Error("Product with SKU \"".concat(sku, "\" not found in product list."));
-                            }
-                        }, 3000);
-                        return [3 /*break*/, 3];
-                    case 2: throw new Error('No development products set. Use "window.MEDKIT_PURCHASABLE_ITEMS" to set debugging products.');
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    /**
-     * Returns a list of dev supplied Products.
-     *
-     * @async
-     * @since 2.4.0
-     *
-     * @return {<[]Product>} Returns an array of {@link Product}
-     * objects for each available sku.
-     *
-     * @example
-     * window.MEDKIT_PURCHASABLE_ITEMS = [{
-     *   sku: "TESTSKU01",
-     *   displayName: "Test SKU 01",
-     *   cost: {
-     *       amount: 1,
-     *       type: "test-cost",
-     *     },
-     *   },
-     *   {
-     *     sku: "TESTSKU02",
-     *     displayName: "Test SKU 02",
-     *     cost: {
-     *      amount: 2,
-     *      type: "test-cost",
-     *   }
-     * ];
-     *
-     * const products = await client.getProducts();
-     */
-    DevPurchaseClient.prototype.getProducts = function () {
-        return Promise.resolve(window.MEDKIT_PURCHASABLE_ITEMS || []);
-    };
-    /**
-     * onUserPurchase is the interface for adding a post transaction callback.
-     *
-     * @since 2.4.0
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchase((transaction) => {
-     *  console.log("Transaction finished!");
-     * });
-     */
-    DevPurchaseClient.prototype.onUserPurchase = function (callback) {
-        this.purchaseCallbacks.push(callback);
-    };
-    /**
-     * onUserPurchaseCanceled is the interface for adding a post transaction failure callback.
-     *
-     * @since 2.4.5
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchaseCanceled(() => {
-     *  console.log("User cancelled transaction!");
-     * });
-     */
-    DevPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
-        // Transactions always succeed on dev, so this will never be called.
-    };
-    return DevPurchaseClient;
-}());
-// TestPurchaseClient implements the basic 'purchase client' interface.
-// This is used by the test of the SDK to provide low-level access to stubbed transactions.
-var TestPurchaseClient = /** @class */ (function () {
-    function TestPurchaseClient(id) {
-        this.purchaseCallbacks = [];
-        this.purchaseCanceledCallbacks = [];
-        this.identifier = "";
-        this.identifier = id;
-    }
-    /**
-     * purchase will start the Test purchase transaction.
-     *
-     * @since 2.4.0
-     *
-     * @param sku the sku of the test item to be purchased.
-     *
-     * @example
-     * client.purchase("TESTSKU00");
-     */
-    TestPurchaseClient.prototype.purchase = function (sku) {
-        var _this = this;
-        if ('MEDKIT_PURCHASABLE_ITEMS' in window) {
-            var devItems_1 = this.getProducts();
-            var products = Object.keys(devItems_1).map(function (sku) { return devItems_1[sku]; });
-            var foundItem_1 = products.find(function (sku) { return sku === sku; });
-            setTimeout(function () {
-                if (foundItem_1) {
-                    var tx_2 = {
-                        transactionId: 'dev-transaction-id',
-                        product: foundItem_1,
-                        userId: 'dev-test-user',
-                        displayName: 'DevTestUser',
-                        initiator: 'current_user',
-                        transactionReceipt: 'transaction-receipt'
-                    };
-                    var promise_3 = Promise.resolve({});
-                    if (mxy.transactionsEnabled) {
-                        promise_3 = mxy.client.sendTransactionToServer(_this.identifier, tx_2);
-                    }
-                    _this.purchaseCallbacks.forEach(function (callback) {
-                        callback(tx_2, promise_3);
-                    });
-                }
-                else {
-                    throw new Error("Product with SKU ".concat(sku, " not found in product list."));
-                }
-            }, 3000);
-        }
-        else {
-            throw new Error('No development products set. Use "window.MEDKIT_PURCHASABLE_ITEMS" to set debugging products.');
-        }
-    };
-    /**
-     * Returns a list of test supplied Products.
-     *
-     * @async
-     * @since 2.4.0
-     *
-     * @return {<[]Product>} Returns an array of test {@link Product}
-     * objects for each available sku.
-     *
-     * @example
-     * window.MEDKIT_PURCHASABLE_ITEMS = [{
-     *   sku: "TESTSKU01",
-     *   displayName: "Test SKU 01",
-     *   cost: {
-     *       amount: 1,
-     *       type: "test-cost",
-     *     },
-     *   },
-     *   {
-     *     sku: "TESTSKU02",
-     *     displayName: "Test SKU 02",
-     *     cost: {
-     *      amount: 2,
-     *      type: "test-cost",
-     *   }
-     * ];
-     *
-     * const products = await client.getProducts();
-     */
-    TestPurchaseClient.prototype.getProducts = function () {
-        return Promise.resolve(window.MEDKIT_PURCHASABLE_ITEMS || []);
-    };
-    /**
-     * onUserPurchase is the interface for testing adding a post transaction callback.
-     *
-     * @since 2.4.0
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchase((transaction) => {
-     *  console.log("Transaction finished!");
-     * });
-     */
-    TestPurchaseClient.prototype.onUserPurchase = function (callback) {
-        this.purchaseCallbacks.push(callback);
-    };
-    /**
-     * onUserPurchaseCancelled is the interface for adding a post transaction failure callback.
-     *
-     * @since 2.4.5
-     *
-     * @param callback a function(body)
-     *
-     * @example
-     * client.onUserPurchaseCanceled(() => {
-     *  console.log("User cancelled transaction!");
-     * });
-     */
-    TestPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
-        this.purchaseCanceledCallbacks.push(callback);
-    };
-    return TestPurchaseClient;
-}());
-function DefaultPurchaseClient(identifier) {
-    var type = Config$1.DefaultPurchaseClientType(CurrentEnvironment());
-    switch (type) {
-        case PurchaseClientType.Dev:
-            return new DevPurchaseClient(identifier);
-        case PurchaseClientType.Test:
-            return new TestPurchaseClient(identifier);
-        case PurchaseClientType.Twitch:
-            return new TwitchPurchaseClient(identifier);
-        default:
-            throw new Error('Could not determine proper transaction type for environment.');
-    }
-}
-
-/**
- * Muxy production API URL.
- * @ignore
- */
-var API_URL = 'https://api.muxy.io';
-/**
- * Muxy sandbox API URL.
- * @ignore
- */
-var SANDBOX_URL = 'https://sandbox.api.muxy.io';
-/**
- * Localhost for testing purposes.
- * @ignore
- */
-var LOCALHOST_URL = 'http://localhost:5000';
-var AuthorizationFlowType;
-(function (AuthorizationFlowType) {
-    AuthorizationFlowType[AuthorizationFlowType["TwitchAuth"] = 0] = "TwitchAuth";
-    AuthorizationFlowType[AuthorizationFlowType["AdminAuth"] = 1] = "AdminAuth";
-    AuthorizationFlowType[AuthorizationFlowType["TestAuth"] = 2] = "TestAuth";
-    AuthorizationFlowType[AuthorizationFlowType["Unknown"] = 3] = "Unknown";
-})(AuthorizationFlowType || (AuthorizationFlowType = {}));
-var Config = /** @class */ (function () {
-    function Config() {
-    }
-    Config.RegisterMoreEnvironments = function () { };
-    Config.DefaultMessengerType = function (env) {
-        switch (env) {
-            case Util.Environments.SandboxDev:
-            case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
-            case Util.Environments.SandboxAdmin:
-                return MessengerType.Pusher;
-            case Util.Environments.SandboxTwitch:
-            case Util.Environments.Production:
-                return MessengerType.Twitch;
-            case Util.Environments.Server:
-                return MessengerType.Server;
-            case Util.Environments.Testing:
-        }
-        return MessengerType.Unknown;
-    };
-    Config.DefaultPurchaseClientType = function (env) {
-        switch (env) {
-            case Util.Environments.SandboxDev:
-                return PurchaseClientType.Dev;
-            case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
-            case Util.Environments.SandboxAdmin:
-            case Util.Environments.SandboxTwitch:
-            case Util.Environments.Production:
-                return PurchaseClientType.Twitch;
-            case Util.Environments.Server:
-                return PurchaseClientType.Server;
-            case Util.Environments.Testing:
-                return PurchaseClientType.Test;
-        }
-        return PurchaseClientType.Unknown;
-    };
-    Config.GetAuthorizationFlowType = function (env) {
-        switch (env) {
-            case Util.Environments.SandboxDev:
-                return AuthorizationFlowType.TestAuth;
-            case Util.Environments.Admin:
-            case Util.Environments.SandboxAdmin:
-                return AuthorizationFlowType.AdminAuth;
-            case Util.Environments.SandboxTwitch:
-            case Util.Environments.Production:
-                return AuthorizationFlowType.TwitchAuth;
-            case Util.Environments.Server:
-            case Util.Environments.Testing:
-        }
-        return AuthorizationFlowType.Unknown;
-    };
-    Config.CanUseTwitchAPIs = function (env) {
-        switch (env) {
-            case Util.Environments.Production:
-            case Util.Environments.SandboxTwitch:
-                return true;
-        }
-        return false;
-    };
-    Config.GetServerURLs = function (env) {
-        if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
-            return {
-                FakeAuthURL: SANDBOX_URL,
-                ServerURL: SANDBOX_URL
-            };
-        }
-        if (env === Util.Environments.Testing) {
-            return {
-                FakeAuthURL: LOCALHOST_URL,
-                ServerURL: LOCALHOST_URL
-            };
-        }
-        return {
-            FakeAuthURL: SANDBOX_URL,
-            ServerURL: API_URL
-        };
-    };
-    Config.OtherEnvironmentCheck = function (window) {
-        return undefined;
-    };
-    return Config;
-}());
-var Config$1 = Config;
-
-var DebuggingOptions = /** @class */ (function () {
-    function DebuggingOptions() {
-        var noop = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            /* Default to doing nothing on callback */
-        };
-        this.options = {
-            onPubsubListen: noop,
-            onPubsubReceive: noop,
-            onPubsubSend: noop
-        };
-        if (window.location && window.location.search) {
-            var qp = new URLSearchParams(window.location.search);
-            this.options.url = this.readFromQuery(qp, 'url');
-            this.options.url = this.readFromQuery(qp, 'channelID');
-            this.options.url = this.readFromQuery(qp, 'userID');
-            this.options.url = this.readFromQuery(qp, 'role');
-            this.options.url = this.readFromQuery(qp, 'environment');
-        }
-    }
-    DebuggingOptions.prototype.url = function (url) {
-        this.options.url = /^https?:\/\//.test(url) ? url : "https://".concat(url);
-        return this;
-    };
-    DebuggingOptions.prototype.channelID = function (cid) {
-        this.options.channelID = cid;
-        return this;
-    };
-    DebuggingOptions.prototype.userID = function (uid) {
-        this.options.userID = uid;
-        return this;
-    };
-    DebuggingOptions.prototype.role = function (r) {
-        this.options.role = r;
-        return this;
-    };
-    DebuggingOptions.prototype.jwt = function (j) {
-        this.options.jwt = j;
-        return this;
-    };
-    DebuggingOptions.prototype.environment = function (e) {
-        this.options.environment = e;
-        return this;
-    };
-    DebuggingOptions.prototype.onPubsubSend = function (cb) {
-        this.options.onPubsubSend = cb;
-        return this;
-    };
-    DebuggingOptions.prototype.onPubsubReceive = function (cb) {
-        this.options.onPubsubReceive = cb;
-        return this;
-    };
-    DebuggingOptions.prototype.onPubsubListen = function (cb) {
-        this.options.onPubsubListen = cb;
-        return this;
-    };
-    DebuggingOptions.prototype.readFromQuery = function (params, key) {
-        return params.get("muxy_debug_".concat(key));
-    };
-    return DebuggingOptions;
-}());
-
-/**
- * @module SDK
- */
-var Observer = /** @class */ (function () {
-    function Observer() {
-        this.observers = [];
-    }
-    Observer.prototype.register = function (observer) {
-        this.observers.push(observer);
-    };
-    Observer.prototype.unregister = function (observer) {
-        var n = this.observers.indexOf(observer);
-        this.observers.splice(n, 1);
-    };
-    Observer.prototype.notify = function (obj) {
-        var i = 0;
-        var max = this.observers.length;
-        for (; i < max; i += 1) {
-            this.observers[i].notify(obj);
-        }
-    };
-    return Observer;
-}());
-var ObserverHandler = /** @class */ (function () {
-    function ObserverHandler() {
-    }
-    ObserverHandler.prototype.notify = function (obj) {
-        throw new Error('Abstract Method!');
-    };
-    return ObserverHandler;
-}());
-
-/**
- * @module SDK
- */
-// Twitch types
-var TwitchAuth = /** @class */ (function () {
-    function TwitchAuth() {
-    }
-    return TwitchAuth;
-}());
-var ContextUpdateCallbackHandle = /** @class */ (function (_super) {
-    __extends(ContextUpdateCallbackHandle, _super);
-    function ContextUpdateCallbackHandle(cb) {
-        var _this = _super.call(this) || this;
-        _this.cb = cb;
-        return _this;
-    }
-    ContextUpdateCallbackHandle.prototype.notify = function (context) {
-        this.cb(context);
-    };
-    return ContextUpdateCallbackHandle;
-}(ObserverHandler));
-var HighlightChangedCallbackHandle = /** @class */ (function (_super) {
-    __extends(HighlightChangedCallbackHandle, _super);
-    function HighlightChangedCallbackHandle(cb) {
-        var _this = _super.call(this) || this;
-        _this.cb = cb;
-        return _this;
-    }
-    HighlightChangedCallbackHandle.prototype.notify = function (isHighlighted) {
-        this.cb(isHighlighted);
-    };
-    return HighlightChangedCallbackHandle;
-}(ObserverHandler));
-
 var DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8';
 var XHRPromise = /** @class */ (function () {
     function XHRPromise(options) {
@@ -14429,6 +13856,72 @@ var XHRPromise = /** @class */ (function () {
     };
     return XHRPromise;
 }());
+
+/**
+ * @module SDK
+ */
+var Observer = /** @class */ (function () {
+    function Observer() {
+        this.observers = [];
+    }
+    Observer.prototype.register = function (observer) {
+        this.observers.push(observer);
+    };
+    Observer.prototype.unregister = function (observer) {
+        var n = this.observers.indexOf(observer);
+        this.observers.splice(n, 1);
+    };
+    Observer.prototype.notify = function (obj) {
+        var i = 0;
+        var max = this.observers.length;
+        for (; i < max; i += 1) {
+            this.observers[i].notify(obj);
+        }
+    };
+    return Observer;
+}());
+var ObserverHandler = /** @class */ (function () {
+    function ObserverHandler() {
+    }
+    ObserverHandler.prototype.notify = function (obj) {
+        throw new Error('Abstract Method!');
+    };
+    return ObserverHandler;
+}());
+
+/**
+ * @module SDK
+ */
+// Twitch types
+var TwitchAuth = /** @class */ (function () {
+    function TwitchAuth() {
+    }
+    return TwitchAuth;
+}());
+var ContextUpdateCallbackHandle = /** @class */ (function (_super) {
+    __extends(ContextUpdateCallbackHandle, _super);
+    function ContextUpdateCallbackHandle(cb) {
+        var _this = _super.call(this) || this;
+        _this.cb = cb;
+        return _this;
+    }
+    ContextUpdateCallbackHandle.prototype.notify = function (context) {
+        this.cb(context);
+    };
+    return ContextUpdateCallbackHandle;
+}(ObserverHandler));
+var HighlightChangedCallbackHandle = /** @class */ (function (_super) {
+    __extends(HighlightChangedCallbackHandle, _super);
+    function HighlightChangedCallbackHandle(cb) {
+        var _this = _super.call(this) || this;
+        _this.cb = cb;
+        return _this;
+    }
+    HighlightChangedCallbackHandle.prototype.notify = function (isHighlighted) {
+        this.cb(isHighlighted);
+    };
+    return HighlightChangedCallbackHandle;
+}(ObserverHandler));
 
 /**
  * @module SDK
@@ -15128,6 +14621,558 @@ var Ext = /** @class */ (function () {
         return res;
     };
     return Ext;
+}());
+
+var PurchaseClientType;
+(function (PurchaseClientType) {
+    PurchaseClientType[PurchaseClientType["Dev"] = 0] = "Dev";
+    PurchaseClientType[PurchaseClientType["Server"] = 1] = "Server";
+    PurchaseClientType[PurchaseClientType["Test"] = 2] = "Test";
+    PurchaseClientType[PurchaseClientType["Twitch"] = 3] = "Twitch";
+    PurchaseClientType[PurchaseClientType["Unknown"] = 4] = "Unknown";
+})(PurchaseClientType || (PurchaseClientType = {}));
+// TwitchPurchaseClient implements the basic 'purchase client' interface.
+// This is used by SDK to provide low-level access to twitch bits transactions.
+var TwitchPurchaseClient = /** @class */ (function () {
+    function TwitchPurchaseClient(id) {
+        var _this = this;
+        var _a, _b;
+        this.purchaseCallbacks = [];
+        this.cancelationCallbacks = [];
+        this.identifier = "";
+        if (!((_b = (_a = window === null || window === void 0 ? void 0 : window.Twitch) === null || _a === void 0 ? void 0 : _a.ext) === null || _b === void 0 ? void 0 : _b.bits)) {
+            throw new Error('Twitch helper is required for bits transactions not loaded.');
+        }
+        this.identifier = id;
+        // Twitch only allows one handler for complete/cancel
+        window.Twitch.ext.bits.onTransactionComplete(function (tx) {
+            if (tx.initiator.toLowerCase() === 'current_user') {
+                var promise_1 = Promise.resolve({});
+                if (mxy.transactionsEnabled) {
+                    promise_1 = mxy.client.sendTransactionToServer(_this.identifier, tx);
+                }
+                _this.purchaseCallbacks.forEach(function (cb) { return cb(tx, promise_1); });
+            }
+        });
+        window.Twitch.ext.bits.onTransactionCancelled(function () {
+            _this.cancelationCallbacks.forEach(function (cb) { return cb(); });
+        });
+    }
+    /**
+     * purchase will start the twitch bits transaction.
+     *
+     * @since 2.4.0
+     *
+     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
+     *
+     * @param sku the twitch sku of the item to be purchased.
+     *
+     * @example
+     * client.purchase("XXSKU000");
+     */
+    TwitchPurchaseClient.prototype.purchase = function (sku) {
+        window.Twitch.ext.bits.useBits(sku);
+    };
+    /**
+     * Returns a list of Twitch Bits Products for the current channel.
+     *
+     * @async
+     * @since 2.4.0
+     *
+     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
+     *
+     * @return {Promise<[]TwitchBitsProduct>} Resolves with an array of {@link TwitchBitsProduct}
+     * objects for each available sku.
+     *
+     * @example
+     * const products = client.getProducts();
+     */
+    TwitchPurchaseClient.prototype.getProducts = function () {
+        return window.Twitch.ext.bits.getProducts();
+    };
+    /**
+     * onUserPurchase is the interface for adding a post transaction callback.
+     *
+     * @since 2.4.0
+     *
+     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchase(() => {
+     *  console.log("Transaction finished!");
+     * });
+     */
+    TwitchPurchaseClient.prototype.onUserPurchase = function (callback) {
+        this.purchaseCallbacks.push(callback);
+    };
+    /**
+     * onUserPurchaseCancelled is the interface for adding a post transaction failure callback.
+     *
+     * @since 2.4.5
+     *
+     * @throws {TwitchHelperError} Will throw an error if the Twitch Helper didn't load.
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchaseCanceled(() => {
+     *  console.log("Transaction cancelled!");
+     * });
+     */
+    TwitchPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
+        this.cancelationCallbacks.push(callback);
+    };
+    return TwitchPurchaseClient;
+}());
+// DevPurchaseClient implements the basic 'purchase client' interface.
+// This is used by SDK to provide low-level access to stubbed transactions.
+var DevPurchaseClient = /** @class */ (function () {
+    function DevPurchaseClient(id) {
+        this.purchaseCallbacks = [];
+        this.identifier = "";
+        this.identifier = id;
+    }
+    /**
+     * purchase will start the Dev purchase transaction.
+     *
+     * @since 2.4.0
+     *
+     * @param sku the sku of the item to be purchased.
+     *
+     * @example
+     * client.purchase("TESTSKU00");
+     */
+    DevPurchaseClient.prototype.purchase = function (sku) {
+        return __awaiter(this, void 0, void 0, function () {
+            var products, item_1, testDate_1, _a, date, time, golangDate, jwtHeader, jwtPayload, encodedHeader, encodedPayload, testEncodedJWT_1;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!('MEDKIT_PURCHASABLE_ITEMS' in window)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.getProducts()];
+                    case 1:
+                        products = _b.sent();
+                        item_1 = products.find(function (p) { return p.sku === sku; });
+                        testDate_1 = new Date();
+                        _a = __read(testDate_1.toISOString().split(/T|Z/), 2), date = _a[0], time = _a[1];
+                        golangDate = "".concat(date, " ").concat(time, " +0000 UTC");
+                        jwtHeader = {
+                            "alg": "HS256",
+                            "typ": "JWT"
+                        };
+                        jwtPayload = {
+                            "topic": "bits_transaction_receipt",
+                            "exp": Math.round((testDate_1.getTime() + 10000) / 1000),
+                            "data": {
+                                "transactionId": "test:".concat(testDate_1.getTime()),
+                                "time": golangDate,
+                                "userId": mxy.user.twitchID,
+                                "product": {
+                                    "domainId": "twitch.ext.".concat(Ext.extensionID),
+                                    "sku": item_1.sku,
+                                    "displayName": item_1.displayName,
+                                    "cost": {
+                                        "amount": item_1.cost.amount,
+                                        "type": item_1.cost.type,
+                                    }
+                                }
+                            }
+                        };
+                        encodedHeader = btoa(JSON.stringify(jwtHeader));
+                        encodedPayload = btoa(JSON.stringify(jwtPayload));
+                        testEncodedJWT_1 = "".concat(encodedHeader, ".").concat(encodedPayload, ".DK02m0j0HQMKsPeFIrAuVdFh5X8f0hknjEKHAjGt6B0");
+                        setTimeout(function () {
+                            if (item_1) {
+                                var tx_1 = {
+                                    transactionId: "test:".concat(testDate_1.getTime()),
+                                    product: item_1,
+                                    userId: mxy.user.twitchID,
+                                    displayName: 'DevTestUser',
+                                    initiator: 'current_user',
+                                    transactionReceipt: testEncodedJWT_1,
+                                };
+                                var promise_2 = Promise.resolve({});
+                                if (mxy.transactionsEnabled) {
+                                    promise_2 = mxy.client.sendTransactionToServer(_this.identifier, tx_1);
+                                }
+                                _this.purchaseCallbacks.forEach(function (cb) { return cb(tx_1, promise_2); });
+                            }
+                            else {
+                                throw new Error("Product with SKU \"".concat(sku, "\" not found in product list."));
+                            }
+                        }, 3000);
+                        return [3 /*break*/, 3];
+                    case 2: throw new Error('No development products set. Use "window.MEDKIT_PURCHASABLE_ITEMS" to set debugging products.');
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /**
+     * Returns a list of dev supplied Products.
+     *
+     * @async
+     * @since 2.4.0
+     *
+     * @return {<[]Product>} Returns an array of {@link Product}
+     * objects for each available sku.
+     *
+     * @example
+     * window.MEDKIT_PURCHASABLE_ITEMS = [{
+     *   sku: "TESTSKU01",
+     *   displayName: "Test SKU 01",
+     *   cost: {
+     *       amount: 1,
+     *       type: "test-cost",
+     *     },
+     *   },
+     *   {
+     *     sku: "TESTSKU02",
+     *     displayName: "Test SKU 02",
+     *     cost: {
+     *      amount: 2,
+     *      type: "test-cost",
+     *   }
+     * ];
+     *
+     * const products = await client.getProducts();
+     */
+    DevPurchaseClient.prototype.getProducts = function () {
+        return Promise.resolve(window.MEDKIT_PURCHASABLE_ITEMS || []);
+    };
+    /**
+     * onUserPurchase is the interface for adding a post transaction callback.
+     *
+     * @since 2.4.0
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchase((transaction) => {
+     *  console.log("Transaction finished!");
+     * });
+     */
+    DevPurchaseClient.prototype.onUserPurchase = function (callback) {
+        this.purchaseCallbacks.push(callback);
+    };
+    /**
+     * onUserPurchaseCanceled is the interface for adding a post transaction failure callback.
+     *
+     * @since 2.4.5
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchaseCanceled(() => {
+     *  console.log("User cancelled transaction!");
+     * });
+     */
+    DevPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
+        // Transactions always succeed on dev, so this will never be called.
+    };
+    return DevPurchaseClient;
+}());
+// TestPurchaseClient implements the basic 'purchase client' interface.
+// This is used by the test of the SDK to provide low-level access to stubbed transactions.
+var TestPurchaseClient = /** @class */ (function () {
+    function TestPurchaseClient(id) {
+        this.purchaseCallbacks = [];
+        this.purchaseCanceledCallbacks = [];
+        this.identifier = "";
+        this.identifier = id;
+    }
+    /**
+     * purchase will start the Test purchase transaction.
+     *
+     * @since 2.4.0
+     *
+     * @param sku the sku of the test item to be purchased.
+     *
+     * @example
+     * client.purchase("TESTSKU00");
+     */
+    TestPurchaseClient.prototype.purchase = function (sku) {
+        var _this = this;
+        if ('MEDKIT_PURCHASABLE_ITEMS' in window) {
+            var devItems_1 = this.getProducts();
+            var products = Object.keys(devItems_1).map(function (sku) { return devItems_1[sku]; });
+            var foundItem_1 = products.find(function (sku) { return sku === sku; });
+            setTimeout(function () {
+                if (foundItem_1) {
+                    var tx_2 = {
+                        transactionId: 'dev-transaction-id',
+                        product: foundItem_1,
+                        userId: 'dev-test-user',
+                        displayName: 'DevTestUser',
+                        initiator: 'current_user',
+                        transactionReceipt: 'transaction-receipt'
+                    };
+                    var promise_3 = Promise.resolve({});
+                    if (mxy.transactionsEnabled) {
+                        promise_3 = mxy.client.sendTransactionToServer(_this.identifier, tx_2);
+                    }
+                    _this.purchaseCallbacks.forEach(function (callback) {
+                        callback(tx_2, promise_3);
+                    });
+                }
+                else {
+                    throw new Error("Product with SKU ".concat(sku, " not found in product list."));
+                }
+            }, 3000);
+        }
+        else {
+            throw new Error('No development products set. Use "window.MEDKIT_PURCHASABLE_ITEMS" to set debugging products.');
+        }
+    };
+    /**
+     * Returns a list of test supplied Products.
+     *
+     * @async
+     * @since 2.4.0
+     *
+     * @return {<[]Product>} Returns an array of test {@link Product}
+     * objects for each available sku.
+     *
+     * @example
+     * window.MEDKIT_PURCHASABLE_ITEMS = [{
+     *   sku: "TESTSKU01",
+     *   displayName: "Test SKU 01",
+     *   cost: {
+     *       amount: 1,
+     *       type: "test-cost",
+     *     },
+     *   },
+     *   {
+     *     sku: "TESTSKU02",
+     *     displayName: "Test SKU 02",
+     *     cost: {
+     *      amount: 2,
+     *      type: "test-cost",
+     *   }
+     * ];
+     *
+     * const products = await client.getProducts();
+     */
+    TestPurchaseClient.prototype.getProducts = function () {
+        return Promise.resolve(window.MEDKIT_PURCHASABLE_ITEMS || []);
+    };
+    /**
+     * onUserPurchase is the interface for testing adding a post transaction callback.
+     *
+     * @since 2.4.0
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchase((transaction) => {
+     *  console.log("Transaction finished!");
+     * });
+     */
+    TestPurchaseClient.prototype.onUserPurchase = function (callback) {
+        this.purchaseCallbacks.push(callback);
+    };
+    /**
+     * onUserPurchaseCancelled is the interface for adding a post transaction failure callback.
+     *
+     * @since 2.4.5
+     *
+     * @param callback a function(body)
+     *
+     * @example
+     * client.onUserPurchaseCanceled(() => {
+     *  console.log("User cancelled transaction!");
+     * });
+     */
+    TestPurchaseClient.prototype.onUserPurchaseCanceled = function (callback) {
+        this.purchaseCanceledCallbacks.push(callback);
+    };
+    return TestPurchaseClient;
+}());
+function DefaultPurchaseClient(identifier) {
+    var type = Config$1.DefaultPurchaseClientType(CurrentEnvironment());
+    switch (type) {
+        case PurchaseClientType.Dev:
+            return new DevPurchaseClient(identifier);
+        case PurchaseClientType.Test:
+            return new TestPurchaseClient(identifier);
+        case PurchaseClientType.Twitch:
+            return new TwitchPurchaseClient(identifier);
+        default:
+            throw new Error('Could not determine proper transaction type for environment.');
+    }
+}
+
+/**
+ * Muxy production API URL.
+ * @ignore
+ */
+var API_URL = 'https://api.muxy.io';
+/**
+ * Muxy sandbox API URL.
+ * @ignore
+ */
+var SANDBOX_URL = 'https://sandbox.api.muxy.io';
+/**
+ * Localhost for testing purposes.
+ * @ignore
+ */
+var LOCALHOST_URL = 'http://localhost:5000';
+var AuthorizationFlowType;
+(function (AuthorizationFlowType) {
+    AuthorizationFlowType[AuthorizationFlowType["TwitchAuth"] = 0] = "TwitchAuth";
+    AuthorizationFlowType[AuthorizationFlowType["AdminAuth"] = 1] = "AdminAuth";
+    AuthorizationFlowType[AuthorizationFlowType["TestAuth"] = 2] = "TestAuth";
+    AuthorizationFlowType[AuthorizationFlowType["Unknown"] = 3] = "Unknown";
+})(AuthorizationFlowType || (AuthorizationFlowType = {}));
+var Config = /** @class */ (function () {
+    function Config() {
+    }
+    Config.RegisterMoreEnvironments = function () { };
+    Config.DefaultMessengerType = function (env) {
+        switch (env) {
+            case Util.Environments.SandboxDev:
+            case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
+            case Util.Environments.SandboxAdmin:
+                return MessengerType.Pusher;
+            case Util.Environments.SandboxTwitch:
+            case Util.Environments.Production:
+                return MessengerType.Twitch;
+            case Util.Environments.Server:
+                return MessengerType.Server;
+            case Util.Environments.Testing:
+        }
+        return MessengerType.Unknown;
+    };
+    Config.DefaultPurchaseClientType = function (env) {
+        switch (env) {
+            case Util.Environments.SandboxDev:
+                return PurchaseClientType.Dev;
+            case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
+            case Util.Environments.SandboxAdmin:
+            case Util.Environments.SandboxTwitch:
+            case Util.Environments.Production:
+                return PurchaseClientType.Twitch;
+            case Util.Environments.Server:
+                return PurchaseClientType.Server;
+            case Util.Environments.Testing:
+                return PurchaseClientType.Test;
+        }
+        return PurchaseClientType.Unknown;
+    };
+    Config.GetAuthorizationFlowType = function (env) {
+        switch (env) {
+            case Util.Environments.SandboxDev:
+                return AuthorizationFlowType.TestAuth;
+            case Util.Environments.Admin:
+            case Util.Environments.SandboxAdmin:
+                return AuthorizationFlowType.AdminAuth;
+            case Util.Environments.SandboxTwitch:
+            case Util.Environments.Production:
+                return AuthorizationFlowType.TwitchAuth;
+            case Util.Environments.Server:
+            case Util.Environments.Testing:
+        }
+        return AuthorizationFlowType.Unknown;
+    };
+    Config.CanUseTwitchAPIs = function (env) {
+        switch (env) {
+            case Util.Environments.Production:
+            case Util.Environments.SandboxTwitch:
+                return true;
+        }
+        return false;
+    };
+    Config.GetServerURLs = function (env) {
+        if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
+            return {
+                FakeAuthURL: SANDBOX_URL,
+                ServerURL: SANDBOX_URL
+            };
+        }
+        if (env === Util.Environments.Testing) {
+            return {
+                FakeAuthURL: LOCALHOST_URL,
+                ServerURL: LOCALHOST_URL
+            };
+        }
+        return {
+            FakeAuthURL: SANDBOX_URL,
+            ServerURL: API_URL
+        };
+    };
+    Config.OtherEnvironmentCheck = function (window) {
+        return undefined;
+    };
+    return Config;
+}());
+var Config$1 = Config;
+
+var DebuggingOptions = /** @class */ (function () {
+    function DebuggingOptions() {
+        var noop = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            /* Default to doing nothing on callback */
+        };
+        this.options = {
+            onPubsubListen: noop,
+            onPubsubReceive: noop,
+            onPubsubSend: noop
+        };
+        if (window.location && window.location.search) {
+            var qp = new URLSearchParams(window.location.search);
+            this.options.url = this.readFromQuery(qp, 'url');
+            this.options.url = this.readFromQuery(qp, 'channelID');
+            this.options.url = this.readFromQuery(qp, 'userID');
+            this.options.url = this.readFromQuery(qp, 'role');
+            this.options.url = this.readFromQuery(qp, 'environment');
+        }
+    }
+    DebuggingOptions.prototype.url = function (url) {
+        this.options.url = /^https?:\/\//.test(url) ? url : "https://".concat(url);
+        return this;
+    };
+    DebuggingOptions.prototype.channelID = function (cid) {
+        this.options.channelID = cid;
+        return this;
+    };
+    DebuggingOptions.prototype.userID = function (uid) {
+        this.options.userID = uid;
+        return this;
+    };
+    DebuggingOptions.prototype.role = function (r) {
+        this.options.role = r;
+        return this;
+    };
+    DebuggingOptions.prototype.jwt = function (j) {
+        this.options.jwt = j;
+        return this;
+    };
+    DebuggingOptions.prototype.environment = function (e) {
+        this.options.environment = e;
+        return this;
+    };
+    DebuggingOptions.prototype.onPubsubSend = function (cb) {
+        this.options.onPubsubSend = cb;
+        return this;
+    };
+    DebuggingOptions.prototype.onPubsubReceive = function (cb) {
+        this.options.onPubsubReceive = cb;
+        return this;
+    };
+    DebuggingOptions.prototype.onPubsubListen = function (cb) {
+        this.options.onPubsubListen = cb;
+        return this;
+    };
+    DebuggingOptions.prototype.readFromQuery = function (params, key) {
+        return params.get("muxy_debug_".concat(key));
+    };
+    return DebuggingOptions;
 }());
 
 var UserUpdateCallbackHandle = /** @class */ (function (_super) {
@@ -16995,7 +17040,7 @@ var TwitchClient = /** @class */ (function () {
 }());
 
 var author = "Muxy, Inc.";
-var version = "2.4.10";
+var version = "2.4.13";
 var repository = "https://github.com/muxy/extensions-js";
 
 /**

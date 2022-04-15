@@ -140,55 +140,6 @@ export default class TwitchClient {
   }
 
   /**
-   * Wraps an AJAX request to Twitch's kraken API. Used internally by the API
-   * convenience methods.
-   *
-   * @async
-   * @since 1.0.0
-   * @ignore
-   *
-   * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-   * @param {string} endpoint - The Twitch kraken API endpoint.
-   * @param {string?} data - A string-encoded JSON payload to send with the request.
-   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-   *
-   * @return {Promise} Resolves with the AJAX payload on response < 400.
-   * Rejects otherwise.
-   */
-  public signedTwitchRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
-    const headers = {
-      Accept: 'application/vnd.twitchtv.v5+json',
-      'Client-ID': this.extensionId,
-
-      Authorization: undefined
-    };
-
-    if (JWT) {
-      headers.Authorization = `Bearer ${JWT}`;
-    }
-
-    return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise({
-        data,
-        headers,
-        method,
-        url: `https://api.twitch.tv/kraken/${endpoint}`
-      });
-
-      return xhrPromise
-        .send()
-        .catch(reject)
-        .then((resp: XHRResponse) => {
-          if (resp.status < 400) {
-            resolve(resp.responseText);
-          }
-
-          reject(resp.responseText);
-        });
-    });
-  }
-
-  /**
    * Wraps an AJAX request to Twitch's helix API. Used internally by the API
    * convenience methods.
    *
@@ -245,53 +196,6 @@ export default class TwitchClient {
   }
 
   /**
-   * Wraps an AJAX request to Twitch's Extension API. Used internally by the API
-   * convenience methods.
-   *
-   * @async
-   * @ignore
-   *
-   * @param {string} method - The AJAX request method, e.g. "POST", "GET", etc.
-   * @param {string} endpoint - The Twitch Extension API endpoint.
-   * @param {string?} data - A string-encoded JSON payload to send with the request.
-   * @param {Object} JWT - Signed JWT, accessible from sdk.user.twitchJWT.
-   *
-   * @return {Promise} Resolves with the AJAX payload on response < 400.
-   * Rejects otherwise.
-   */
-  public signedTwitchExtensionRequest(method: string, endpoint: string, data?: string, JWT?: string): Promise<any> {
-    const headers = {
-      'Client-ID': this.extensionId,
-
-      Authorization: undefined
-    };
-
-    if (JWT) {
-      headers.Authorization = `Bearer ${JWT}`;
-    }
-
-    return new Promise((resolve, reject) => {
-      const xhrPromise = new XMLHttpRequestPromise({
-        data,
-        headers,
-        method,
-        url: `https://api.twitch.tv/extensions/${endpoint}`
-      });
-
-      return xhrPromise
-        .send()
-        .catch(reject)
-        .then((resp: XHRResponse) => {
-          if (resp.status < 400) {
-            resolve(resp.responseText);
-          }
-
-          reject(resp.responseText);
-        });
-    });
-  }
-
-  /**
    * Returns a list of Twitch User objects for a given list of usernames.
    *
    * @async
@@ -300,6 +204,7 @@ export default class TwitchClient {
    * @throws {TypeError} Will throw an error if users is not an array of strings.
    *
    * @param {[]string} usernames - A list of usernames to lookup on Twitch.
+   * @param {string} jwt - The bearer token for the current user, obtained from sdk.user.helixToken.
    *
    * @return {Promise<[]TwitchUser>} Resolves with a list of {@link TwitchUser}
    * objects for each of the usernames provided.
@@ -309,12 +214,12 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  public getTwitchUsers(usernames: string[]): Promise<TwitchUser[]> {
+  public getTwitchUsers(usernames: string[], jwt: string): Promise<TwitchUser[]> {
     if (usernames.length === 0) {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchRequest('GET', `users?login=${usernames.join(',')}`);
+    return this.signedTwitchHelixRequest('GET', `users?login=${usernames.join('&login=')}`, jwt);
   }
 
   /**
@@ -343,36 +248,6 @@ export default class TwitchClient {
   }
 
   /**
-   * Monetization
-   */
-
-  /**
-   * Gets a list of the digital goods the current user has.
-   *
-   * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-   *
-   * @return {Promise<[]ExtensionGood>} Resolves with a list of {@link ExtensionGood} objects for
-   * each of the goods the user is entitled to.
-   */
-  public getUserGoods(jwt) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods', '{}', jwt);
-  }
-
-  /**
-   * Sets the fulfillment status for the specified receipts (purchases).
-   *
-   * @param {Object} jwt - Signed JWT, accessible from sdk.user.twitchJWT
-   * @param {[]Receipt} receipts - List of {@link Receipt} objects detailing which goods need to be
-   * updated.
-   *
-   * @return {Promise<[]Object>} Resolves with a list of results, one for each Receipt in the
-   * Receipts parameter.
-   */
-  public updateFulfilledGoods(jwt, receipts) {
-    return this.signedTwitchRequest('POST', 'commerce/user/goods/fulfill', receipts, jwt);
-  }
-
-  /**
    * Sets the required configuration string enabling an extension to be enabled
    *
    * SEE: https://dev.twitch.tv/docs/extensions/reference/#set-extension-required-configuration
@@ -382,16 +257,13 @@ export default class TwitchClient {
    */
   public setExtensionRequiredConfiguration(jwt: string, configurationString: string) {
     const environment = Util.getTwitchEnvironment();
-
     const data = { required_configuration: configurationString };
-
     const token = Util.extractJWTInfo(jwt);
 
-    return this.signedTwitchExtensionRequest(
-      'PUT',
-      `${this.extensionId}/${environment.version}/required_configuration?channel_id=${token.channel_id}`,
-      JSON.stringify(data),
-      jwt
-    );
+    return this.signedTwitchHelixRequest(
+      "PUT",
+      `extensions/${this.extensionId}/${environment.version}/required_configuration?channel_id=${token.channel_id}`,
+      '{}',
+      jwt);
   }
 }

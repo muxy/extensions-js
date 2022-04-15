@@ -375,13 +375,6 @@ export class Muxy implements MuxyInterface {
       for (const key of keys) {
         this.SDKClients[key].updateUser(this.user);
       }
-
-      // If buffer size goes to 0, send an analytics event that
-      // this user's video is buffering.
-      if (this.context.bufferSize < 1 && this.analytics) {
-        this.analytics.user = this.user;
-        this.analytics.sendEvent('video', 'buffer', 1);
-      }
     };
 
     Ext.extensionID = extensionID;

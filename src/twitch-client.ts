@@ -239,12 +239,12 @@ export default class TwitchClient {
    *  console.log(response.users[0].display_name);
    * });
    */
-  public getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]> {
+  public getTwitchUsersByID(userIDs: string[], jwt: string): Promise<HelixTwitchUser[]> {
     if (userIDs.length === 0) {
       return Promise.resolve([]);
     }
 
-    return this.signedTwitchHelixRequest('GET', `users?id=${userIDs.join(',')}`);
+    return this.signedTwitchHelixRequest('GET', `users?id=${userIDs.join(',')}`, jwt);
   }
 
   /**

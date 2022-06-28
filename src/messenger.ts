@@ -218,13 +218,12 @@ class PusherMessenger implements Messenger {
     client.signedRequest(
       id,
       'POST',
-      'pusher_broadcast',
-      JSON.stringify({
+      'pusher_broadcast', {
         data: body,
         event: scopedEvent,
         target,
         user_id: this.channelID
-      })
+      }
     );
   }
 
@@ -290,13 +289,12 @@ class ServerMessenger implements Messenger {
     client.signedRequest(
       id,
       'POST',
-      'broadcast',
-      JSON.stringify({
+      'broadcast', {
         data: body,
         event,
         target,
         user_id: this.channelID
-      })
+      }
     );
   }
 

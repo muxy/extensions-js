@@ -50,5 +50,5 @@ To get started building an extension with Muxy, we have a [Vue.js](https://vuejs
 [here](https://github.com/muxy/medkit-starter-vue).
 
 Once you've played around there and are ready to dig into some documentation, our
-[Getting Started](https://dev.muxy.io/getting-started.html) and
-[Detailed Usage Guides](https://dev.muxy.io/using.html) should help.
+[Getting Started](https://docs.muxy.io/docs/quick-start) and
+[Detailed Usage Guides](https://docs.muxy.io/reference/medkit-rest-api) should help.

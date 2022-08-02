@@ -7,8 +7,6 @@ a Twitch Client and a Google Analytics system.
 
 ## Hosted Versions
 
-Muxy hosts specific versions and latest releases at https://ext-cdn.muxy.io/medkit.
-
 Tagged releases (starting with 2.0.0):
 * https://unpkg.com/@muxy/extensions-js@2.0.0/dist/medkit.umd.js
 * https://unpkg.com/@muxy/extensions-js@2.0.0/dist/medkit.esm.js
@@ -50,5 +48,5 @@ To get started building an extension with Muxy, we have a [Vue.js](https://vuejs
 [here](https://github.com/muxy/medkit-starter-vue).
 
 Once you've played around there and are ready to dig into some documentation, our
-[Getting Started](https://docs.muxy.io/docs/quick-start) and
-[Detailed Usage Guides](https://docs.muxy.io/reference/medkit-rest-api) should help.
+[Getting Started](https://docs.muxy.io/docs/getting-started-with-medkit) and
+[Detailed API Guides](https://docs.muxy.io/reference/medkit-rest-api) should help.

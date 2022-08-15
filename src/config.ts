@@ -7,12 +7,14 @@ import Util, { Environment } from './util';
  * @ignore
  */
 const API_URL = 'https://api.muxy.io';
+const PORTAL_URL = 'https://dev.muxy.io';
 
 /**
  * Muxy sandbox API URL.
  * @ignore
  */
 const SANDBOX_URL = 'https://sandbox.api.muxy.io';
+const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
 
 /**
  * Localhost for testing purposes.
@@ -22,6 +24,7 @@ const LOCALHOST_URL = 'http://localhost:5000';
 
 export interface ServerURLs {
   ServerURL: string;
+  PortalURL: string;
   FakeAuthURL: string;
 }
 
@@ -100,6 +103,7 @@ export default class Config {
     if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
       return {
         FakeAuthURL: SANDBOX_URL,
+        PortalURL: PORTAL_URL,
         ServerURL: SANDBOX_URL
       };
     }
@@ -107,12 +111,14 @@ export default class Config {
     if (env === Util.Environments.Testing) {
       return {
         FakeAuthURL: LOCALHOST_URL,
+        PortalURL: STAGING_PORTAL_URL,
         ServerURL: LOCALHOST_URL
       };
     }
 
     return {
       FakeAuthURL: SANDBOX_URL,
+      PortalURL: PORTAL_URL,
       ServerURL: API_URL
     };
   }

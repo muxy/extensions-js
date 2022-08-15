@@ -169,7 +169,7 @@ export default class TwitchClient {
      *  console.log(response.users[0].display_name);
      * });
      */
-    getTwitchUsersByID(userIDs: string[]): Promise<HelixTwitchUser[]>;
+    getTwitchUsersByID(userIDs: string[], jwt: string): Promise<HelixTwitchUser[]>;
     /**
      * Sets the required configuration string enabling an extension to be enabled
      *

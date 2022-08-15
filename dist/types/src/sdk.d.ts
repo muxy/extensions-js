@@ -352,6 +352,13 @@ export default class SDK {
      */
     loaded(): Promise<void>;
     /**
+     * Starts the debug helix token flow. This will throw if
+     * .debug() has not been called.
+     *
+     * @since 2.4.16
+     */
+    beginDebugHelixTokenFlow(): void;
+    /**
      * Updates the internally stored user object with the provided value.
      * Also calls any stored user update callbacks with the new user object.
      * @since 1.5

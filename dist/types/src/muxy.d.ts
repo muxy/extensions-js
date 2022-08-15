@@ -288,6 +288,16 @@ export declare class Muxy implements MuxyInterface {
      */
     debug(options: DebuggingOptions): void;
     /**
+       * Debugging callback, used to start the helix token flow.
+       * @internal
+       * @type {function}
+       */
+    private openHelixUrl;
+    /**
+     * Start the debug helix token flow.
+     */
+    beginDebugHelixTokenFlow(): void;
+    /**
      * Returns a twitch client to use. Can only be used after the loaded promise resolves.
      *
      * @since 1.0.0

@@ -3,6 +3,7 @@ import { PurchaseClientType } from './purchase-client';
 import { Environment } from './util';
 export interface ServerURLs {
     ServerURL: string;
+    PortalURL: string;
     FakeAuthURL: string;
 }
 export declare enum AuthorizationFlowType {

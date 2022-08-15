@@ -5,6 +5,7 @@
 import Analytics from './analytics';
 import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
+import { allowTestingHelixToken } from "./debug-token";
 import DefaultMessenger, { Messenger } from './messenger';
 import DefaultPurchaseClient, { PurchaseClient } from './purchase-client';
 import SDK, { TriviaQuestionState, UserInfo } from './sdk';
@@ -394,6 +395,11 @@ export class Muxy implements MuxyInterface {
       const resolvePromise = (user) => {
         this.user = user;
 
+        if (this.debugOptions) {
+          const { openHelixUrl } = allowTestingHelixToken(Ext.extensionID, this.user);
+          this.openHelixUrl = openHelixUrl;
+        }
+
         const keys = Object.keys(this.SDKClients);
         for (const key of keys) {
           this.SDKClients[key].updateUser(this.user);
@@ -554,6 +560,26 @@ export class Muxy implements MuxyInterface {
       ...this.debugOptions,
       ...options.options
     };
+  }
+
+/**
+   * Debugging callback, used to start the helix token flow.
+   * @internal
+   * @type {function}
+   */
+  private openHelixUrl: () => void = null;
+
+  /**
+   * Start the debug helix token flow.
+   */
+  public beginDebugHelixTokenFlow() {
+    this.loadPromise.then(() => {
+      if (this.openHelixUrl) {
+        this.openHelixUrl();
+      } else {
+        throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
+      }
+    });
   }
 
   /**

@@ -107,6 +107,16 @@ function __read(o, n) {
     return ar;
 }
 
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+}
+
 function unwrapExports (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
@@ -13643,12 +13653,12 @@ var PusherMessenger = /** @class */ (function () {
     PusherMessenger.prototype.send = function (id, event, target, body, client) {
         var scopedEvent = "".concat(CurrentEnvironment().environment, ":").concat(id, ":").concat(event);
         this.debug.onPubsubSend(id, event, target, body);
-        client.signedRequest(id, 'POST', 'pusher_broadcast', JSON.stringify({
+        client.signedRequest(id, 'POST', 'pusher_broadcast', {
             data: body,
             event: scopedEvent,
             target: target,
             user_id: this.channelID
-        }));
+        });
     };
     PusherMessenger.prototype.listen = function (id, topic, callback) {
         var _this = this;
@@ -13698,12 +13708,12 @@ var ServerMessenger = /** @class */ (function () {
     }
     ServerMessenger.prototype.send = function (id, event, target, body, client) {
         this.debug.onPubsubSend(id, event, target, body);
-        client.signedRequest(id, 'POST', 'broadcast', JSON.stringify({
+        client.signedRequest(id, 'POST', 'broadcast', {
             data: body,
             event: event,
             target: target,
             user_id: this.channelID
-        }));
+        });
     };
     /* tslint:disable:no-console */
     ServerMessenger.prototype.listen = function (id, topic, callback) {
@@ -15008,11 +15018,13 @@ function DefaultPurchaseClient(identifier) {
  * @ignore
  */
 var API_URL = 'https://api.muxy.io';
+var PORTAL_URL = 'https://dev.muxy.io';
 /**
  * Muxy sandbox API URL.
  * @ignore
  */
 var SANDBOX_URL = 'https://sandbox.api.muxy.io';
+var STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
 /**
  * Localhost for testing purposes.
  * @ignore
@@ -15087,17 +15099,20 @@ var Config = /** @class */ (function () {
         if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
             return {
                 FakeAuthURL: SANDBOX_URL,
+                PortalURL: PORTAL_URL,
                 ServerURL: SANDBOX_URL
             };
         }
         if (env === Util.Environments.Testing) {
             return {
                 FakeAuthURL: LOCALHOST_URL,
+                PortalURL: STAGING_PORTAL_URL,
                 ServerURL: LOCALHOST_URL
             };
         }
         return {
             FakeAuthURL: SANDBOX_URL,
+            PortalURL: PORTAL_URL,
             ServerURL: API_URL
         };
     };
@@ -15172,6 +15187,125 @@ var DebuggingOptions = /** @class */ (function () {
     };
     return DebuggingOptions;
 }());
+
+var TESTING_HELIX_TOKEN_KEY = "testing_helix_token";
+function allowTestingHelixToken(id, user) {
+    var _this = this;
+    if (user.helixToken) {
+        return;
+    }
+    var urls = Config$1.GetServerURLs(Util.currentEnvironment());
+    var clientId = id;
+    var useHelixToken = function () { return __awaiter(_this, void 0, void 0, function () {
+        var localToken, sanityToken, req, newToken;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    localToken = localStorage.getItem(TESTING_HELIX_TOKEN_KEY);
+                    if (!localToken) {
+                        return [2 /*return*/, false];
+                    }
+                    try {
+                        sanityToken = JSON.parse(localToken);
+                        if (!sanityToken.access_token || !sanityToken.refresh_token || !sanityToken.expires_in) {
+                            return [2 /*return*/, false];
+                        }
+                    }
+                    catch (e) {
+                        return [2 /*return*/, false];
+                    }
+                    return [4 /*yield*/, fetch("".concat(urls.PortalURL, "/api/tokenauth/").concat(clientId, "/refresh"), {
+                            method: "POST",
+                            body: localToken,
+                        })];
+                case 1:
+                    req = _a.sent();
+                    return [4 /*yield*/, req.json()];
+                case 2:
+                    newToken = (_a.sent());
+                    if (newToken.access_token) {
+                        localStorage.setItem(TESTING_HELIX_TOKEN_KEY, JSON.stringify(newToken));
+                        user.helixToken = newToken.access_token;
+                        console.log("Using testing helix token. Call window.ClearHelixToken() to stop this behavior");
+                        return [2 /*return*/, true];
+                    }
+                    else {
+                        console.log("Failed to refresh helix token.");
+                        return [2 /*return*/, false];
+                    }
+            }
+        });
+    }); };
+    var pollForHelixToken = function (rng) { return __awaiter(_this, void 0, void 0, function () {
+        var interval, attempts;
+        var _this = this;
+        return __generator(this, function (_a) {
+            interval = 0;
+            attempts = 0;
+            interval = window.setInterval(function () { return __awaiter(_this, void 0, void 0, function () {
+                var req, js;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4 /*yield*/, fetch("".concat(urls.PortalURL, "/api/tokenauth/").concat(clientId, "/").concat(rng))];
+                        case 1:
+                            req = _a.sent();
+                            return [4 /*yield*/, req.json()];
+                        case 2:
+                            js = (_a.sent());
+                            if (js.access_token) {
+                                localStorage.setItem("testing_helix_token", JSON.stringify(js));
+                                clearInterval(interval);
+                                useHelixToken();
+                                return [2 /*return*/];
+                            }
+                            attempts++;
+                            if (attempts > 120) {
+                                console.log("Failed to obtain authentication, try again by calling ObtainHelixToken");
+                                clearInterval(interval);
+                                return [2 /*return*/];
+                            }
+                            return [2 /*return*/];
+                    }
+                });
+            }); }, 2000);
+            return [2 /*return*/];
+        });
+    }); };
+    var obtainHelixToken = function () { return __awaiter(_this, void 0, void 0, function () {
+        var rng;
+        return __generator(this, function (_a) {
+            rng = __spreadArray([], __read(Array(8)), false).map(function () { return Math.random().toString(36)[2]; }).join("");
+            console.log("To obtain a helix token, visit ");
+            console.log("  ".concat(urls.PortalURL, "/login/twitch/token/").concat(clientId, "/").concat(rng));
+            pollForHelixToken(rng);
+            return [2 /*return*/, ""];
+        });
+    }); };
+    var openHelixUrl = function () { return __awaiter(_this, void 0, void 0, function () {
+        var rng;
+        return __generator(this, function (_a) {
+            rng = __spreadArray([], __read(Array(8)), false).map(function () { return Math.random().toString(36)[2]; }).join("");
+            window.open("".concat(urls.PortalURL, "/login/twitch/token/").concat(clientId, "/").concat(rng), "_blank");
+            pollForHelixToken(rng);
+            return [2 /*return*/, ""];
+        });
+    }); };
+    var clearHelixToken = function () {
+        localStorage.removeItem(TESTING_HELIX_TOKEN_KEY);
+        user.helixToken = "";
+    };
+    window.ObtainHelixToken = obtainHelixToken;
+    window.ClearHelixToken = clearHelixToken;
+    var loadHelixToken = useHelixToken();
+    loadHelixToken.then(function (result) {
+        if (!result) {
+            console.log(" To use the debug helix token flow, call window.ObtainHelixToken() in the console");
+        }
+    });
+    return {
+        openHelixUrl: openHelixUrl
+    };
+}
 
 var UserUpdateCallbackHandle = /** @class */ (function (_super) {
     __extends(UserUpdateCallbackHandle, _super);
@@ -15485,6 +15619,15 @@ var SDK = /** @class */ (function () {
      */
     SDK.prototype.loaded = function () {
         return this.loadPromise;
+    };
+    /**
+     * Starts the debug helix token flow. This will throw if
+     * .debug() has not been called.
+     *
+     * @since 2.4.16
+     */
+    SDK.prototype.beginDebugHelixTokenFlow = function () {
+        mxy.beginDebugHelixTokenFlow();
     };
     /**
      * Updates the internally stored user object with the provided value.
@@ -16904,11 +17047,11 @@ var TwitchClient = /** @class */ (function () {
      *  console.log(response.users[0].display_name);
      * });
      */
-    TwitchClient.prototype.getTwitchUsersByID = function (userIDs) {
+    TwitchClient.prototype.getTwitchUsersByID = function (userIDs, jwt) {
         if (userIDs.length === 0) {
             return Promise.resolve([]);
         }
-        return this.signedTwitchHelixRequest('GET', "users?id=".concat(userIDs.join(',')));
+        return this.signedTwitchHelixRequest('GET', "users?id=".concat(userIDs.join(',')), jwt);
     };
     /**
      * Sets the required configuration string enabling an extension to be enabled
@@ -16927,7 +17070,7 @@ var TwitchClient = /** @class */ (function () {
 }());
 
 var author = "Muxy, Inc.";
-var version = "2.4.14";
+var version = "2.4.16";
 var repository = "https://github.com/muxy/extensions-js";
 
 /**
@@ -16974,6 +17117,12 @@ var Muxy = /** @class */ (function () {
          * Makes trivia state enum available from the global `Muxy` object
          */
         this.TriviaQuestionState = TriviaQuestionState;
+        /**
+           * Debugging callback, used to start the helix token flow.
+           * @internal
+           * @type {function}
+           */
+        this.openHelixUrl = null;
         this.Util = Util;
         this.setupCalled = false;
         this.testChannelID = '23161357';
@@ -17118,6 +17267,10 @@ var Muxy = /** @class */ (function () {
             var resolvePromise = function (user) {
                 var e_2, _a;
                 _this.user = user;
+                if (_this.debugOptions) {
+                    var openHelixUrl = allowTestingHelixToken(Ext.extensionID, _this.user).openHelixUrl;
+                    _this.openHelixUrl = openHelixUrl;
+                }
                 var keys = Object.keys(_this.SDKClients);
                 try {
                     for (var keys_2 = __values(keys), keys_2_1 = keys_2.next(); !keys_2_1.done; keys_2_1 = keys_2.next()) {
@@ -17284,6 +17437,20 @@ var Muxy = /** @class */ (function () {
      */
     Muxy.prototype.debug = function (options) {
         this.debugOptions = __assign(__assign({ channelID: this.testChannelID, role: this.testJWTRole }, this.debugOptions), options.options);
+    };
+    /**
+     * Start the debug helix token flow.
+     */
+    Muxy.prototype.beginDebugHelixTokenFlow = function () {
+        var _this = this;
+        this.loadPromise.then(function () {
+            if (_this.openHelixUrl) {
+                _this.openHelixUrl();
+            }
+            else {
+                throw new Error('Muxy.setup() must be called before creating a new TwitchClient instance');
+            }
+        });
     };
     /**
      * Returns a twitch client to use. Can only be used after the loaded promise resolves.

@@ -428,6 +428,31 @@ export default class SDK {
   }
 
   /**
+   * Starts the debug helix token flow. This will throw if
+   * .debug() has not been called.
+   *
+   * @since 2.4.16
+   *
+   * @example
+   * const client = new Muxy.TwitchClient();
+   *
+   * // When testing the extension, outside of twitch, the following
+   * // request will not work, since no helixToken is returned from the
+   * // testing auth system.
+   * client.signedTwitchHelixRequest(..., sdk.user.helixToken);
+   *
+   * // Opens a new window to go through the helix token flow.
+   * sdk.beginDebugHelixTokenFlow()
+   *
+   * // After going through the helix flow, then signedTwitchHelixRequest
+   * // call will work
+   * client.signedTwitchHelixRequest(..., sdk.user.helixToken);
+   */
+  public beginDebugHelixTokenFlow() {
+    mxy.beginDebugHelixTokenFlow();
+  }
+
+  /**
    * Updates the internally stored user object with the provided value.
    * Also calls any stored user update callbacks with the new user object.
    * @since 1.5

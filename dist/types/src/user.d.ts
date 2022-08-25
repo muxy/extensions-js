@@ -5,7 +5,7 @@ import { ObserverHandler } from './observer';
 import { TwitchAuth } from './twitch';
 export declare class UserUpdateCallbackHandle extends ObserverHandler<User> {
     private cb;
-    constructor(cb: any);
+    constructor(cb: (user: User) => void);
     notify(user: User): void;
 }
 /**
@@ -31,6 +31,8 @@ export default class User {
     theme: string;
     volume: number;
     timeOffset: number;
+    language: string;
+    locale: string;
     /**
      * Defines the current user's role on Twitch relative to the current channel being
      * viewed. May be "viewer" if the user is simply viewing the channel, "moderator"

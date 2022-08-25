@@ -1,10 +1,10 @@
 /**
  * @module SDK
  */
+import type { Transaction } from './types/purchases';
 import { XHROptions } from '../libs/xhr-promise';
 import { DebugOptions } from './debug';
-import { Transaction } from './purchase-client';
-import { AccumulateData, EligibleCodes, ExtensionUsersResult, RankResponse, RedeemedCodes, RedeemResult, TriviaLeaderboard, TriviaOption, TriviaQuestion, TriviaQuestionResponse, TriviaQuestionState, TriviaStateResponse, TriviaTeam, UserInfo, VoteData, VoteLog } from './sdk';
+import { AccumulateData, EligibleCodes, ExtensionUsersResult, RankResponse, RedeemedCodes, RedeemResult, TriviaLeaderboard, TriviaOption, TriviaQuestion, TriviaQuestionResponse, TriviaQuestionState, TriviaStateResponse, TriviaTeam, UserInfo, VoteData, VoteLog } from './types';
 import { TwitchAuth } from './twitch';
 import { Environment } from './util';
 /**
@@ -175,7 +175,10 @@ declare class StateClient {
     /** @ignore */
     accumulate: <DataType = unknown, ResponseType_1 = unknown>(identifier: string, id: string, data: DataType) => Promise<ResponseType_1>;
     /** @ignore */
-    vote: <DataType = unknown>(identifier: string, id: string, data: DataType) => Promise<VoteData>;
+    vote: <DataType = {
+        value: number;
+        count?: number;
+    }>(identifier: string, id: string, data: DataType) => Promise<VoteData>;
     /** @ignore */
     getVotes: (identifier: string, id?: string) => Promise<VoteData>;
     /** @ignore */

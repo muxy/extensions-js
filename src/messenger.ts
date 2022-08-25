@@ -32,6 +32,13 @@ export interface Messenger {
   close(): void;
 }
 
+export type ListenCallback<Payload> = (p: Payload, event: string) => void;
+
+export interface MessageEnvelope<Payload> {
+  data: Payload;
+  event: string;
+}
+
 function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic: string, msg: string) {
   if (msg.length === 0) {
     return {};
@@ -298,7 +305,6 @@ class ServerMessenger implements Messenger {
     );
   }
 
-  /* tslint:disable:no-console */
   public listen(id, topic, callback): CallbackHandle {
     console.error('Server-side message receiving is not implemented.');
 
@@ -313,7 +319,6 @@ class ServerMessenger implements Messenger {
   public unlisten(id, handle: CallbackHandle): void {
     console.error('Server-side message receiving is not implemented.');
   }
-  /* tslint:enable:no-console */
 
   public close() {
     /* Nothing to close server-side. */

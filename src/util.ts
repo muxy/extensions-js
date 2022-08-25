@@ -88,6 +88,11 @@ export default class Util {
     this.availableEnvironments[key] = env;
   }
 
+  public static getQueryParam(key: string) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key);
+  }
+
   /**
    * Wraps a string error response in an (immediately rejected) promise.
    * @since 1.0.0
@@ -111,7 +116,7 @@ export default class Util {
   public static widestLine(lines: string[]): number {
     return Math.max.apply(
       null,
-      lines.map(x => x.length)
+      lines.map((x) => x.length)
     );
   }
 
@@ -134,7 +139,7 @@ export default class Util {
     const out = [intro];
     out.push(`┌${'─'.repeat(contentWidth + 2)}┐`);
 
-    lines.forEach(line => {
+    lines.forEach((line) => {
       const paddingRight = ' '.repeat(contentWidth - line.length);
       out.push(`| ${line}${paddingRight} |`);
     });

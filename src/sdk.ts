@@ -6,340 +6,44 @@ import { consolePrint, CurrentEnvironment, eventPatternMatch, forceType } from '
 
 import Analytics from './analytics';
 import { DebugOptions } from './debug';
-import { Messenger } from './messenger';
+import { CallbackHandle, Messenger, MessageEnvelope, ListenCallback } from './messenger';
 import mxy from './muxy';
 import Observer from './observer';
 import StateClient from './state-client';
-import { PurchaseClient, Transaction, TransactionResponse } from './purchase-client';
 import { ContextUpdateCallbackHandle, HighlightChangedCallbackHandle, Position, TwitchContext } from './twitch';
 import Ext from './twitch-ext';
 import User, { UserUpdateCallbackHandle } from './user';
+import Util from './util';
 
-/**
- * The response from {@link getAllState}.
- *
- * @typedef {Object} AllState
- *
- * @property {Object} extension - A state object only settable by the extension itself.
- * Universal for all channels.
- * @property {Object} channel - A state object only settable by a broadcaster. Universal for all
- * viewers of the same channel.
- * @property {Object} viewer - A state object settable by each viewer. Specific to the viewer of
- * a given channel.
- * @property {Object} extension_viewer - A state object settable by each viewer. Specific to the viewer but
- * extension wide.
- */
-export interface AllState {
-  extension: object;
-  channel: object;
-  viewer: object;
-  extension_viewer: object;
-}
+import type { AccumulateData } from './types/accumulate';
+import type { EligibleCodes, RedeemedCodes, RedeemResult } from './types/codes';
+import type { Product, PurchaseClient, Transaction, TransactionResponse } from './types/purchases';
+import type { RankData, RankResponse } from './types/rank';
+import type { AllState } from './types/state';
+import type {
+  TriviaLeaderboard,
+  TriviaOption,
+  TriviaQuestion,
+  TriviaQuestionResponse,
+  TriviaQuestionState,
+  TriviaStateResponse,
+  TriviaTeam
+} from './types/trivia';
+import type { ExtensionUsersResult } from './types/user';
+import type { VoteData, VoteLog } from './types/vote';
 
-/**
- * The response from {@link getAccumulateData}.
- *
- * @typedef {Object} AccumulateData
- *
- * @property {number} latest A Unix timestamp of the most recently posted JSON blob.
- *
- * @property {AccumulatePayload[]} data Array of all JSON blob payloads posted to this identifier.
- */
-export interface AccumulateData {
-  latest: number;
-  data: AccumulatePayload[];
-}
-
-/**
- * @typedef {Object} AccumulatePayload
- *
- * @property {number} observed A Unix timestamp of when this payload was received.
- * @property {string} channel_id The id of the channel this payload is associated with
- * (either the viewer was watching the channel, or the app/server was authed with this channel).
- * @property {string} opaque_user_id Twitch's Opaque User ID representing the sender
- * of the payload. This will always be set and can be used with Twitch's pub/sub system to
- * whisper events to a particular viewer.
- * @property {string} user_id If the viewer has chosen to share their identity with the
- * extension, this field will hold the viewer's actual Twitch ID.
- * @property {Object} data The actual JSON blob payload as sent to the accumulate endpoint.
- */
-export interface AccumulatePayload {
-  observed: number;
-  channel_id: string;
-  opaque_user_id: string;
-  user_id: string;
-  data: object;
-}
-
-/**
- * The response from {@link getVoteData}.
- *
- * @typedef {Object} VoteData
- *
- * @property {number} count - The total number of votes received for this vote identifier.
- * @property {number} mean - The average of all votes received for this identifier.
- * @property {number[]} specific - The number of votes cast for the specific values [0-4].
- * @property {number} stddev - Approximate standard deviation for all votes received for
- * this identifier.
- * @property {number} sum - The sum of all votes received for this identifier.
- * @property {number} vote - If the user has a vote associated with this identifer, the
- * current value for this user. Not set if no vote has been received.
- */
-export interface VoteData {
-  count: number;
-  mean: number;
-  specific: number[];
-  stddev: number;
-  sum: number;
-  vote: number;
-}
-
-/**
- * A single vote cast in a poll, returned from {@link getFullVoteLogs}
- *
- * @typedef {Object} VoteLogEntry
- * @property {string} identifier - Either the opaque userID or userID of a user who voted, depending on
- *  the user's user id share status at the time of casting the vote.
- * @property {number} value - The numerical value of the vote cast.
- */
-export interface VoteLogEntry {
-  identifier: string;
-  value: number;
-}
-
-/**
- * The response from {@link getFullVoteLogs}
- *
- * @typedef {Object} VoteLog
- * @property {object[]} result - An array of VoteLogEntries that represents the votes cast on a poll.
- */
-export interface VoteLog {
-  result: VoteLogEntry[];
-}
-
-/**
- * The response from {@link getRankData}.
- *
- * @typedef {Object} RankData
- *
- * @property {RankScore[]} data - array of the rank data
- */
-export interface RankData {
-  data: RankScore[];
-}
-
-/**
- *
- * @typedef {Object} RankScore
- *
- * @property {string} key - A single key as sent to the ranking endpoint for this identifier.
- * @property {number} score - The number of users who have sent this `key` for this identifier.
- */
-export interface RankScore {
-  key: string;
-  score: number;
-}
-
-/**
- * @typedef {Object} RankResponse
- */
-export interface RankResponse {
-  accepted: boolean;
-  original: string | undefined;
-}
-
-/**
- * The response from {@link getEligibleCodes}.
- *
- * @typedef {Object} EligibleCodes
- *
- * @property {Array<number>} eligible - Each integer is the array is how many codes the given user is eligible for.
- * A zero entry in this array means that the user is not eligible for any codes for that prize.
- */
-export interface EligibleCodes {
-  eligible: number[];
-}
-
-/**
- * The response from {@link getRedeemedCodes}.
- *
- * @typedef {Object} RedeemedCodes
- *
- * @property {Array<Array<string>>} redeemed - Each array entry in redeemed represents a prize index.
- * Strings in the sub arrays are the codes the user has redeemed.
- */
-export interface RedeemedCodes {
-  redeemed: string[][];
-}
-
-/**
- * The response from {@link redeemCode}.
- *
- * @typedef {Object} RedeemResult
- *
- * @property {string} code - The code that was redeemed if successful
- * @property {Array<string>} all_prizes - list of all the codes that this user has redeemed for the
- * prize index.
- */
-export interface RedeemResult {
-  code?: string;
-  all_prizes: string[];
-}
-
-/**
- * A single entry in the response from {@link getExtensionUsers}.
- *
- * @typedef {Object} ExtensionUser
- *
- * @property {string} twitch_id - The user's Twitch id.
- */
-export interface ExtensionUser {
-  twitch_id: string;
-}
-
-/**
- * The response from {@link getExtensionUsers}.
- *
- * @typedef {Object} ExtensionUsersResult
- *
- * @property {string} next - A cursor to request the next (up-to) 1000 results. A value of `0` means
- * all results have been returned.
- * @property {ExtensionUser[]} results - A list of (up-to) 1000 user IDs who have shared their ID with
- * the extension.
- */
-export interface ExtensionUsersResult {
-  next: string;
-  results: ExtensionUser[];
-}
-
-/**
- * Represents a trivia question
- *
- * @property {string} id - The id of the question
- * @property {string} name - The name of the question
- * @property {string} short_name - The name of the question for smaller displays.
- * @property {string} description - A description for the question
- * @property {string} image - A url that hosts an image to show with the question
- * @property {TriviaOption[]} - An array of options that this question has
- * @property {string} state - Current state of the question
- */
-export interface TriviaQuestion {
-  id: string;
-  name: string;
-  short_name: string;
-  description: string;
-  image?: string;
-  order?: number;
-  options?: TriviaOption[];
-  state?: string;
-}
-
-/**
- * Represents an option on a trivia question
- *
- * @property {string} id - The id of the option
- * @property {string} name - The name of the option
- * @property {string} short_name - The name of the option for smaller displays.
- * @property {string} description - A description for the option
- * @property {string} image - A url that hosts an image to show with the option
- */
-export interface TriviaOption {
-  id: string;
-  name: string;
-  short_name: string;
-  description: string;
-  image?: string;
-  order?: number;
-}
-
-/**
- * The response from `getExtensionTriviaJoinedTeam`.
- *
- * @property {string} id - A unique identifier representing this team.
- */
-export interface TriviaTeam {
-  id: string;
-}
-
-export interface TriviaLeaderboard {
-  leaderboard: TriviaLeaderboardTeam[];
-}
-
-/**
- * Contains scoring info for one trivia team
- *
- * @property {string} team_id - The id of the team
- * @property {number} combined_score - The total score the team has
- * @property {Map<string, TriviaLeaderboardQuestionResults>} questions - A map of scores per question asked
- */
-export interface TriviaLeaderboardTeam {
-  team_id: string;
-  combined_score: number;
-  questions: TriviaLeaderboardQuestionResultsMap;
-}
-
-export interface TriviaLeaderboardQuestionResultsMap {
-  [key: string]: TriviaLeaderboardQuestionResults;
-}
-
-/**
- * Shows the score per question on the trivia leaderboard
- *
- * @property {string} question_id - The id of the question
- * @property {boolean} broadcaster_correct - If the Team leader (channel) was correct
- * @property {number} team_participation - Participation of the team 0.0-1.0
- * @property {number} team_participants - Number of team members that voted
- * @property {number} percent_correct - How many members got the question correct 0.0-1.0
- * @property {number} team_votes - The number of team members that votes
- * @property {number[]} score_values
- */
-export interface TriviaLeaderboardQuestionResults {
-  question_id: string;
-  broadcaster_correct: boolean;
-  team_participation: number;
-  team_participants: number;
-  percent_correct: number;
-  team_votes: number;
-  score_values: number[];
-}
-
-export interface TriviaStateResponse {
-  state: string;
-}
-
-export interface TriviaQuestionResponse {
-  questions: TriviaQuestion[];
-}
-
-export enum TriviaQuestionState {
-  // Inactive marks a poll as inactive. Only admins can see an inactive poll.
-  Inactive = 'state-inactive',
-
-  // Unlocked marks a poll as being visible to everyone, and open to votes.
-  Unlocked = 'state-unlocked',
-
-  // Unlocked marks a poll as being visible to everyone, but closed to votes. No results
-  // are visible while unlocked.
-  Locked = 'state-locked',
-
-  // Results marks a poll as complete, and results are available.
-  Results = 'state-results'
-}
-
-/**
- * Represents user info
- *
- * @property {string} ip_address - The id of the question
- * @property {boolean} registered - The name of the question
- * @property {number} server_time - The name of the question for smaller displays.
- * @property {string} visualization_id - A description for the question
- */
-export interface UserInfo {
-  ip_address: string;
-  registered: boolean;
-  server_time: number;
-  visualization_id: string;
-}
+type ExtensionAnchor = 'component' | 'panel' | 'video_overlay';
+type ExtensionMode = 'config' | 'dashboard' | 'viewer';
+type ExtensionPlatform = 'web' | 'mobile';
+type ExtensionState =
+  | 'testing'
+  | 'hosted_test'
+  | 'approved'
+  | 'released'
+  | 'ready_for_review'
+  | 'in_review'
+  | 'pending_action'
+  | 'uploading';
 
 /**
  * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
@@ -372,6 +76,12 @@ export default class SDK {
   public userObservers: Observer<User>;
   public contextObservers: Observer<TwitchContext>;
   public highlightObservers: Observer<boolean>;
+
+  public anchor?: ExtensionAnchor;
+  public mode?: ExtensionMode;
+  public platform?: ExtensionPlatform;
+  public popout?: boolean;
+  public state?: ExtensionState;
 
   /** @ignore */
   constructor(id?: string) {
@@ -631,17 +341,15 @@ export default class SDK {
    * @param {string} voteID - The identifer to fetch associated vote data.
    * @param {number} value - Any numeric value to represent this user's vote. Note that only
    * values of 0-5 will be included in the `specific` field returned from `getVoteData`.
+   * @param {number} count - The "multiplier" of this vote. Must be <= 30.
    *
    * @return {Promise} Will resolve on successful server-send. Rejects on failure.
    *
    * @example
    * sdk.vote('poll-number-1', 1);
    */
-  public vote(voteID: string, value: number): Promise<VoteData> {
-    forceType(voteID, 'string');
-    forceType(value, 'number');
-
-    return this.client.vote(this.identifier, voteID, { value });
+  public vote(voteID: string, value: number, count: number = 1): Promise<VoteData> {
+    return this.client.vote(this.identifier, voteID, { value, count });
   }
 
   /**
@@ -1277,7 +985,7 @@ export default class SDK {
    * This callback will receive the message body as its first parameter and the `event` parameter
    * to {@link send} as the second.
    *
-   * @return {Object} A listener handle that can be passed to {@see unlisten} to unbind
+   * @return {CallbackHandle} A listener handle that can be passed to {@see unlisten} to unbind
    * this callback.
    *
    * @example
@@ -1285,7 +993,11 @@ export default class SDK {
    *   console.log(`${track.artist} - {track.title} (${track.year})`);
    * });
    */
-  public listen(inEvent, inUserID, inCallback?) {
+  public listen<Payload>(
+    inEvent: string,
+    inUserID: string | ListenCallback<Payload>,
+    inCallback?: ListenCallback<Payload>
+  ): CallbackHandle {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1296,13 +1008,13 @@ export default class SDK {
     let callback = inCallback;
     if (callback) {
       l = `whisper-${inUserID}`;
-    } else {
+    } else if (inUserID instanceof Function) {
       callback = inUserID;
     }
 
     let messageBuffer = [];
 
-    const cb = (msg) => {
+    const cb = (msg: MessageEnvelope<Payload>) => {
       try {
         // Production messages may be unprefixed.
         if (CurrentEnvironment().environment === 'production') {
@@ -1356,9 +1068,9 @@ export default class SDK {
    *
    * @since 1.0.0
    *
-   * @param {Object} handle - An event handle as returned from {@see listen}.
+   * @param {CallbackHandle} handle - An event handle as returned from {@see listen}.
    */
-  public unlisten(handle) {
+  public unlisten(handle: CallbackHandle) {
     return this.messenger.unlisten(this.identifier, handle);
   }
 
@@ -1380,7 +1092,7 @@ export default class SDK {
    * @example
    * const products = await client.getProducts();
    */
-  public getProducts() {
+  public getProducts(): Promise<Product[]> {
     if (!mxy.didLoad) {
       throw new Error('sdk.loaded() was not complete. Please call this method only after the promise has resolved.');
     }
@@ -1800,6 +1512,49 @@ export default class SDK {
      * @type {Object}
      */
     this.SKUs = SKUs;
+
+    /**
+     * The type of the anchor in which the extension is activated. Valid only
+     * when platform is "web". Valid values: "component", "panel", "video_overlay".
+     *
+     * @public
+     * @type {string}
+     */
+    this.anchor = Util.getQueryParam('anchor') as ExtensionAnchor;
+
+    /**
+     * The extension’s mode. Valid values: "config", "dashboard", "viewer".
+     *
+     * @public
+     * @type {string}
+     */
+    this.mode = Util.getQueryParam('mode') as ExtensionMode;
+
+    /**
+     * The platform on which the Twitch client is running. Valid values: "mobile", "web".
+     *
+     * @public
+     * @type {string}
+     */
+    this.platform = Util.getQueryParam('platform') as ExtensionPlatform;
+
+    /**
+     * Indicates whether the extension is popped out. If true, the extension is running
+     * in its own window; otherwise, false.
+     *
+     * @public
+     * @type {boolean}
+     */
+    this.popout = Util.getQueryParam('popout') === 'true';
+
+    /**
+     * The release state of the extension. Valid values: "testing", "hosted_test",
+     * "approved", "released", "ready_for_review", "in_review", "pending_action", "uploading".
+     *
+     * @public
+     * @type {string}
+     */
+    this.state = Util.getQueryParam('state') as ExtensionState;
 
     /** @ignore */
     this.debug = debug;

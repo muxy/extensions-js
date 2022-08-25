@@ -47,6 +47,7 @@ export default class Util {
     };
     static overrideEnvironment?: Environment;
     static registerEnvironment(key: string, env: Environment): void;
+    static getQueryParam(key: string): string;
     /**
      * Wraps a string error response in an (immediately rejected) promise.
      * @since 1.0.0

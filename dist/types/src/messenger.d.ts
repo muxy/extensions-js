@@ -17,4 +17,9 @@ export interface Messenger {
     unlisten(id: any, CallbackHandle: any): void;
     close(): void;
 }
+export declare type ListenCallback<Payload> = (p: Payload, event: string) => void;
+export interface MessageEnvelope<Payload> {
+    data: Payload;
+    event: string;
+}
 export default function DefaultMessenger(debug: DebugOptions): Messenger;

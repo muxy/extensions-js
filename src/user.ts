@@ -2,13 +2,13 @@
  * @module SDK
  */
 import { ObserverHandler } from './observer';
-import { JWT, TwitchAuth } from './twitch';
+import { TwitchAuth } from './twitch';
 import Util from './util';
 
 export class UserUpdateCallbackHandle extends ObserverHandler<User> {
   private cb: (user: User) => void;
 
-  constructor(cb) {
+  constructor(cb: (user: User) => void) {
     super();
     this.cb = cb;
   }
@@ -41,6 +41,8 @@ export default class User {
   public theme: string;
   public volume: number;
   public timeOffset: number;
+  public language: string;
+  public locale: string;
 
   /**
    * Defines the current user's role on Twitch relative to the current channel being
@@ -216,6 +218,22 @@ export default class User {
      * @type {number}
      */
     this.volume = 0;
+
+    /**
+     * User's preferred language code as set on Twitch.
+     *
+     * @since 2.5.0
+     * @type {string}
+     */
+    this.language = 'en';
+
+    /**
+     * User's locale as set on Twitch.
+     *
+     * @since 2.5.0
+     * @type {string}
+     */
+    this.locale = 'en-US';
 
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.

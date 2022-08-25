@@ -2,11 +2,12 @@
  * @module SDK
  */
 
+import type { Transaction } from './types/purchases';
+
 import XHRPromise, { XHROptions } from '../libs/xhr-promise';
 
 import Config from './config';
 import { DebugOptions } from './debug';
-import { Transaction } from './purchase-client';
 import {
   AccumulateData,
   EligibleCodes,
@@ -24,7 +25,7 @@ import {
   UserInfo,
   VoteData,
   VoteLog
-} from './sdk';
+} from './types';
 import { TwitchAuth } from './twitch';
 import { Environment } from './util';
 
@@ -472,7 +473,7 @@ class StateClient {
     this.signedRequest<DataType, ResponseType>(identifier, 'POST', `accumulate?id=${id || 'default'}`, data);
 
   /** @ignore */
-  public vote = <DataType = unknown>(identifier: string, id: string, data: DataType) =>
+  public vote = <DataType = { value: number; count?: number }>(identifier: string, id: string, data: DataType) =>
     this.signedRequest<DataType, VoteData>(identifier, 'POST', `vote?id=${id || 'default'}`, data);
 
   /** @ignore */

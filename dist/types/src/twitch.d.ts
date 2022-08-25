@@ -23,16 +23,19 @@ export interface TwitchBitsTransaction {
     transactionId: string;
     product: TwitchBitsProduct;
     userId: string;
+    domainID: string;
+    transactionID: string;
     displayName: string;
-    initiator: any;
+    initiator: 'CURRENT_USER' | 'OTHER';
     transactionReceipt: string;
 }
 export interface TwitchBitsProduct {
-    domain: string;
     sku: string;
-    inDevelopment: boolean;
+    type: 'bits';
+    inDevelopment?: boolean;
     displayName: string;
     cost: TwitchBitsCost;
+    amount: string;
 }
 export interface TwitchBitsCost {
     amount: number;
@@ -42,6 +45,7 @@ export interface TwitchActionsSDK {
     followChannel(chan: string): void;
     onFollow(cb: (didFollow: boolean, chan: string) => void): void;
     requestIdShare(): void;
+    minimize(): void;
 }
 export interface TwitchBitsSDK {
     getProducts: () => Promise<TwitchBitsProduct[]>;
@@ -62,32 +66,40 @@ export interface TwitchPurchasesSDK {
     getPrices(): Promise<any>;
     onReloadEntitlements(cb: (arg: any) => void): void;
 }
+export interface TwitchExtensionViewer {
+    opaqueId: string;
+    id: string | null;
+    role: string;
+    isLinked: boolean;
+    sessionToken: string;
+    subscriptionStatus: null | {
+        tier: '1000' | '2000' | '3000';
+    };
+    onChanged(cb: () => void): void;
+}
 export interface TwitchSDK {
     actions: TwitchActionsSDK;
     bits: TwitchBitsSDK;
     features: TwitchFeaturesSDK;
     purchases: TwitchPurchasesSDK;
-    settings: any;
+    viewer: TwitchExtensionViewer;
+    settings: Record<string, unknown>;
     onAuthorized(cb: (auth: TwitchAuth) => void): void;
     onContext(cb: (ctx: TwitchContext, fields: object) => void): void;
     onError(cb: (err: string | Error) => void): void;
     onVisibilityChanged(callback: (isVisible: boolean, ctx: TwitchContext | null) => void): void;
     onPositionChanged(callback: (position: Position) => void): void;
     onHighlightChanged(callback: (highlight: boolean) => void): void;
-    getAuthData(): any;
-    send(target: string, dataType: string, event: {
+    send(target: string, dataType: string, event: string | {
         event: string;
         data: object;
-    }): any;
-    listen(topic: string, callback: (t: any, datatype: string, message: string) => void): any;
-    unlisten(topic: string, callback: (t: any, datatype: string, message: string) => void): any;
-}
-export interface TwitchExtensionHelper {
-    ext: TwitchSDK;
+    }): void;
+    listen(topic: string, callback: (t: string, datatype: string, message: string) => void): void;
+    unlisten(topic: string, callback: (t: string, datatype: string, message: string) => void): void;
 }
 export declare class ContextUpdateCallbackHandle extends ObserverHandler<TwitchContext> {
     private cb;
-    constructor(cb: any);
+    constructor(cb: (context: TwitchContext) => void);
     notify(context: TwitchContext): void;
 }
 export declare class HighlightChangedCallbackHandle extends ObserverHandler<boolean> {
@@ -112,11 +124,14 @@ export interface TwitchContext {
     isPaused: boolean;
     isTheatreMode: boolean;
     language: string;
-    mode: string;
-    playbackMode: string;
-    theme: string;
+    mode: 'viewer' | 'dashboard' | 'config';
+    playbackMode: 'video' | 'audio' | 'remote' | 'chat-only';
+    theme: 'light' | 'dark';
     videoResolution: string;
     volume: number;
+}
+export interface TwitchExtensionHelper {
+    ext: TwitchSDK;
 }
 declare global {
     interface Window {

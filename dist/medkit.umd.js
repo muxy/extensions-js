@@ -113,6 +113,28 @@
         return ar;
     }
 
+    var PurchaseClientType;
+    (function (PurchaseClientType) {
+        PurchaseClientType[PurchaseClientType["Dev"] = 0] = "Dev";
+        PurchaseClientType[PurchaseClientType["Server"] = 1] = "Server";
+        PurchaseClientType[PurchaseClientType["Test"] = 2] = "Test";
+        PurchaseClientType[PurchaseClientType["Twitch"] = 3] = "Twitch";
+        PurchaseClientType[PurchaseClientType["Unknown"] = 4] = "Unknown";
+    })(PurchaseClientType || (PurchaseClientType = {}));
+
+    var TriviaQuestionState;
+    (function (TriviaQuestionState) {
+        // Inactive marks a poll as inactive. Only admins can see an inactive poll.
+        TriviaQuestionState["Inactive"] = "state-inactive";
+        // Unlocked marks a poll as being visible to everyone, and open to votes.
+        TriviaQuestionState["Unlocked"] = "state-unlocked";
+        // Unlocked marks a poll as being visible to everyone, but closed to votes. No results
+        // are visible while unlocked.
+        TriviaQuestionState["Locked"] = "state-locked";
+        // Results marks a poll as complete, and results are available.
+        TriviaQuestionState["Results"] = "state-results";
+    })(TriviaQuestionState || (TriviaQuestionState = {}));
+
     function unwrapExports (x) {
     	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
     }
@@ -13189,6 +13211,10 @@
         Util.registerEnvironment = function (key, env) {
             this.availableEnvironments[key] = env;
         };
+        Util.getQueryParam = function (key) {
+            var params = new URLSearchParams(window.location.search);
+            return params.get(key);
+        };
         /**
          * Wraps a string error response in an (immediately rejected) promise.
          * @since 1.0.0
@@ -13711,7 +13737,6 @@
                 user_id: this.channelID
             }));
         };
-        /* tslint:disable:no-console */
         ServerMessenger.prototype.listen = function (id, topic, callback) {
             console.error('Server-side message receiving is not implemented.');
             return {
@@ -13724,7 +13749,6 @@
         ServerMessenger.prototype.unlisten = function (id, handle) {
             console.error('Server-side message receiving is not implemented.');
         };
-        /* tslint:enable:no-console */
         ServerMessenger.prototype.close = function () {
             /* Nothing to close server-side. */
         };
@@ -13743,6 +13767,178 @@
                 throw new Error('Could not determine proper messenger type for environment.');
         }
     }
+
+    /**
+     * Muxy production API URL.
+     * @ignore
+     */
+    var API_URL = 'https://api.muxy.io';
+    /**
+     * Muxy sandbox API URL.
+     * @ignore
+     */
+    var SANDBOX_URL = 'https://sandbox.api.muxy.io';
+    /**
+     * Localhost for testing purposes.
+     * @ignore
+     */
+    var LOCALHOST_URL = 'http://localhost:5000';
+    var AuthorizationFlowType;
+    (function (AuthorizationFlowType) {
+        AuthorizationFlowType[AuthorizationFlowType["TwitchAuth"] = 0] = "TwitchAuth";
+        AuthorizationFlowType[AuthorizationFlowType["AdminAuth"] = 1] = "AdminAuth";
+        AuthorizationFlowType[AuthorizationFlowType["TestAuth"] = 2] = "TestAuth";
+        AuthorizationFlowType[AuthorizationFlowType["Unknown"] = 3] = "Unknown";
+    })(AuthorizationFlowType || (AuthorizationFlowType = {}));
+    var Config = /** @class */ (function () {
+        function Config() {
+        }
+        Config.RegisterMoreEnvironments = function () { };
+        Config.DefaultMessengerType = function (env) {
+            switch (env) {
+                case Util.Environments.SandboxDev:
+                case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
+                case Util.Environments.SandboxAdmin:
+                    return MessengerType.Pusher;
+                case Util.Environments.SandboxTwitch:
+                case Util.Environments.Production:
+                    return MessengerType.Twitch;
+                case Util.Environments.Server:
+                    return MessengerType.Server;
+                case Util.Environments.Testing:
+            }
+            return MessengerType.Unknown;
+        };
+        Config.DefaultPurchaseClientType = function (env) {
+            switch (env) {
+                case Util.Environments.SandboxDev:
+                    return PurchaseClientType.Dev;
+                case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
+                case Util.Environments.SandboxAdmin:
+                case Util.Environments.SandboxTwitch:
+                case Util.Environments.Production:
+                    return PurchaseClientType.Twitch;
+                case Util.Environments.Server:
+                    return PurchaseClientType.Server;
+                case Util.Environments.Testing:
+                    return PurchaseClientType.Test;
+            }
+            return PurchaseClientType.Unknown;
+        };
+        Config.GetAuthorizationFlowType = function (env) {
+            switch (env) {
+                case Util.Environments.SandboxDev:
+                    return AuthorizationFlowType.TestAuth;
+                case Util.Environments.Admin:
+                case Util.Environments.SandboxAdmin:
+                    return AuthorizationFlowType.AdminAuth;
+                case Util.Environments.SandboxTwitch:
+                case Util.Environments.Production:
+                    return AuthorizationFlowType.TwitchAuth;
+                case Util.Environments.Server:
+                case Util.Environments.Testing:
+            }
+            return AuthorizationFlowType.Unknown;
+        };
+        Config.CanUseTwitchAPIs = function (env) {
+            switch (env) {
+                case Util.Environments.Production:
+                case Util.Environments.SandboxTwitch:
+                    return true;
+            }
+            return false;
+        };
+        Config.GetServerURLs = function (env) {
+            if (env === Util.Environments.SandboxDev ||
+                env === Util.Environments.SandboxTwitch ||
+                env === Util.Environments.SandboxAdmin) {
+                return {
+                    FakeAuthURL: SANDBOX_URL,
+                    ServerURL: SANDBOX_URL
+                };
+            }
+            if (env === Util.Environments.Testing) {
+                return {
+                    FakeAuthURL: LOCALHOST_URL,
+                    ServerURL: LOCALHOST_URL
+                };
+            }
+            return {
+                FakeAuthURL: SANDBOX_URL,
+                ServerURL: API_URL
+            };
+        };
+        Config.OtherEnvironmentCheck = function (window) {
+            return undefined;
+        };
+        return Config;
+    }());
+    var Config$1 = Config;
+
+    var DebuggingOptions = /** @class */ (function () {
+        function DebuggingOptions() {
+            var noop = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                /* Default to doing nothing on callback */
+            };
+            this.options = {
+                onPubsubListen: noop,
+                onPubsubReceive: noop,
+                onPubsubSend: noop
+            };
+            if (window.location && window.location.search) {
+                var qp = new URLSearchParams(window.location.search);
+                this.options.url = this.readFromQuery(qp, 'url');
+                this.options.url = this.readFromQuery(qp, 'channelID');
+                this.options.url = this.readFromQuery(qp, 'userID');
+                this.options.url = this.readFromQuery(qp, 'role');
+                this.options.url = this.readFromQuery(qp, 'environment');
+            }
+        }
+        DebuggingOptions.prototype.url = function (url) {
+            this.options.url = /^https?:\/\//.test(url) ? url : "https://".concat(url);
+            return this;
+        };
+        DebuggingOptions.prototype.channelID = function (cid) {
+            this.options.channelID = cid;
+            return this;
+        };
+        DebuggingOptions.prototype.userID = function (uid) {
+            this.options.userID = uid;
+            return this;
+        };
+        DebuggingOptions.prototype.role = function (r) {
+            this.options.role = r;
+            return this;
+        };
+        DebuggingOptions.prototype.jwt = function (j) {
+            this.options.jwt = j;
+            return this;
+        };
+        DebuggingOptions.prototype.environment = function (e) {
+            this.options.environment = e;
+            return this;
+        };
+        DebuggingOptions.prototype.onPubsubSend = function (cb) {
+            this.options.onPubsubSend = cb;
+            return this;
+        };
+        DebuggingOptions.prototype.onPubsubReceive = function (cb) {
+            this.options.onPubsubReceive = cb;
+            return this;
+        };
+        DebuggingOptions.prototype.onPubsubListen = function (cb) {
+            this.options.onPubsubListen = cb;
+            return this;
+        };
+        DebuggingOptions.prototype.readFromQuery = function (params, key) {
+            return params.get("muxy_debug_".concat(key));
+        };
+        return DebuggingOptions;
+    }());
 
     var DEFAULT_CONTENT_TYPE = 'application/x-www-form-urlencoded; charset=UTF-8';
     var XHRPromise = /** @class */ (function () {
@@ -14627,14 +14823,6 @@
         return Ext;
     }());
 
-    var PurchaseClientType;
-    (function (PurchaseClientType) {
-        PurchaseClientType[PurchaseClientType["Dev"] = 0] = "Dev";
-        PurchaseClientType[PurchaseClientType["Server"] = 1] = "Server";
-        PurchaseClientType[PurchaseClientType["Test"] = 2] = "Test";
-        PurchaseClientType[PurchaseClientType["Twitch"] = 3] = "Twitch";
-        PurchaseClientType[PurchaseClientType["Unknown"] = 4] = "Unknown";
-    })(PurchaseClientType || (PurchaseClientType = {}));
     // TwitchPurchaseClient implements the basic 'purchase client' interface.
     // This is used by SDK to provide low-level access to twitch bits transactions.
     var TwitchPurchaseClient = /** @class */ (function () {
@@ -14643,7 +14831,7 @@
             var _a, _b;
             this.purchaseCallbacks = [];
             this.cancelationCallbacks = [];
-            this.identifier = "";
+            this.identifier = '';
             if (!((_b = (_a = window === null || window === void 0 ? void 0 : window.Twitch) === null || _a === void 0 ? void 0 : _a.ext) === null || _b === void 0 ? void 0 : _b.bits)) {
                 throw new Error('Twitch helper is required for bits transactions not loaded.');
             }
@@ -14735,7 +14923,7 @@
     var DevPurchaseClient = /** @class */ (function () {
         function DevPurchaseClient(id) {
             this.purchaseCallbacks = [];
-            this.identifier = "";
+            this.identifier = '';
             this.identifier = id;
         }
         /**
@@ -14764,23 +14952,23 @@
                             _a = __read(testDate_1.toISOString().split(/T|Z/), 2), date = _a[0], time = _a[1];
                             golangDate = "".concat(date, " ").concat(time, " +0000 UTC");
                             jwtHeader = {
-                                "alg": "HS256",
-                                "typ": "JWT"
+                                alg: 'HS256',
+                                typ: 'JWT'
                             };
                             jwtPayload = {
-                                "topic": "bits_transaction_receipt",
-                                "exp": Math.round((testDate_1.getTime() + 10000) / 1000),
-                                "data": {
-                                    "transactionId": "test:".concat(testDate_1.getTime()),
-                                    "time": golangDate,
-                                    "userId": mxy.user.twitchID,
-                                    "product": {
-                                        "domainId": "twitch.ext.".concat(Ext.extensionID),
-                                        "sku": item_1.sku,
-                                        "displayName": item_1.displayName,
-                                        "cost": {
-                                            "amount": item_1.cost.amount,
-                                            "type": item_1.cost.type,
+                                topic: 'bits_transaction_receipt',
+                                exp: Math.round((testDate_1.getTime() + 10000) / 1000),
+                                data: {
+                                    transactionId: "test:".concat(testDate_1.getTime()),
+                                    time: golangDate,
+                                    userId: mxy.user.twitchID,
+                                    product: {
+                                        domainId: "twitch.ext.".concat(Ext.extensionID),
+                                        sku: item_1.sku,
+                                        displayName: item_1.displayName,
+                                        cost: {
+                                            amount: item_1.cost.amount,
+                                            type: item_1.cost.type
                                         }
                                     }
                                 }
@@ -14796,7 +14984,7 @@
                                         userId: mxy.user.twitchID,
                                         displayName: 'DevTestUser',
                                         initiator: 'current_user',
-                                        transactionReceipt: testEncodedJWT_1,
+                                        transactionReceipt: testEncodedJWT_1
                                     };
                                     var promise_2 = Promise.resolve({});
                                     if (mxy.transactionsEnabled) {
@@ -14885,7 +15073,7 @@
         function TestPurchaseClient(id) {
             this.purchaseCallbacks = [];
             this.purchaseCanceledCallbacks = [];
-            this.identifier = "";
+            this.identifier = '';
             this.identifier = id;
         }
         /**
@@ -15008,176 +15196,6 @@
                 throw new Error('Could not determine proper transaction type for environment.');
         }
     }
-
-    /**
-     * Muxy production API URL.
-     * @ignore
-     */
-    var API_URL = 'https://api.muxy.io';
-    /**
-     * Muxy sandbox API URL.
-     * @ignore
-     */
-    var SANDBOX_URL = 'https://sandbox.api.muxy.io';
-    /**
-     * Localhost for testing purposes.
-     * @ignore
-     */
-    var LOCALHOST_URL = 'http://localhost:5000';
-    var AuthorizationFlowType;
-    (function (AuthorizationFlowType) {
-        AuthorizationFlowType[AuthorizationFlowType["TwitchAuth"] = 0] = "TwitchAuth";
-        AuthorizationFlowType[AuthorizationFlowType["AdminAuth"] = 1] = "AdminAuth";
-        AuthorizationFlowType[AuthorizationFlowType["TestAuth"] = 2] = "TestAuth";
-        AuthorizationFlowType[AuthorizationFlowType["Unknown"] = 3] = "Unknown";
-    })(AuthorizationFlowType || (AuthorizationFlowType = {}));
-    var Config = /** @class */ (function () {
-        function Config() {
-        }
-        Config.RegisterMoreEnvironments = function () { };
-        Config.DefaultMessengerType = function (env) {
-            switch (env) {
-                case Util.Environments.SandboxDev:
-                case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
-                case Util.Environments.SandboxAdmin:
-                    return MessengerType.Pusher;
-                case Util.Environments.SandboxTwitch:
-                case Util.Environments.Production:
-                    return MessengerType.Twitch;
-                case Util.Environments.Server:
-                    return MessengerType.Server;
-                case Util.Environments.Testing:
-            }
-            return MessengerType.Unknown;
-        };
-        Config.DefaultPurchaseClientType = function (env) {
-            switch (env) {
-                case Util.Environments.SandboxDev:
-                    return PurchaseClientType.Dev;
-                case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
-                case Util.Environments.SandboxAdmin:
-                case Util.Environments.SandboxTwitch:
-                case Util.Environments.Production:
-                    return PurchaseClientType.Twitch;
-                case Util.Environments.Server:
-                    return PurchaseClientType.Server;
-                case Util.Environments.Testing:
-                    return PurchaseClientType.Test;
-            }
-            return PurchaseClientType.Unknown;
-        };
-        Config.GetAuthorizationFlowType = function (env) {
-            switch (env) {
-                case Util.Environments.SandboxDev:
-                    return AuthorizationFlowType.TestAuth;
-                case Util.Environments.Admin:
-                case Util.Environments.SandboxAdmin:
-                    return AuthorizationFlowType.AdminAuth;
-                case Util.Environments.SandboxTwitch:
-                case Util.Environments.Production:
-                    return AuthorizationFlowType.TwitchAuth;
-                case Util.Environments.Server:
-                case Util.Environments.Testing:
-            }
-            return AuthorizationFlowType.Unknown;
-        };
-        Config.CanUseTwitchAPIs = function (env) {
-            switch (env) {
-                case Util.Environments.Production:
-                case Util.Environments.SandboxTwitch:
-                    return true;
-            }
-            return false;
-        };
-        Config.GetServerURLs = function (env) {
-            if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
-                return {
-                    FakeAuthURL: SANDBOX_URL,
-                    ServerURL: SANDBOX_URL
-                };
-            }
-            if (env === Util.Environments.Testing) {
-                return {
-                    FakeAuthURL: LOCALHOST_URL,
-                    ServerURL: LOCALHOST_URL
-                };
-            }
-            return {
-                FakeAuthURL: SANDBOX_URL,
-                ServerURL: API_URL
-            };
-        };
-        Config.OtherEnvironmentCheck = function (window) {
-            return undefined;
-        };
-        return Config;
-    }());
-    var Config$1 = Config;
-
-    var DebuggingOptions = /** @class */ (function () {
-        function DebuggingOptions() {
-            var noop = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                /* Default to doing nothing on callback */
-            };
-            this.options = {
-                onPubsubListen: noop,
-                onPubsubReceive: noop,
-                onPubsubSend: noop
-            };
-            if (window.location && window.location.search) {
-                var qp = new URLSearchParams(window.location.search);
-                this.options.url = this.readFromQuery(qp, 'url');
-                this.options.url = this.readFromQuery(qp, 'channelID');
-                this.options.url = this.readFromQuery(qp, 'userID');
-                this.options.url = this.readFromQuery(qp, 'role');
-                this.options.url = this.readFromQuery(qp, 'environment');
-            }
-        }
-        DebuggingOptions.prototype.url = function (url) {
-            this.options.url = /^https?:\/\//.test(url) ? url : "https://".concat(url);
-            return this;
-        };
-        DebuggingOptions.prototype.channelID = function (cid) {
-            this.options.channelID = cid;
-            return this;
-        };
-        DebuggingOptions.prototype.userID = function (uid) {
-            this.options.userID = uid;
-            return this;
-        };
-        DebuggingOptions.prototype.role = function (r) {
-            this.options.role = r;
-            return this;
-        };
-        DebuggingOptions.prototype.jwt = function (j) {
-            this.options.jwt = j;
-            return this;
-        };
-        DebuggingOptions.prototype.environment = function (e) {
-            this.options.environment = e;
-            return this;
-        };
-        DebuggingOptions.prototype.onPubsubSend = function (cb) {
-            this.options.onPubsubSend = cb;
-            return this;
-        };
-        DebuggingOptions.prototype.onPubsubReceive = function (cb) {
-            this.options.onPubsubReceive = cb;
-            return this;
-        };
-        DebuggingOptions.prototype.onPubsubListen = function (cb) {
-            this.options.onPubsubListen = cb;
-            return this;
-        };
-        DebuggingOptions.prototype.readFromQuery = function (params, key) {
-            return params.get("muxy_debug_".concat(key));
-        };
-        return DebuggingOptions;
-    }());
 
     var UserUpdateCallbackHandle = /** @class */ (function (_super) {
         __extends(UserUpdateCallbackHandle, _super);
@@ -15323,6 +15341,20 @@
              * @type {number}
              */
             this.volume = 0;
+            /**
+             * User's preferred language code as set on Twitch.
+             *
+             * @since 2.5.0
+             * @type {string}
+             */
+            this.language = 'en';
+            /**
+             * User's locale as set on Twitch.
+             *
+             * @since 2.5.0
+             * @type {string}
+             */
+            this.locale = 'en-US';
             // If the user has authorized an extension to see their Twitch ID, it will be
             // hidden in the JWT payload.
             this.extractJWTInfo(auth.token);
@@ -15425,18 +15457,6 @@
     /**
      * @module SDK
      */
-    var TriviaQuestionState;
-    (function (TriviaQuestionState) {
-        // Inactive marks a poll as inactive. Only admins can see an inactive poll.
-        TriviaQuestionState["Inactive"] = "state-inactive";
-        // Unlocked marks a poll as being visible to everyone, and open to votes.
-        TriviaQuestionState["Unlocked"] = "state-unlocked";
-        // Unlocked marks a poll as being visible to everyone, but closed to votes. No results
-        // are visible while unlocked.
-        TriviaQuestionState["Locked"] = "state-locked";
-        // Results marks a poll as complete, and results are available.
-        TriviaQuestionState["Results"] = "state-results";
-    })(TriviaQuestionState || (TriviaQuestionState = {}));
     /**
      * The Muxy Extensions SDK, used to communicate with Muxy's Extension Backend Service.
      *
@@ -15680,16 +15700,16 @@
          * @param {string} voteID - The identifer to fetch associated vote data.
          * @param {number} value - Any numeric value to represent this user's vote. Note that only
          * values of 0-5 will be included in the `specific` field returned from `getVoteData`.
+         * @param {number} count - The "multiplier" of this vote. Must be <= 30.
          *
          * @return {Promise} Will resolve on successful server-send. Rejects on failure.
          *
          * @example
          * sdk.vote('poll-number-1', 1);
          */
-        SDK.prototype.vote = function (voteID, value) {
-            forceType(voteID, 'string');
-            forceType(value, 'number');
-            return this.client.vote(this.identifier, voteID, { value: value });
+        SDK.prototype.vote = function (voteID, value, count) {
+            if (count === void 0) { count = 1; }
+            return this.client.vote(this.identifier, voteID, { value: value, count: count });
         };
         /**
          * User Ranking
@@ -16284,7 +16304,7 @@
          * This callback will receive the message body as its first parameter and the `event` parameter
          * to {@link send} as the second.
          *
-         * @return {Object} A listener handle that can be passed to {@see unlisten} to unbind
+         * @return {CallbackHandle} A listener handle that can be passed to {@see unlisten} to unbind
          * this callback.
          *
          * @example
@@ -16303,7 +16323,7 @@
             if (callback) {
                 l = "whisper-".concat(inUserID);
             }
-            else {
+            else if (inUserID instanceof Function) {
                 callback = inUserID;
             }
             var messageBuffer = [];
@@ -16354,7 +16374,7 @@
          *
          * @since 1.0.0
          *
-         * @param {Object} handle - An event handle as returned from {@see listen}.
+         * @param {CallbackHandle} handle - An event handle as returned from {@see listen}.
          */
         SDK.prototype.unlisten = function (handle) {
             return this.messenger.unlisten(this.identifier, handle);
@@ -16742,6 +16762,44 @@
              * @type {Object}
              */
             this.SKUs = SKUs;
+            /**
+             * The type of the anchor in which the extension is activated. Valid only
+             * when platform is "web". Valid values: "component", "panel", "video_overlay".
+             *
+             * @public
+             * @type {string}
+             */
+            this.anchor = Util.getQueryParam('anchor');
+            /**
+             * The extension’s mode. Valid values: "config", "dashboard", "viewer".
+             *
+             * @public
+             * @type {string}
+             */
+            this.mode = Util.getQueryParam('mode');
+            /**
+             * The platform on which the Twitch client is running. Valid values: "mobile", "web".
+             *
+             * @public
+             * @type {string}
+             */
+            this.platform = Util.getQueryParam('platform');
+            /**
+             * Indicates whether the extension is popped out. If true, the extension is running
+             * in its own window; otherwise, false.
+             *
+             * @public
+             * @type {boolean}
+             */
+            this.popout = Util.getQueryParam('popout') === 'true';
+            /**
+             * The release state of the extension. Valid values: "testing", "hosted_test",
+             * "approved", "released", "ready_for_review", "in_review", "pending_action", "uploading".
+             *
+             * @public
+             * @type {string}
+             */
+            this.state = Util.getQueryParam('state');
             /** @ignore */
             this.debug = debug;
         };
@@ -16933,7 +16991,7 @@
     }());
 
     var author = "Muxy, Inc.";
-    var version = "2.4.14";
+    var version = "2.5.0-20220825.1";
     var repository = "https://github.com/muxy/extensions-js";
 
     /**
@@ -17167,6 +17225,9 @@
                             }
                             finally { if (e_3) throw e_3.error; }
                         }
+                        // Pull user settings from environment
+                        user.language = Util.getQueryParam('language') || user.language;
+                        user.locale = Util.getQueryParam('locale') || user.locale;
                         updateUserContextSettings.call(_this);
                         _this.didLoad = true;
                         resolvePromise(user);

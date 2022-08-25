@@ -1,11 +1,11 @@
 /**
  * @module Muxy
  */
+import { TriviaQuestionState, type PurchaseClient } from './types';
 import Analytics from './analytics';
 import { DebuggingOptions, DebugOptions } from './debug';
 import { Messenger } from './messenger';
-import { PurchaseClient } from './purchase-client';
-import SDK, { TriviaQuestionState } from './sdk';
+import SDK from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
 import User from './user';

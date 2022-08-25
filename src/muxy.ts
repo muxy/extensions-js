@@ -2,12 +2,14 @@
  * @module Muxy
  */
 
+import { TriviaQuestionState, type UserInfo, type PurchaseClient } from './types';
+
 import Analytics from './analytics';
 import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
 import DefaultMessenger, { Messenger } from './messenger';
-import DefaultPurchaseClient, { PurchaseClient } from './purchase-client';
-import SDK, { TriviaQuestionState, UserInfo } from './sdk';
+import DefaultPurchaseClient from './purchase-client';
+import SDK from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
@@ -420,6 +422,10 @@ export class Muxy implements MuxyInterface {
             for (const key of keys) {
               this.SDKClients[key].timeOffset = offset;
             }
+
+            // Pull user settings from environment
+            user.language = Util.getQueryParam('language') || user.language;
+            user.locale = Util.getQueryParam('locale') || user.locale;
 
             updateUserContextSettings.call(this);
 

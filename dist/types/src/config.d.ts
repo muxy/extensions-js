@@ -1,5 +1,5 @@
 import { MessengerType } from './messenger';
-import { PurchaseClientType } from './purchase-client';
+import { PurchaseClientType } from './types/purchases';
 import { Environment } from './util';
 export interface ServerURLs {
     ServerURL: string;

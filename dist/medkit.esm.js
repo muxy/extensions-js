@@ -15192,7 +15192,15 @@ var TESTING_HELIX_TOKEN_KEY = "testing_helix_token";
 function allowTestingHelixToken(id, user) {
     var _this = this;
     if (user.helixToken) {
-        return;
+        return {
+            openHelixUrl: function () {
+                return __awaiter(this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        return [2 /*return*/, ""];
+                    });
+                });
+            }
+        };
     }
     var urls = Config$1.GetServerURLs(Util.currentEnvironment());
     var clientId = id;
@@ -15625,6 +15633,21 @@ var SDK = /** @class */ (function () {
      * .debug() has not been called.
      *
      * @since 2.4.16
+     *
+     * @example
+     * const client = new Muxy.TwitchClient();
+     *
+     * // When testing the extension, outside of twitch, the following
+     * // request will not work, since no helixToken is returned from the
+     * // testing auth system.
+     * client.signedTwitchHelixRequest(..., sdk.user.helixToken);
+     *
+     * // Opens a new window to go through the helix token flow.
+     * sdk.beginDebugHelixTokenFlow()
+     *
+     * // After going through the helix flow, then signedTwitchHelixRequest
+     * // call will work
+     * client.signedTwitchHelixRequest(..., sdk.user.helixToken);
      */
     SDK.prototype.beginDebugHelixTokenFlow = function () {
         mxy.beginDebugHelixTokenFlow();
@@ -17070,7 +17093,7 @@ var TwitchClient = /** @class */ (function () {
 }());
 
 var author = "Muxy, Inc.";
-var version = "2.4.16";
+var version = "2.4.18";
 var repository = "https://github.com/muxy/extensions-js";
 
 /**

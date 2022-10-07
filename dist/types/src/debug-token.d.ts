@@ -6,5 +6,5 @@ declare global {
     }
 }
 export declare function allowTestingHelixToken(id: string, user: User): {
-    openHelixUrl: () => Promise<string>;
+    openHelixUrl(): Promise<string>;
 };

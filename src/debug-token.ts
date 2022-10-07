@@ -19,7 +19,11 @@ declare global {
 
 export function allowTestingHelixToken (id: string, user: User) {
   if (user.helixToken) {
-    return;
+    return {
+      async openHelixUrl() {
+        return "";
+      }
+    };
   }
 
   const urls = Config.GetServerURLs(Util.currentEnvironment());

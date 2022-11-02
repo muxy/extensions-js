@@ -25,7 +25,7 @@ export declare class DebuggingOptions {
     userID(uid: any): this;
     role(r: any): this;
     jwt(j: any): this;
-    environment(e: any): this;
+    environment(e: string): this;
     onPubsubSend(cb: any): this;
     onPubsubReceive(cb: any): this;
     onPubsubListen(cb: any): this;

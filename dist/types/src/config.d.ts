@@ -13,11 +13,9 @@ export declare enum AuthorizationFlowType {
     Unknown = 3
 }
 export default class Config {
-    static RegisterMoreEnvironments(): void;
     static DefaultMessengerType(env: Environment): MessengerType;
     static DefaultPurchaseClientType(env: Environment): PurchaseClientType;
     static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType;
     static CanUseTwitchAPIs(env: Environment): boolean;
     static GetServerURLs(env: Environment): ServerURLs;
-    static OtherEnvironmentCheck(window: Window | any): Environment | undefined;
 }

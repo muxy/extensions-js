@@ -72,7 +72,7 @@ export class DebuggingOptions {
     return this;
   }
 
-  public environment(e) {
+  public environment(e: string) {
     this.options.environment = e;
     return this;
   }

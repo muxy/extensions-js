@@ -13,8 +13,10 @@ const PORTAL_URL = 'https://dev.muxy.io';
  * Muxy sandbox API URL.
  * @ignore
  */
-const SANDBOX_URL = 'https://sandbox.api.muxy.io';
-const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io';
+const SANDBOX_URL = 'https://api.sandbox.muxy.io';
+const STAGING_URL = 'https://api.staging.muxy.io';
+
+const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
 
 /**
  * Localhost for testing purposes.
@@ -36,20 +38,25 @@ export enum AuthorizationFlowType {
 }
 
 export default class Config {
-  public static RegisterMoreEnvironments() {}
-
   public static DefaultMessengerType(env: Environment): MessengerType {
     switch (env) {
       case Util.Environments.SandboxDev:
+      case Util.Environments.StagingDev:
       case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
       case Util.Environments.SandboxAdmin:
+      case Util.Environments.StagingAdmin:
         return MessengerType.Pusher;
+
+      case Util.Environments.StagingTwitch:
       case Util.Environments.SandboxTwitch:
       case Util.Environments.Production:
         return MessengerType.Twitch;
+
       case Util.Environments.Server:
         return MessengerType.Server;
+
       case Util.Environments.Testing:
+        return MessengerType.Pusher;
     }
     return MessengerType.Unknown;
   }
@@ -57,12 +64,16 @@ export default class Config {
   public static DefaultPurchaseClientType(env: Environment): PurchaseClientType {
     switch (env) {
       case Util.Environments.SandboxDev:
+      case Util.Environments.StagingDev:
         return PurchaseClientType.Dev;
       case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
       case Util.Environments.SandboxAdmin:
+      case Util.Environments.StagingAdmin:
       case Util.Environments.SandboxTwitch:
+      case Util.Environments.StagingTwitch:
       case Util.Environments.Production:
         return PurchaseClientType.Twitch;
+
       case Util.Environments.Server:
         return PurchaseClientType.Server;
       case Util.Environments.Testing:
@@ -75,13 +86,17 @@ export default class Config {
   public static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType {
     switch (env) {
       case Util.Environments.SandboxDev:
+      case Util.Environments.StagingDev:
         return AuthorizationFlowType.TestAuth;
-      case Util.Environments.Admin:
+      case Util.Environments.Admin :
       case Util.Environments.SandboxAdmin:
-        return AuthorizationFlowType.AdminAuth;
+      case Util.Environments.StagingAdmin:
+          return AuthorizationFlowType.AdminAuth;
       case Util.Environments.SandboxTwitch:
+      case Util.Environments.StagingTwitch:
       case Util.Environments.Production:
         return AuthorizationFlowType.TwitchAuth;
+
       case Util.Environments.Server:
       case Util.Environments.Testing:
     }
@@ -93,6 +108,7 @@ export default class Config {
     switch (env) {
       case Util.Environments.Production:
       case Util.Environments.SandboxTwitch:
+      case Util.Environments.StagingTwitch:
         return true;
     }
 
@@ -112,6 +128,18 @@ export default class Config {
       };
     }
 
+    if (
+      env === Util.Environments.StagingDev ||
+      env === Util.Environments.StagingTwitch ||
+      env === Util.Environments.StagingAdmin
+    ) {
+      return {
+        FakeAuthURL: STAGING_URL,
+        PortalURL: STAGING_PORTAL_URL,
+        ServerURL: STAGING_URL
+      };
+    }
+
     if (env === Util.Environments.Testing) {
       return {
         FakeAuthURL: LOCALHOST_URL,
@@ -125,9 +153,5 @@ export default class Config {
       PortalURL: PORTAL_URL,
       ServerURL: API_URL
     };
-  }
-
-  public static OtherEnvironmentCheck(window: Window | any): Environment | undefined {
-    return undefined;
   }
 }

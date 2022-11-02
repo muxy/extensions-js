@@ -103,6 +103,15 @@ export class Muxy implements MuxyInterface {
       case Util.Environments.SandboxAdmin:
         SDKInfoText.push('Running in sandbox environment in the Admin panel');
         break;
+      case Util.Environments.StagingDev:
+        SDKInfoText.push('Running in staging environment outside of Twitch');
+        break;
+      case Util.Environments.StagingTwitch:
+        SDKInfoText.push('Running in staging environment on Twitch');
+        break;
+      case Util.Environments.StagingAdmin:
+        SDKInfoText.push('Running in staging environment in the Admin panel');
+        break;
       case Util.Environments.Admin:
         SDKInfoText.push('Running in the Admin panel');
         break;
@@ -526,6 +535,9 @@ export class Muxy implements MuxyInterface {
 
     if (this.debugOptions.environment) {
       Util.overrideEnvironment = Util.Environments[this.debugOptions.environment];
+      if (!Util.overrideEnvironment) {
+        throw new Error('Muxy.setup() was called with an unknown override environment');
+      }
     }
 
     this.client = new StateClient(this.loadPromise, this.debugOptions);
@@ -603,8 +615,6 @@ export class Muxy implements MuxyInterface {
     return undefined;
   }
 }
-
-Config.RegisterMoreEnvironments();
 
 /**
  * Global Muxy singleton object.

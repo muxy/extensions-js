@@ -8,20 +8,19 @@ import { JWT } from './twitch';
 export declare class Environment {
     environment: string;
 }
-/**
- * Possible runtime environments for the SDK.
- * @since 1.0.0
- * @deprecated Use {@link Util.Environments} instead.
- */
-/** @ignore */ export declare const ENVIRONMENTS: {
-    ADMIN: Environment;
-    PRODUCTION: Environment;
-    SANDBOX_ADMIN: Environment;
-    SANDBOX_DEV: Environment;
-    SANDBOX_TWITCH: Environment;
-    SERVER: Environment;
-    TESTING: Environment;
+/** @ignore */ declare const availableEnvironments: {
+    Admin: Environment;
+    Production: Environment;
+    SandboxAdmin: Environment;
+    SandboxDev: Environment;
+    SandboxTwitch: Environment;
+    StagingAdmin: Environment;
+    StagingDev: Environment;
+    StagingTwitch: Environment;
+    Server: Environment;
+    Testing: Environment;
 };
+export declare type AllowedEnvironments = keyof typeof availableEnvironments;
 export interface ConsolePrintOptions {
     type?: string;
     boxed?: boolean;
@@ -66,10 +65,18 @@ export default class Util {
      * @type {Object}
      */
     static get Environments(): {
-        [key: string]: Environment;
+        Admin: Environment;
+        Production: Environment;
+        SandboxAdmin: Environment;
+        SandboxDev: Environment;
+        SandboxTwitch: Environment;
+        StagingAdmin: Environment;
+        StagingDev: Environment;
+        StagingTwitch: Environment;
+        Server: Environment;
+        Testing: Environment;
     };
     static overrideEnvironment?: Environment;
-    static registerEnvironment(key: string, env: Environment): void;
     static getQueryParam(key: string): string;
     /**
      * Wraps a string error response in an (immediately rejected) promise.
@@ -196,10 +203,10 @@ export default class Util {
      * @param {Object} jwt - The auth JWT token as returned from the auth harness.
      */
     static extractJWTInfo(jwt: string): JWT;
-    private static availableEnvironments;
 }
 /** @ignore */ export declare const consolePrint: typeof Util.consolePrint;
 /** @ignore */ export declare const forceType: typeof Util.forceType;
 /** @ignore */ export declare const eventPatternMatch: typeof Util.eventPatternMatch;
 /** @ignore */ export declare const CurrentEnvironment: typeof Util.currentEnvironment;
 /** @ignore */ export declare const errorPromise: typeof Util.errorPromise;
+export {};

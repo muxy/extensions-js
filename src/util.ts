@@ -38,24 +38,36 @@ export class Environment {
   environment: 'server'
 };
 
+/** @ignore */ const StagingDevEnvironment: Environment = {
+  environment: 'staging'
+};
+
+/** @ignore */ const StagingAdministrationEnvironment: Environment = {
+  environment: 'staging'
+};
+
+/** @ignore */ const StagingTwitchEnvironment: Environment = {
+  environment: 'staging'
+}
+
 /** @ignore */ const TestingEnvironment: Environment = {
   environment: 'testing'
 };
 
-/**
- * Possible runtime environments for the SDK.
- * @since 1.0.0
- * @deprecated Use {@link Util.Environments} instead.
- */
-/** @ignore */ export const ENVIRONMENTS = {
-  ADMIN: AdministrationEnvironment,
-  PRODUCTION: ProductionEnvironment,
-  SANDBOX_ADMIN: SandboxAdministrationEnvironment,
-  SANDBOX_DEV: SandboxDevEnvironment,
-  SANDBOX_TWITCH: SandboxTwitchEnvironment,
-  SERVER: ServerEnvironment,
-  TESTING: TestingEnvironment
+/** @ignore */ const availableEnvironments = {
+  Admin: AdministrationEnvironment,
+  Production: ProductionEnvironment,
+  SandboxAdmin: SandboxAdministrationEnvironment,
+  SandboxDev: SandboxDevEnvironment,
+  SandboxTwitch: SandboxTwitchEnvironment,
+  StagingAdmin: StagingAdministrationEnvironment,
+  StagingDev: StagingDevEnvironment,
+  StagingTwitch: StagingTwitchEnvironment,
+  Server: ServerEnvironment,
+  Testing: TestingEnvironment
 };
+
+export type AllowedEnvironments = keyof typeof availableEnvironments;
 
 export interface ConsolePrintOptions {
   type?: string;
@@ -103,14 +115,10 @@ export default class Util {
    * @type {Object}
    */
   static get Environments() {
-    return this.availableEnvironments;
+    return availableEnvironments;
   }
 
   public static overrideEnvironment?: Environment;
-
-  public static registerEnvironment(key: string, env: Environment) {
-    this.availableEnvironments[key] = env;
-  }
 
   public static getQueryParam(key: string) {
     const params = new URLSearchParams(window.location.search);
@@ -219,16 +227,11 @@ export default class Util {
       return Util.overrideEnvironment;
     }
 
-    const otherEnv = Config.OtherEnvironmentCheck(vWindow);
-    if (otherEnv !== undefined) {
-      return otherEnv as Environment;
-    }
-
     try {
       // NodeJS module system, assume server.
       // istanbul ignore if
       if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
-        return ENVIRONMENTS.SERVER;
+        return ServerEnvironment;
       }
 
       // Not in an iframe, assume sandbox dev.
@@ -236,43 +239,43 @@ export default class Util {
         // See if we're in the admin state.
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-          return ENVIRONMENTS.SANDBOX_ADMIN;
+          return SandboxAdministrationEnvironment;
         }
 
-        return ENVIRONMENTS.SANDBOX_DEV;
+        return SandboxDevEnvironment;
       }
 
       // See if we're in the admin pane.
       if (vWindow.name === 'Admin') {
-        return ENVIRONMENTS.ADMIN;
+        return AdministrationEnvironment;
       }
 
       // See if we're in the admin state, but in an iframed context.
       const iFrameUrlParams = new URLSearchParams(window.location.search);
       if (iFrameUrlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-        return ENVIRONMENTS.SANDBOX_ADMIN;
+        return SandboxAdministrationEnvironment;
       }
 
       // Loaded from Twitch's CDN, assume production.
       if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-        return ENVIRONMENTS.PRODUCTION;
+        return ProductionEnvironment;
       }
 
       // Not on Twitch but with their referrer, assume sandbox twitch.
       if (vWindow.Twitch) {
-        return ENVIRONMENTS.SANDBOX_TWITCH;
+        return SandboxTwitchEnvironment;
       }
 
       // Explicity set testing variable, assume testing.
       if ((vWindow as any).testing) {
-        return ENVIRONMENTS.TESTING;
+        return TestingEnvironment
       }
     } catch (err) {
       Util.consolePrint(err.toString(), { type: 'error' });
     }
 
     // Default, assume we're running in sandbox dev environment.
-    return ENVIRONMENTS.SANDBOX_DEV;
+    return SandboxDevEnvironment;
   }
 
   /**
@@ -437,16 +440,6 @@ export default class Util {
       throw new Error('Failed to parse JWT');
     }
   }
-
-  private static availableEnvironments: { [key: string]: Environment } = {
-    Admin: AdministrationEnvironment,
-    Production: ProductionEnvironment,
-    SandboxAdmin: SandboxAdministrationEnvironment,
-    SandboxDev: SandboxDevEnvironment,
-    SandboxTwitch: SandboxTwitchEnvironment,
-    Server: ServerEnvironment,
-    Testing: TestingEnvironment
-  };
 }
 
 /** @ignore */ export const consolePrint = Util.consolePrint;

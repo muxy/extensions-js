@@ -2,13 +2,15 @@
  * @module Muxy
  */
 
+import { TriviaQuestionState, type UserInfo, type PurchaseClient } from './types';
+
 import Analytics from './analytics';
 import Config from './config';
 import { DebuggingOptions, DebugOptions } from './debug';
-import { allowTestingHelixToken } from "./debug-token";
+import { allowTestingHelixToken } from './debug-token';
 import DefaultMessenger, { Messenger } from './messenger';
-import DefaultPurchaseClient, { PurchaseClient } from './purchase-client';
-import SDK, { TriviaQuestionState, UserInfo } from './sdk';
+import DefaultPurchaseClient from './purchase-client';
+import SDK from './sdk';
 import StateClient from './state-client';
 import TwitchClient from './twitch-client';
 import Ext from './twitch-ext';
@@ -189,7 +191,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {StateClient}
    */
-  public client: StateClient;
+  public client: StateClient | null;
 
   /**
    * Internal {@link Messenger}.
@@ -197,7 +199,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {Messenger}
    */
-  public messenger: Messenger;
+  public messenger: Messenger | null;
 
   /**
    * Internal {@link PurchaseClient}.
@@ -205,7 +207,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {PurchaseClient}
    */
-  public purchaseClient: PurchaseClient;
+  public purchaseClient: PurchaseClient | null;
 
   /**
    * Enables/Disables the PurchaseClient for coin/bits/etc transactions.
@@ -221,7 +223,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {TwitchClient}.
    */
-  public cachedTwitchClient: TwitchClient;
+  public cachedTwitchClient: TwitchClient | null;
 
   /**
    * Internal {@link Analytics}.
@@ -229,7 +231,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {Analytics}.
    */
-  public analytics: Analytics;
+  public analytics: Analytics | null;
 
   /**
    * Internal caching for most recent context callback result.
@@ -245,7 +247,7 @@ export class Muxy implements MuxyInterface {
    * @ignore
    * @type {User}
    */
-  public user: User;
+  public user: User | null;
 
   /**
    * Promise to resolve once the Muxy singleton is full loaded and ready
@@ -381,7 +383,7 @@ export class Muxy implements MuxyInterface {
     Ext.extensionID = extensionID;
 
     // Auth callback handler
-    Ext.onAuthorized(this.debugOptions, (auth) => {
+    Ext.onAuthorized(this.debugOptions, auth => {
       if (!auth) {
         this.loadReject('Received invalid authorization from Twitch');
         return;
@@ -392,7 +394,7 @@ export class Muxy implements MuxyInterface {
       this.messenger.channelID = auth.channelId;
       this.client.updateAuth(auth.token);
 
-      const resolvePromise = (user) => {
+      const resolvePromise = user => {
         this.user = user;
 
         if (this.debugOptions) {
@@ -427,6 +429,10 @@ export class Muxy implements MuxyInterface {
               this.SDKClients[key].timeOffset = offset;
             }
 
+            // Pull user settings from environment
+            user.language = Util.getQueryParam('language') || user.language;
+            user.locale = Util.getQueryParam('locale') || user.locale;
+
             updateUserContextSettings.call(this);
 
             this.didLoad = true;
@@ -434,7 +440,7 @@ export class Muxy implements MuxyInterface {
             resolvePromise(user);
             this.loadResolve();
           })
-          .catch((err) => {
+          .catch(err => {
             this.loadReject(err);
           });
       };
@@ -447,7 +453,7 @@ export class Muxy implements MuxyInterface {
       }
     });
 
-    Ext.onContext((context) => {
+    Ext.onContext(context => {
       this.context = context;
 
       if (this.user) {
@@ -562,7 +568,7 @@ export class Muxy implements MuxyInterface {
     };
   }
 
-/**
+  /**
    * Debugging callback, used to start the helix token flow.
    * @internal
    * @type {function}

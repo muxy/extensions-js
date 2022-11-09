@@ -5,6 +5,9 @@ import { TwitchBitsProduct, TwitchBitsTransaction } from './twitch';
 import mxy from './muxy';
 import Ext from './twitch-ext';
 
+import { PurchaseClientType, TransactionResponse } from './types/purchases';
+import type { Product, PurchaseClient, Transaction } from './types/purchases';
+
 // Muxy dev variable
 declare global {
   interface Window {
@@ -12,50 +15,12 @@ declare global {
   }
 }
 
-export enum PurchaseClientType {
-  Dev,
-  Server,
-  Test,
-  Twitch,
-  Unknown
-}
-
-export type TransactionResponse = Record<string, never>;
-
-export interface PurchaseClient {
-  getProducts(): Promise<Product[]>;
-  purchase(sku: string): void;
-
-  onUserPurchase(callback: (transaction: Transaction, sendToServerPromise: Promise<TransactionResponse>) => void): void;
-  onUserPurchaseCanceled(callback: () => void): void;
-}
-
-export interface Cost {
-  amount: number;
-  type: string;
-}
-
-export interface Product {
-  sku: string;
-  displayName: string;
-  cost: Cost;
-}
-
-export interface Transaction {
-  transactionId: string;
-  product: Product;
-  userId: string;
-  displayName: string;
-  initiator: any;
-  transactionReceipt: string;
-}
-
 // TwitchPurchaseClient implements the basic 'purchase client' interface.
 // This is used by SDK to provide low-level access to twitch bits transactions.
 export class TwitchPurchaseClient implements PurchaseClient {
   private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
   private cancelationCallbacks: Array<() => void> = [];
-  private identifier: string = "";
+  private identifier: string = '';
 
   constructor(id: string) {
     if (!window?.Twitch?.ext?.bits) {
@@ -67,18 +32,17 @@ export class TwitchPurchaseClient implements PurchaseClient {
     // Twitch only allows one handler for complete/cancel
     window.Twitch.ext.bits.onTransactionComplete((tx: TwitchBitsTransaction) => {
       if (tx.initiator.toLowerCase() === 'current_user') {
-
         let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});
         if (mxy.transactionsEnabled) {
           promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
         }
 
-        this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
+        this.purchaseCallbacks.forEach(cb => cb(tx, promise));
       }
     });
 
     window.Twitch.ext.bits.onTransactionCancelled(() => {
-      this.cancelationCallbacks.forEach((cb) => cb());
+      this.cancelationCallbacks.forEach(cb => cb());
     });
   }
 
@@ -157,7 +121,7 @@ export class TwitchPurchaseClient implements PurchaseClient {
 // This is used by SDK to provide low-level access to stubbed transactions.
 export class DevPurchaseClient implements PurchaseClient {
   private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
-  private identifier: string = "";
+  private identifier: string = '';
 
   public constructor(id: string) {
     this.identifier = id;
@@ -184,24 +148,24 @@ export class DevPurchaseClient implements PurchaseClient {
       const golangDate = `${date} ${time} +0000 UTC`;
 
       const jwtHeader = {
-        "alg": "HS256",
-        "typ": "JWT"
+        alg: 'HS256',
+        typ: 'JWT'
       };
 
       const jwtPayload = {
-        "topic": "bits_transaction_receipt",
-        "exp": Math.round((testDate.getTime() + 10000) / 1000),
-        "data": {
-          "transactionId": `test:${testDate.getTime()}`,
-          "time": golangDate,
-          "userId": mxy.user.twitchID,
-          "product": {
-            "domainId": `twitch.ext.${Ext.extensionID}`,
-            "sku": item.sku,
-            "displayName": item.displayName,
-            "cost": {
-              "amount": item.cost.amount,
-              "type": item.cost.type,
+        topic: 'bits_transaction_receipt',
+        exp: Math.round((testDate.getTime() + 10000) / 1000),
+        data: {
+          transactionId: `test:${testDate.getTime()}`,
+          time: golangDate,
+          userId: mxy.user.twitchID,
+          product: {
+            domainId: `twitch.ext.${Ext.extensionID}`,
+            sku: item.sku,
+            displayName: item.displayName,
+            cost: {
+              amount: item.cost.amount,
+              type: item.cost.type
             }
           }
         }
@@ -221,7 +185,7 @@ export class DevPurchaseClient implements PurchaseClient {
             userId: mxy.user.twitchID,
             displayName: 'DevTestUser',
             initiator: 'current_user',
-            transactionReceipt: testEncodedJWT,
+            transactionReceipt: testEncodedJWT
           };
 
           let promise: Promise<TransactionResponse> = Promise.resolve<TransactionResponse>({});
@@ -229,7 +193,7 @@ export class DevPurchaseClient implements PurchaseClient {
             promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
           }
 
-          this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
+          this.purchaseCallbacks.forEach(cb => cb(tx, promise));
         } else {
           throw new Error(`Product with SKU "${sku}" not found in product list.`);
         }
@@ -310,7 +274,7 @@ export class DevPurchaseClient implements PurchaseClient {
 export class TestPurchaseClient implements PurchaseClient {
   private purchaseCallbacks: Array<(tx: Transaction, promise: Promise<TransactionResponse>) => void> = [];
   private purchaseCanceledCallbacks: Array<(tx: Transaction) => void> = [];
-  private identifier: string = "";
+  private identifier: string = '';
 
   public constructor(id: string) {
     this.identifier = id;
@@ -329,7 +293,7 @@ export class TestPurchaseClient implements PurchaseClient {
     if ('MEDKIT_PURCHASABLE_ITEMS' in window) {
       const devItems = this.getProducts();
 
-      const products = Object.keys(devItems).map((sku) => devItems[sku]);
+      const products = Object.keys(devItems).map(sku => devItems[sku]);
       const foundItem = products.find((sku: string) => sku === sku);
 
       setTimeout(() => {
@@ -348,7 +312,7 @@ export class TestPurchaseClient implements PurchaseClient {
             promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
           }
 
-          this.purchaseCallbacks.forEach(function (callback) {
+          this.purchaseCallbacks.forEach(callback => {
             callback(tx, promise);
           });
         } else {

@@ -1,3 +1,5 @@
+import { beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
+
 import StateClient from '../src/state-client';
 import { ENVIRONMENTS } from '../src/util';
 
@@ -60,7 +62,6 @@ describe('StateClient', () => {
     });
   });
 
-
   test('sets and gets viewer state', async () => {
     const client = new StateClient(loadedPromise, {});
     const auth = await StateClient.fetchTestAuth(clientId, {
@@ -88,25 +89,24 @@ describe('StateClient', () => {
 
   test('allows proper typing', async () => {
     interface ChannelState {
-      stringState: string,
-      numberState: number,
-      booleanState: boolean
+      stringState: string;
+      numberState: number;
+      booleanState: boolean;
     }
 
     const channelState = {
-      stringState: "hello",
+      stringState: 'hello',
       numberState: 123,
-      booleanState: true,
+      booleanState: true
     };
 
     // @ts-expect-error
     await broadcasterClient.setChannelState<ChannelState>(clientId, {
       // Missing required parameters of ChannelState
-      numberState: 123,
+      numberState: 123
     });
 
     mockXHR.__queueResponseMock(JSON.stringify(channelState));
-    expect(await broadcasterClient.getChannelState<ChannelState>(clientId))
-      .toMatchObject(channelState);
+    expect(await broadcasterClient.getChannelState<ChannelState>(clientId)).toMatchObject(channelState);
   });
 });

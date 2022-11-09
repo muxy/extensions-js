@@ -5,7 +5,7 @@ import Pusher, { Channel } from 'pusher-js';
 import pako from 'pako';
 
 import { DebugOptions } from './debug';
-import { CurrentEnvironment, Environment, ENVIRONMENTS } from './util';
+import { CurrentEnvironment } from './util';
 import Config from './config';
 
 export enum MessengerType {
@@ -32,25 +32,30 @@ export interface Messenger {
   close(): void;
 }
 
+export type ListenCallback<Payload> = (p: Payload, event: string) => void;
+
+export interface MessageEnvelope<Payload> {
+  data: Payload;
+  event: string;
+}
+
 function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic: string, msg: string) {
   if (msg.length === 0) {
     return {};
   }
 
-  if (msg[0] == '{' || msg[0] == '[') {
+  if (msg[0] === '{' || msg[0] === '[') {
     // JSON message
     return JSON.parse(msg);
-  } else if (msg[0] == '<') {
+  } else if (msg[0] === '<') {
     // Fragmented multipart message.
     // A fragmented multipart message has plaintext header <index, count> right
     // before the data string.
     const close = msg.indexOf('>');
     const header = msg.substr(1, close - 1);
-    const parts = header.split(',').map(function (x) {
-      return parseInt(x, 10);
-    });
+    const parts = header.split(',').map(x => parseInt(x, 10));
 
-    if (parts.length != 2) {
+    if (parts.length !== 2) {
       return {};
     }
 
@@ -70,7 +75,7 @@ function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic
 
     let allFragmentsReceived = true;
     for (let i = 0; i < count; ++i) {
-      if (fragments[i].length == 0) {
+      if (fragments[i].length === 0) {
         allFragmentsReceived = false;
         break;
       }
@@ -86,16 +91,12 @@ function parseMessage(messageBuffer: Record<string, string[]>, id: string, topic
 
     const fullMessage = fragments.join('');
     const decoded = atob(fullMessage);
-    const integers = decoded.split('').map(function (x) {
-      return x.charCodeAt(0);
-    });
+    const integers = decoded.split('').map(x => x.charCodeAt(0));
     const bytes = new Uint8Array(integers);
     return JSON.parse(pako.inflate(bytes, { to: 'string' }));
   } else {
     const decoded = atob(msg);
-    const integers = decoded.split('').map(function (x) {
-      return x.charCodeAt(0);
-    });
+    const integers = decoded.split('').map(x => x.charCodeAt(0));
     const bytes = new Uint8Array(integers);
     return JSON.parse(pako.inflate(bytes, { to: 'string' }));
   }
@@ -150,7 +151,7 @@ class TwitchMessenger implements Messenger {
     const cb = (t, datatype, message) => {
       try {
         const parsed = parseMessage(messageBuffer, id, topic, message);
-        if (parsed == null) {
+        if (!parsed) {
           return;
         }
 
@@ -215,16 +216,12 @@ class PusherMessenger implements Messenger {
     const scopedEvent = `${CurrentEnvironment().environment}:${id}:${event}`;
     this.debug.onPubsubSend(id, event, target, body);
 
-    client.signedRequest(
-      id,
-      'POST',
-      'pusher_broadcast', {
-        data: body,
-        event: scopedEvent,
-        target,
-        user_id: this.channelID
-      }
-    );
+    client.signedRequest(id, 'POST', 'pusher_broadcast', {
+      data: body,
+      event: scopedEvent,
+      target,
+      user_id: this.channelID
+    });
   }
 
   public listen(id, topic, callback) {
@@ -237,10 +234,10 @@ class PusherMessenger implements Messenger {
     }
 
     const messageBuffer: Record<string, string[]> = {};
-    const cb = (message) => {
+    const cb = message => {
       try {
         const parsed = parseMessage(messageBuffer, id, topic, message.message);
-        if (parsed == null) {
+        if (!parsed) {
           return;
         }
 
@@ -286,34 +283,21 @@ class ServerMessenger implements Messenger {
   public send(id, event, target, body, client) {
     this.debug.onPubsubSend(id, event, target, body);
 
-    client.signedRequest(
-      id,
-      'POST',
-      'broadcast', {
-        data: body,
-        event,
-        target,
-        user_id: this.channelID
-      }
-    );
+    client.signedRequest(id, 'POST', 'broadcast', {
+      data: body,
+      event,
+      target,
+      user_id: this.channelID
+    });
   }
 
-  /* tslint:disable:no-console */
   public listen(id, topic, callback): CallbackHandle {
-    console.error('Server-side message receiving is not implemented.');
-
-    return {
-      cb: () => {
-        /* Not Implemented */
-      },
-      target: ''
-    };
+    throw new Error('Server-side message receiving is not implemented.');
   }
 
   public unlisten(id, handle: CallbackHandle): void {
-    console.error('Server-side message receiving is not implemented.');
+    throw new Error('Server-side message receiving is not implemented.');
   }
-  /* tslint:enable:no-console */
 
   public close() {
     /* Nothing to close server-side. */

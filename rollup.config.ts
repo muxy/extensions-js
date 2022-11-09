@@ -8,9 +8,11 @@ const pkg = require('./package.json');
 
 export default {
   input: 'src/muxy.ts',
-  output: [{ file: pkg.main, name: 'Muxy', format: 'umd' }, { file: pkg.module, format: 'es' }],
+  output: [
+    { file: pkg.main, name: 'Muxy', format: 'umd', exports: 'named' },
+    { file: pkg.module, format: 'es' }
+  ],
 
-  sourcemap: true,
   watch: {
     include: 'src/**'
   },

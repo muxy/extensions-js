@@ -2,21 +2,8 @@
  * @module SDK
  */
 import { ObserverHandler } from './observer';
-import { JWT, TwitchAuth } from './twitch';
+import { TwitchAuth } from './twitch';
 import Util from './util';
-
-export class UserUpdateCallbackHandle extends ObserverHandler<User> {
-  private cb: (user: User) => void;
-
-  constructor(cb) {
-    super();
-    this.cb = cb;
-  }
-
-  public notify(user: User): void {
-    this.cb(user);
-  }
-}
 
 /**
  * Stores fields related to the current extension user, either a viewer or the broadcaster.
@@ -41,6 +28,8 @@ export default class User {
   public theme: string;
   public volume: number;
   public timeOffset: number;
+  public language: string;
+  public locale: string;
 
   /**
    * Defines the current user's role on Twitch relative to the current channel being
@@ -217,6 +206,22 @@ export default class User {
      */
     this.volume = 0;
 
+    /**
+     * User's preferred language code as set on Twitch.
+     *
+     * @since 2.5.0
+     * @type {string}
+     */
+    this.language = 'en';
+
+    /**
+     * User's locale as set on Twitch.
+     *
+     * @since 2.5.0
+     * @type {string}
+     */
+    this.locale = 'en-US';
+
     // If the user has authorized an extension to see their Twitch ID, it will be
     // hidden in the JWT payload.
     this.extractJWTInfo(auth.token);
@@ -279,5 +284,18 @@ export default class User {
    */
   public getOffsetDate(): Date {
     return new Date(new Date().getTime() + this.timeOffset);
+  }
+}
+
+export class UserUpdateCallbackHandle extends ObserverHandler<User> {
+  private cb: (user: User) => void;
+
+  constructor(cb: (user: User) => void) {
+    super();
+    this.cb = cb;
+  }
+
+  public notify(user: User): void {
+    this.cb(user);
   }
 }

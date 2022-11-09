@@ -1,6 +1,13 @@
 /**
  * @module SDK
  */
+
+export class ObserverHandler<Observable> {
+  public notify(obj: Observable): void {
+    throw new Error('Abstract Method!');
+  }
+}
+
 export default class Observer<Observable> {
   private observers: Array<ObserverHandler<Observable>> = [];
 
@@ -20,11 +27,5 @@ export default class Observer<Observable> {
     for (; i < max; i += 1) {
       this.observers[i].notify(obj);
     }
-  }
-}
-
-export class ObserverHandler<Observable> {
-  public notify(obj: Observable): void {
-    throw new Error('Abstract Method!');
   }
 }

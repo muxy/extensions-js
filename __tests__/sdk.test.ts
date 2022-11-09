@@ -1,5 +1,7 @@
+import { beforeAll, describe, expect, it, jest, test } from '@jest/globals';
+
 import Analytics from '../src/analytics';
-import { DebugOptions, DefaultDebugOptions } from '../src/debug';
+import { DefaultDebugOptions } from '../src/debug';
 import Messenger from '../src/messenger';
 import SDK from '../src/sdk';
 import StateClient from '../src/state-client';
@@ -29,7 +31,7 @@ describe('SDK', () => {
     client = new StateClient(prom, new DefaultDebugOptions());
     messenger = Messenger(new DefaultDebugOptions());
     messenger.close();
-    purchaseClient = new TestPurchaseClient();
+    purchaseClient = new TestPurchaseClient(auth.clientId);
     user = new User(auth);
   });
 

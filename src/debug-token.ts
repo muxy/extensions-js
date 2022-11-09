@@ -1,8 +1,8 @@
-import User from "./user";
+import User from './user';
 import Config from './config';
 import Util from './util';
 
-const TESTING_HELIX_TOKEN_KEY = "testing_helix_token";
+const TESTING_HELIX_TOKEN_KEY = 'testing_helix_token';
 
 interface Token {
   access_token: string;
@@ -17,11 +17,11 @@ declare global {
   }
 }
 
-export function allowTestingHelixToken (id: string, user: User) {
+export function allowTestingHelixToken(id: string, user: User) {
   if (user.helixToken) {
     return {
       async openHelixUrl() {
-        return "";
+        return '';
       }
     };
   }
@@ -46,8 +46,8 @@ export function allowTestingHelixToken (id: string, user: User) {
 
     // Immediately refresh the token. Note that localToken is a string.
     const req = await fetch(`${urls.PortalURL}/api/tokenauth/${clientId}/refresh`, {
-      method: "POST",
-      body: localToken,
+      method: 'POST',
+      body: localToken
     });
 
     // Store and use the token.
@@ -56,10 +56,12 @@ export function allowTestingHelixToken (id: string, user: User) {
       localStorage.setItem(TESTING_HELIX_TOKEN_KEY, JSON.stringify(newToken));
       user.helixToken = newToken.access_token;
 
-      console.log("Using testing helix token. Call window.ClearHelixToken() to stop this behavior");
+      /* eslint-disable-next-line no-console */
+      console.log('Using testing helix token. Call window.ClearHelixToken() to stop this behavior');
       return true;
     } else {
-      console.log("Failed to refresh helix token.");
+      /* eslint-disable-next-line no-console */
+      console.log('Failed to refresh helix token.');
       return false;
     }
   };
@@ -72,7 +74,7 @@ export function allowTestingHelixToken (id: string, user: User) {
       const js = (await req.json()) as Token;
 
       if (js.access_token) {
-        localStorage.setItem("testing_helix_token", JSON.stringify(js));
+        localStorage.setItem('testing_helix_token', JSON.stringify(js));
         clearInterval(interval);
         useHelixToken();
         return;
@@ -81,7 +83,8 @@ export function allowTestingHelixToken (id: string, user: User) {
       attempts++;
 
       if (attempts > 120) {
-        console.log("Failed to obtain authentication, try again by calling ObtainHelixToken");
+        /* eslint-disable-next-line no-console */
+        console.log('Failed to obtain authentication, try again by calling ObtainHelixToken');
         clearInterval(interval);
         return;
       }
@@ -89,25 +92,33 @@ export function allowTestingHelixToken (id: string, user: User) {
   };
 
   const obtainHelixToken = async () => {
-    const rng = [...Array(8)].map(() => Math.random().toString(36)[2]).join("");
+    const rng = Array(8)
+      .fill(0)
+      .map(() => Math.random().toString(36)[2])
+      .join('');
 
-    console.log("To obtain a helix token, visit ");
+    /* eslint-disable no-console */
+    console.log('To obtain a helix token, visit ');
     console.log(`  ${urls.PortalURL}/login/twitch/token/${clientId}/${rng}`);
+    /* eslint-enable no-console */
 
     pollForHelixToken(rng);
-    return "";
+    return '';
   };
 
   const openHelixUrl = async () => {
-    const rng = [...Array(8)].map(() => Math.random().toString(36)[2]).join("");
-    window.open(`${urls.PortalURL}/login/twitch/token/${clientId}/${rng}`, "_blank");
+    const rng = Array(8)
+      .fill(0)
+      .map(() => Math.random().toString(36)[2])
+      .join('');
+    window.open(`${urls.PortalURL}/login/twitch/token/${clientId}/${rng}`, '_blank');
     pollForHelixToken(rng);
-    return "";
+    return '';
   };
 
   const clearHelixToken = () => {
     localStorage.removeItem(TESTING_HELIX_TOKEN_KEY);
-    user.helixToken = "";
+    user.helixToken = '';
   };
 
   window.ObtainHelixToken = obtainHelixToken;
@@ -115,9 +126,10 @@ export function allowTestingHelixToken (id: string, user: User) {
 
   const loadHelixToken = useHelixToken();
 
-  loadHelixToken.then((result) => {
+  loadHelixToken.then(result => {
     if (!result) {
-      console.log(" To use the debug helix token flow, call window.ObtainHelixToken() in the console");
+      /* eslint-disable-next-line no-console */
+      console.log(' To use the debug helix token flow, call window.ObtainHelixToken() in the console');
     }
   });
 

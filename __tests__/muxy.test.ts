@@ -1,9 +1,6 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
+
 import Muxy from '../src/muxy';
-
-import { TwitchContext } from '../src/twitch';
-
-const someJWT =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsX2lkIjoiMTI2OTU1MjExIiwicm9sZSI6InZpZXdlciIsImV4dGVuc2lvbl9pZCI6ImthM3kyOHJyZ2gyZjUzM214dDltbDM3ZnY2emI4ayIsImV4cCI6MjE0NzQ4MzY0Nywib3BhcXVlX3VzZXJfaWQiOiJBODk0MzIzNiIsImFsbG93ZWRfc3RhZ2UiOiJ0ZXN0aW5nIiwiYXBwX2lkIjoibXlfYXdlc29tZV9hcHAifQ.0a5_yR6bTc2V4boC0kH_0mz2v34dJQq4p1iOBA70lt4';
 
 describe('Muxy', () => {
   beforeAll(() => {
@@ -19,14 +16,9 @@ describe('Muxy', () => {
   });
 
   beforeEach(() => {
-    // The pusher SDK likes to hang jest unless we disconnect
-    if (Muxy.messenger) {
-      Muxy.messenger.close();
-    }
-
     // Reset Muxy object.
     Muxy.SDKClients = {};
-    Muxy.twitchClientID = null;
+    Muxy.twitchClientID = '';
     Muxy.cachedTwitchClient = null;
     Muxy.client = null;
     Muxy.messenger = null;
@@ -44,9 +36,9 @@ describe('Muxy', () => {
       isPaused: false,
       isTheatreMode: false,
       language: 'en',
-      mode: 'playing',
-      playbackMode: 'unknown',
-      theme: 'default',
+      mode: 'viewer',
+      playbackMode: 'video',
+      theme: 'dark',
       videoResolution: '1920x1080',
       volume: 90
     };
@@ -63,47 +55,52 @@ describe('Muxy', () => {
   });
 
   afterEach(() => {
+    // The pusher SDK likes to hang jest unless we disconnect
+    if (Muxy.messenger) {
+      Muxy.messenger.close();
+    }
+
     // Force resolve to remove open file handle.
     Muxy.loadReject('clear');
   });
 
-  it('needs an extension client id to setup', () => {
+  test('needs an extension client id to setup', () => {
     expect(() => {
       // @ts-ignore
       Muxy.setup({ quiet: true });
     }).toThrow(Error);
   });
 
-  it('can be set up', () => {
+  test('can be set up', () => {
     Muxy.setup({
       clientID: 'testextensionid',
       quiet: true
     });
   });
 
-  it('cannot call setup() twice', () => {
+  test('cannot call setup() twice', () => {
     Muxy.setup({ clientID: 'testextensionid', quiet: true });
     expect(() => {
       Muxy.setup({ clientID: 'textextensionid', quiet: true });
     }).toThrow(Error);
   });
 
-  it('accepts client id on setup', () => {
+  test('accepts client id on setup', () => {
     Muxy.setup({ clientID: 'testextensionid', quiet: true });
   });
 
-  it('cannot create SDK objects before setup', () => {
+  test('cannot create SDK objects before setup', () => {
     expect(() => {
       const sdk = new Muxy.SDK();
     }).toThrow(Error);
   });
 
-  it('can create new SDK instances', () => {
+  test('can create new SDK instances', () => {
     Muxy.setup({ clientID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });
 
-  it('can create new SDK instances with new scope', () => {
+  test('can create new SDK instances with new scope', () => {
     Muxy.setup({ clientID: 'testextensionid', quiet: true });
     const sdk = new Muxy.SDK();
   });

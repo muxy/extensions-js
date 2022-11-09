@@ -1,5 +1,5 @@
 import { MessengerType } from './messenger';
-import { PurchaseClientType } from './purchase-client';
+import { PurchaseClientType } from './types/purchases';
 import Util, { Environment } from './util';
 
 /**
@@ -14,7 +14,7 @@ const PORTAL_URL = 'https://dev.muxy.io';
  * @ignore
  */
 const SANDBOX_URL = 'https://sandbox.api.muxy.io';
-const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
+const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io';
 
 /**
  * Localhost for testing purposes.
@@ -41,7 +41,7 @@ export default class Config {
   public static DefaultMessengerType(env: Environment): MessengerType {
     switch (env) {
       case Util.Environments.SandboxDev:
-      case Util.Environments.Admin : // Currently unable to hook into the twitch pubsub system from admin
+      case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
       case Util.Environments.SandboxAdmin:
         return MessengerType.Pusher;
       case Util.Environments.SandboxTwitch:
@@ -58,7 +58,7 @@ export default class Config {
     switch (env) {
       case Util.Environments.SandboxDev:
         return PurchaseClientType.Dev;
-      case Util.Environments.Admin : // Currently unable to hook into the twitch pubsub system from admin
+      case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
       case Util.Environments.SandboxAdmin:
       case Util.Environments.SandboxTwitch:
       case Util.Environments.Production:
@@ -76,9 +76,9 @@ export default class Config {
     switch (env) {
       case Util.Environments.SandboxDev:
         return AuthorizationFlowType.TestAuth;
-      case Util.Environments.Admin :
+      case Util.Environments.Admin:
       case Util.Environments.SandboxAdmin:
-          return AuthorizationFlowType.AdminAuth;
+        return AuthorizationFlowType.AdminAuth;
       case Util.Environments.SandboxTwitch:
       case Util.Environments.Production:
         return AuthorizationFlowType.TwitchAuth;
@@ -100,7 +100,11 @@ export default class Config {
   }
 
   public static GetServerURLs(env: Environment): ServerURLs {
-    if (env === Util.Environments.SandboxDev || env === Util.Environments.SandboxTwitch || env === Util.Environments.SandboxAdmin) {
+    if (
+      env === Util.Environments.SandboxDev ||
+      env === Util.Environments.SandboxTwitch ||
+      env === Util.Environments.SandboxAdmin
+    ) {
       return {
         FakeAuthURL: SANDBOX_URL,
         PortalURL: PORTAL_URL,

@@ -288,10 +288,10 @@ export declare class Muxy implements MuxyInterface {
      */
     debug(options: DebuggingOptions): void;
     /**
-       * Debugging callback, used to start the helix token flow.
-       * @internal
-       * @type {function}
-       */
+     * Debugging callback, used to start the helix token flow.
+     * @internal
+     * @type {function}
+     */
     private openHelixUrl;
     /**
      * Start the debug helix token flow.

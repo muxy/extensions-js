@@ -1,6 +1,8 @@
+import { describe, expect, test } from '@jest/globals';
+
 import Config, { AuthorizationFlowType } from '../src/config';
 import { MessengerType } from '../src/messenger';
-import { Environment, ENVIRONMENTS } from '../src/util';
+import Util, { Environment, ENVIRONMENTS } from '../src/util';
 
 describe('Config', () => {
   describe('DefaultMessengerType', () => {
@@ -49,10 +51,11 @@ describe('Config', () => {
     test('should return localhost urls object when TESTING environment set', () => {
       const returnObj = {
         FakeAuthURL: 'http://localhost:5000',
+        PortalURL: 'https://dev.staging.muxy.io',
         ServerURL: 'http://localhost:5000'
       };
 
-      expect(Config.GetServerURLs(ENVIRONMENTS.TESTING)).toEqual(returnObj);
+      expect(Config.GetServerURLs(Util.Environments.Testing)).toEqual(returnObj);
     });
 
     test('should return sandbox and api urls object when invalid environment set', () => {
@@ -62,6 +65,7 @@ describe('Config', () => {
 
       const returnObj = {
         FakeAuthURL: 'https://sandbox.api.muxy.io',
+        PortalURL: 'https://dev.muxy.io',
         ServerURL: 'https://api.muxy.io'
       };
 

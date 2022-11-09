@@ -56,9 +56,11 @@ export function allowTestingHelixToken(id: string, user: User) {
       localStorage.setItem(TESTING_HELIX_TOKEN_KEY, JSON.stringify(newToken));
       user.helixToken = newToken.access_token;
 
+      /* eslint-disable-next-line no-console */
       console.log('Using testing helix token. Call window.ClearHelixToken() to stop this behavior');
       return true;
     } else {
+      /* eslint-disable-next-line no-console */
       console.log('Failed to refresh helix token.');
       return false;
     }
@@ -81,6 +83,7 @@ export function allowTestingHelixToken(id: string, user: User) {
       attempts++;
 
       if (attempts > 120) {
+        /* eslint-disable-next-line no-console */
         console.log('Failed to obtain authentication, try again by calling ObtainHelixToken');
         clearInterval(interval);
         return;
@@ -94,8 +97,10 @@ export function allowTestingHelixToken(id: string, user: User) {
       .map(() => Math.random().toString(36)[2])
       .join('');
 
+    /* eslint-disable no-console */
     console.log('To obtain a helix token, visit ');
     console.log(`  ${urls.PortalURL}/login/twitch/token/${clientId}/${rng}`);
+    /* eslint-enable no-console */
 
     pollForHelixToken(rng);
     return '';
@@ -121,8 +126,9 @@ export function allowTestingHelixToken(id: string, user: User) {
 
   const loadHelixToken = useHelixToken();
 
-  loadHelixToken.then((result) => {
+  loadHelixToken.then(result => {
     if (!result) {
+      /* eslint-disable-next-line no-console */
       console.log(' To use the debug helix token flow, call window.ObtainHelixToken() in the console');
     }
   });

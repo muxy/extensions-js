@@ -1,97 +1,66 @@
 {
   "name": "@muxy/extensions-js",
   "author": "Muxy, Inc.",
-  "version": "2.5.0-20220825.1",
+  "version": "2.5.0-20221109.1",
   "license": "ISC",
   "repository": "https://github.com/muxy/extensions-js",
   "description": "Provides easy access to Muxy's powerful backend architecture for Twitch extensions.",
   "main": "dist/medkit.umd.js",
   "module": "dist/medkit.esm.js",
-  "typings": "dist/types/src/index.d.ts",
   "scripts": {
     "build": "tsc --module commonjs --skipLibCheck && rollup -c rollup.config.ts",
     "dev": "rollup -c rollup.config.ts -w",
     "lint": "npx eslint 'src/**/*.ts' '__tests__/**/*.ts'",
     "prebuild": "rimraf dist",
     "prepack": "npm run build",
-    "report-coverage": "cat ./coverage/lcov.info | coveralls",
-    "test": "TZ=UTC jest __tests__/*.ts",
-    "test:watch": "jest --watch",
-    "test:prod": "npm run lint && npm run test -- --coverage --no-cache"
+    "report-coverage": "coveralls < ./coverage/lcov.info",
+    "test": "TZ=UTC npx jest",
+    "test:watch": "npx jest --watch",
+    "test:ci": "npm run lint && npm run test -- --ci --coverage --no-cache --reporters='default' --reporters='./tools/ga-jest-reporter'"
   },
-  "lint-staged": {
-    "{src,__tests__}/**/*.ts": [
-      "prettier --config ./.prettierrc.js --write",
-      "git add"
-    ]
-  },
-  "jest": {
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/__tests__/"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 90,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
-      }
-    },
-    "collectCoverage": true,
-    "verbose": true,
-    "resolver": "./tools/resolver.js"
+  "dependencies": {
+    "eslint-config-prettier": "^8.5.0",
+    "gulp": "^3.9.1",
+    "pako": "^2.1.0",
+    "pusher-js": "^7.4.0"
   },
   "devDependencies": {
-    "@types/pusher-js": "^5.1.0",
-    "@typescript-eslint/eslint-plugin": "^5.9.1",
-    "@typescript-eslint/parser": "^5.9.1",
+    "@babel/preset-typescript": "^7.18.6",
+    "@typescript-eslint/eslint-plugin": "^5.42.1",
+    "@typescript-eslint/parser": "^5.42.1",
     "browser-resolve": "^2.0.0",
-    "colors": "^1.4.0",
-    "commitizen": "^4.2.4",
     "coveralls": "^3.1.1",
-    "cross-env": "^7.0.3",
-    "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.7.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
-    "js-yaml": "^4.1.0",
-    "lint-staged": "^12.1.7",
-    "prettier": "^2.5.1",
-    "prompt": "^1.2.1",
-    "regenerator-runtime": "^0.13.9",
+    "eslint": "^8.27.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.2",
+    "jest": "^29.3.1",
+    "jest-environment-jsdom-global": "^4.0.0",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "prompt": "^1.3.0",
+    "regenerator-runtime": "^0.13.10",
     "rimraf": "^3.0.2",
-    "rollup": "^2.64.0",
+    "rollup": "^2.79.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-typescript2": "^0.31.1",
-    "semantic-release": "^18.0.1",
-    "shins": "^2.6.0",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4",
-    "validate-commit-msg": "^2.14.0",
-    "widdershins": "^4.0.1"
-  },
-  "dependencies": {
-    "eslint-config-prettier": "^8.2.0",
-    "gulp": "^4.0.2",
-    "pako": "^2.0.4",
-    "pusher-js": "^7.0.3"
+    "rollup-plugin-typescript2": "^0.34.1",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4",
+    "validate-commit-msg": "^1.1.3"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "lint-staged": {
+    "{src,__tests__}/**/*.ts": [
+      "npx eslint 'src/**/*.ts' '__tests__/**/*.ts' --fix",
+      "prettier --config ./.prettierrc.js --write",
+      "git add"
+    ]
   }
 }

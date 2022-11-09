@@ -1,20 +1,22 @@
-import { TestPurchaseClient } from "../src/purchase-client";
-import Util from "../src/util";
+import { beforeEach, describe, expect, test } from '@jest/globals';
 
-const devTestProducts = [{
-  sku: "UNITTESTSKU01",
-  displayName: "Unit Test SKU 01",
-  cost: {
+import { TestPurchaseClient } from '../src/purchase-client';
+
+const devTestProducts = [
+  {
+    sku: 'UNITTESTSKU01',
+    displayName: 'Unit Test SKU 01',
+    cost: {
       amount: 1,
-      type: "test-cost",
-    },
+      type: 'test-cost'
+    }
   },
   {
-    sku: "UNITTESTSKU02",
-    displayName: "Unit Test SKU 02",
+    sku: 'UNITTESTSKU02',
+    displayName: 'Unit Test SKU 02',
     cost: {
-     amount: 2,
-     type: "test-cost",
+      amount: 2,
+      type: 'test-cost'
     }
   }
 ];
@@ -26,8 +28,8 @@ describe('PurchaseClient', () => {
     });
 
     test('should return an array of products', async () => {
-      const client = new TestPurchaseClient();
-      
+      const client = new TestPurchaseClient('client id');
+
       await expect(client.getProducts()).resolves.toMatchObject(devTestProducts);
     });
   });

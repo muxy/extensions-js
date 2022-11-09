@@ -37,12 +37,12 @@ export class TwitchPurchaseClient implements PurchaseClient {
           promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
         }
 
-        this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
+        this.purchaseCallbacks.forEach(cb => cb(tx, promise));
       }
     });
 
     window.Twitch.ext.bits.onTransactionCancelled(() => {
-      this.cancelationCallbacks.forEach((cb) => cb());
+      this.cancelationCallbacks.forEach(cb => cb());
     });
   }
 
@@ -193,7 +193,7 @@ export class DevPurchaseClient implements PurchaseClient {
             promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
           }
 
-          this.purchaseCallbacks.forEach((cb) => cb(tx, promise));
+          this.purchaseCallbacks.forEach(cb => cb(tx, promise));
         } else {
           throw new Error(`Product with SKU "${sku}" not found in product list.`);
         }
@@ -293,7 +293,7 @@ export class TestPurchaseClient implements PurchaseClient {
     if ('MEDKIT_PURCHASABLE_ITEMS' in window) {
       const devItems = this.getProducts();
 
-      const products = Object.keys(devItems).map((sku) => devItems[sku]);
+      const products = Object.keys(devItems).map(sku => devItems[sku]);
       const foundItem = products.find((sku: string) => sku === sku);
 
       setTimeout(() => {
@@ -312,7 +312,7 @@ export class TestPurchaseClient implements PurchaseClient {
             promise = mxy.client.sendTransactionToServer(this.identifier, tx) as Promise<TransactionResponse>;
           }
 
-          this.purchaseCallbacks.forEach(function (callback) {
+          this.purchaseCallbacks.forEach(callback => {
             callback(tx, promise);
           });
         } else {

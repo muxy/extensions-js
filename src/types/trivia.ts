@@ -14,6 +14,24 @@ export enum TriviaQuestionState {
 }
 
 /**
+ * Represents an option on a trivia question
+ *
+ * @property {string} id - The id of the option
+ * @property {string} name - The name of the option
+ * @property {string} short_name - The name of the option for smaller displays.
+ * @property {string} description - A description for the option
+ * @property {string} image - A url that hosts an image to show with the option
+ */
+export interface TriviaOption {
+  id: string;
+  name: string;
+  short_name: string;
+  description: string;
+  image?: string;
+  order?: number;
+}
+
+/**
  * Represents a trivia question
  *
  * @property {string} id - The id of the question
@@ -36,51 +54,12 @@ export interface TriviaQuestion {
 }
 
 /**
- * Represents an option on a trivia question
- *
- * @property {string} id - The id of the option
- * @property {string} name - The name of the option
- * @property {string} short_name - The name of the option for smaller displays.
- * @property {string} description - A description for the option
- * @property {string} image - A url that hosts an image to show with the option
- */
-export interface TriviaOption {
-  id: string;
-  name: string;
-  short_name: string;
-  description: string;
-  image?: string;
-  order?: number;
-}
-
-/**
  * The response from `getExtensionTriviaJoinedTeam`.
  *
  * @property {string} id - A unique identifier representing this team.
  */
 export interface TriviaTeam {
   id: string;
-}
-
-export interface TriviaLeaderboard {
-  leaderboard: TriviaLeaderboardTeam[];
-}
-
-/**
- * Contains scoring info for one trivia team
- *
- * @property {string} team_id - The id of the team
- * @property {number} combined_score - The total score the team has
- * @property {Map<string, TriviaLeaderboardQuestionResults>} questions - A map of scores per question asked
- */
-export interface TriviaLeaderboardTeam {
-  team_id: string;
-  combined_score: number;
-  questions: TriviaLeaderboardQuestionResultsMap;
-}
-
-export interface TriviaLeaderboardQuestionResultsMap {
-  [key: string]: TriviaLeaderboardQuestionResults;
 }
 
 /**
@@ -102,6 +81,27 @@ export interface TriviaLeaderboardQuestionResults {
   percent_correct: number;
   team_votes: number;
   score_values: number[];
+}
+
+export interface TriviaLeaderboardQuestionResultsMap {
+  [key: string]: TriviaLeaderboardQuestionResults;
+}
+
+/**
+ * Contains scoring info for one trivia team
+ *
+ * @property {string} team_id - The id of the team
+ * @property {number} combined_score - The total score the team has
+ * @property {Map<string, TriviaLeaderboardQuestionResults>} questions - A map of scores per question asked
+ */
+export interface TriviaLeaderboardTeam {
+  team_id: string;
+  combined_score: number;
+  questions: TriviaLeaderboardQuestionResultsMap;
+}
+
+export interface TriviaLeaderboard {
+  leaderboard: TriviaLeaderboardTeam[];
 }
 
 export interface TriviaStateResponse {

@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
+
 import { TwitchAuth } from '../src/twitch';
 import User from '../src/user';
 import { UserUpdateCallbackHandle } from '../src/user';

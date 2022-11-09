@@ -28,6 +28,29 @@ export interface ConsolePrintOptions {
     style?: string;
 }
 /**
+ * The response from {@link getTwitchEnvironment}.
+ *
+ * @typedef {Object[]} TwitchEnvironment
+ *
+ * @property {string} anchor - The type of the anchor in which the extension is activated.
+ * Valid only when platform is "web". Valid values: "component", "panel", "video_overlay".
+ * @property {string} language - The user’s language setting (e.g., "en").
+ * @property {string} mode - The extension’s mode. Valid values: "config", "dashboard", "viewer".
+ * @property {string} platform - The platform on which the Twitch client is running. Valid values: "mobile", "web".
+ * @property {string} state - The release state of the extension.
+ * @property {string} version - The version of the extension
+ * Valid values: "testing", "hosted_test", "approved", "released",
+ * "ready_for_review", "in_review", "pending_action", "uploading".
+ */
+export interface TwitchEnvironment {
+    anchor: string;
+    language: string;
+    mode: string;
+    platform: string;
+    state: string;
+    version: string;
+}
+/**
  * A collection of static utility functions, available at {@link Muxy.Util}.
  *
  * @example
@@ -174,29 +197,6 @@ export default class Util {
      */
     static extractJWTInfo(jwt: string): JWT;
     private static availableEnvironments;
-}
-/**
- * The response from {@link getTwitchEnvironment}.
- *
- * @typedef {Object[]} TwitchEnvironment
- *
- * @property {string} anchor - The type of the anchor in which the extension is activated.
- * Valid only when platform is "web". Valid values: "component", "panel", "video_overlay".
- * @property {string} language - The user’s language setting (e.g., "en").
- * @property {string} mode - The extension’s mode. Valid values: "config", "dashboard", "viewer".
- * @property {string} platform - The platform on which the Twitch client is running. Valid values: "mobile", "web".
- * @property {string} state - The release state of the extension.
- * @property {string} version - The version of the extension
- * Valid values: "testing", "hosted_test", "approved", "released",
- * "ready_for_review", "in_review", "pending_action", "uploading".
- */
-export interface TwitchEnvironment {
-    anchor: string;
-    language: string;
-    mode: string;
-    platform: string;
-    state: string;
-    version: string;
 }
 /** @ignore */ export declare const consolePrint: typeof Util.consolePrint;
 /** @ignore */ export declare const forceType: typeof Util.forceType;

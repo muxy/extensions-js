@@ -48,7 +48,7 @@ export declare type ResponseHook = <InType = unknown, OutType = unknown>(resp: I
  *
  * @ignore
  */
-export declare class HookManager<HookCallback> implements Iterable<Hook<HookCallback>> {
+export declare class HookManager<HookCallback extends RequestHook | ResponseHook> implements Iterable<Hook<HookCallback>> {
     private callbacks;
     get length(): number;
     add(success: HookCallback, failure?: HookCallback): number;

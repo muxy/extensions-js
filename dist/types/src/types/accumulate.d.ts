@@ -1,17 +1,4 @@
 /**
- * The response from {@link getAccumulateData}.
- *
- * @typedef {Object} AccumulateData
- *
- * @property {number} latest A Unix timestamp of the most recently posted JSON blob.
- *
- * @property {AccumulatePayload[]} data Array of all JSON blob payloads posted to this identifier.
- */
-export interface AccumulateData {
-    latest: number;
-    data: AccumulatePayload[];
-}
-/**
  * @typedef {Object} AccumulatePayload
  *
  * @property {number} observed A Unix timestamp of when this payload was received.
@@ -30,4 +17,17 @@ export interface AccumulatePayload {
     opaque_user_id: string;
     user_id: string;
     data: object;
+}
+/**
+ * The response from {@link getAccumulateData}.
+ *
+ * @typedef {Object} AccumulateData
+ *
+ * @property {number} latest A Unix timestamp of the most recently posted JSON blob.
+ *
+ * @property {AccumulatePayload[]} data Array of all JSON blob payloads posted to this identifier.
+ */
+export interface AccumulateData {
+    latest: number;
+    data: AccumulatePayload[];
 }

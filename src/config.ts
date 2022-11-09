@@ -14,7 +14,7 @@ const PORTAL_URL = 'https://dev.muxy.io';
  * @ignore
  */
 const SANDBOX_URL = 'https://sandbox.api.muxy.io';
-const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
+const STAGING_PORTAL_URL = 'https://dev.staging.muxy.io';
 
 /**
  * Localhost for testing purposes.

@@ -40,9 +40,9 @@ export default class Ext {
       window.parent.postMessage({ type: 'connect', id: this.extensionID }, '*');
     }, 150);
 
-    window.addEventListener('message', (auth) => {
+    window.addEventListener('message', auth => {
       let allowed = false;
-      allowedOrigins.forEach((origin) => {
+      allowedOrigins.forEach(origin => {
         const r = new RegExp(origin);
         if (r.test(auth.origin)) {
           allowed = true;
@@ -93,7 +93,7 @@ export default class Ext {
 
       case AuthorizationFlowType.TwitchAuth: {
         const timer = setTimeout(cb, 1000 * 15);
-        window.Twitch.ext.onAuthorized((auth) => {
+        window.Twitch.ext.onAuthorized(auth => {
           clearTimeout(timer);
 
           StateClient.setEnvironment(null, opts);
@@ -129,7 +129,7 @@ export default class Ext {
     if (Config.CanUseTwitchAPIs(CurrentEnvironment())) {
       window.Twitch.ext.purchases
         .getPrices()
-        .then((prices) => {
+        .then(prices => {
           cb(prices);
         })
         .catch(cb);

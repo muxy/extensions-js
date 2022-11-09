@@ -6,6 +6,31 @@
 import { ObserverHandler } from './observer';
 
 // Twitch types
+export interface HostingInfo {
+  hostedChannelId: string;
+  hostingChannelId: string;
+}
+
+export interface TwitchContext {
+  arePlayerControlsVisible: boolean;
+  bitrate: number;
+  bufferSize: number;
+  displayResolution: string;
+  game: string;
+  hlsLatencyBroadcaster: number;
+  hostingInfo?: HostingInfo;
+  isFullScreen: boolean;
+  isMuted: boolean;
+  isPaused: boolean;
+  isTheatreMode: boolean;
+  language: string;
+  mode: 'viewer' | 'dashboard' | 'config';
+  playbackMode: 'video' | 'audio' | 'remote' | 'chat-only';
+  theme: 'light' | 'dark';
+  videoResolution: string;
+  volume: number;
+}
+
 export class TwitchAuth {
   public clientId: string;
   public token: string;
@@ -26,15 +51,9 @@ export interface Position {
   y: number;
 }
 
-export interface TwitchBitsTransaction {
-  transactionId: string;
-  product: TwitchBitsProduct;
-  userId: string;
-  domainID: string;
-  transactionID: string;
-  displayName: string;
-  initiator: 'CURRENT_USER' | 'OTHER';
-  transactionReceipt: string;
+export interface TwitchBitsCost {
+  amount: number;
+  type: string;
 }
 
 export interface TwitchBitsProduct {
@@ -46,9 +65,15 @@ export interface TwitchBitsProduct {
   amount: string;
 }
 
-export interface TwitchBitsCost {
-  amount: number;
-  type: string;
+export interface TwitchBitsTransaction {
+  transactionId: string;
+  product: TwitchBitsProduct;
+  userId: string;
+  domainID: string;
+  transactionID: string;
+  displayName: string;
+  initiator: 'CURRENT_USER' | 'OTHER';
+  transactionReceipt: string;
 }
 
 // Twitch SDK Interfaces
@@ -149,31 +174,6 @@ export class HighlightChangedCallbackHandle extends ObserverHandler<boolean> {
   public notify(isHighlighted: boolean): void {
     this.cb(isHighlighted);
   }
-}
-
-export interface HostingInfo {
-  hostedChannelId: string;
-  hostingChannelId: string;
-}
-
-export interface TwitchContext {
-  arePlayerControlsVisible: boolean;
-  bitrate: number;
-  bufferSize: number;
-  displayResolution: string;
-  game: string;
-  hlsLatencyBroadcaster: number;
-  hostingInfo?: HostingInfo;
-  isFullScreen: boolean;
-  isMuted: boolean;
-  isPaused: boolean;
-  isTheatreMode: boolean;
-  language: string;
-  mode: 'viewer' | 'dashboard' | 'config';
-  playbackMode: 'video' | 'audio' | 'remote' | 'chat-only';
-  theme: 'light' | 'dark';
-  videoResolution: string;
-  volume: number;
 }
 
 // Twitch Global Object

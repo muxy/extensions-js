@@ -1,19 +1,21 @@
+import { describe, expect, test } from '@jest/globals';
+
 import Util from '../src/util';
 
 // Convenience test harness for forceType.
 function testForceType(value: any, expected: string) {
-  return function() {
+  return () => {
     Util.forceType(value, expected);
   };
 }
 
 describe('Util', () => {
   describe('errorPromise', () => {
-    it('rejects immediately', () => {
+    test('rejects immediately', () => {
       return expect(Util.errorPromise('error string')).rejects.toEqual('error string');
     });
 
-    it('passes error string', () => {
+    test('passes error string', () => {
       return expect(Util.errorPromise('error string')).rejects.toEqual('error string');
     });
   });
@@ -25,7 +27,7 @@ describe('Util', () => {
   });
 
   describe('currentEnvironment', () => {
-    it('correctly detects a sandbox development environment', () => {
+    test('correctly detects a sandbox development environment', () => {
       const sandboxWindow = {
         location: {
           origin: 'http://localhost:4000'
@@ -37,7 +39,7 @@ describe('Util', () => {
       expect(Util.currentEnvironment(sandboxWindow)).toEqual(Util.Environments.SandboxDev);
     });
 
-    it('correctly detects a sandbox twitch environment', () => {
+    test('correctly detects a sandbox twitch environment', () => {
       const stagingWindow = {
         location: {
           origin: 'http://localhost:4000'
@@ -49,7 +51,7 @@ describe('Util', () => {
       expect(Util.currentEnvironment(stagingWindow)).toEqual(Util.Environments.SandboxTwitch);
     });
 
-    it('correctly detects a production environment', () => {
+    test('correctly detects a production environment', () => {
       const productionWindow = {
         location: {
           origin: 'http://<extension id>.ext-twitch.tv'
@@ -66,7 +68,7 @@ describe('Util', () => {
   });
 
   describe('eventPatternMatch', () => {
-    it('correctly matches valid patterns', () => {
+    test('correctly matches valid patterns', () => {
       expect(Util.eventPatternMatch('a:b:c', 'a:b:c')).toBe(true);
       expect(Util.eventPatternMatch('a:b:c', 'a:b:*')).toBe(true);
       expect(Util.eventPatternMatch('a:b:c', 'a:*:c')).toBe(true);
@@ -76,7 +78,7 @@ describe('Util', () => {
       expect(Util.eventPatternMatch('a:b:c', '*:*:*')).toBe(true);
     });
 
-    it('does not match invalid patterns', () => {
+    test('does not match invalid patterns', () => {
       expect(Util.eventPatternMatch('a:b:c', 'a:b')).toBe(false);
       expect(Util.eventPatternMatch('a:b:c', 'a:b:**')).toBe(false);
       expect(Util.eventPatternMatch('a:b:c', 'a:b:d')).toBe(false);
@@ -88,7 +90,7 @@ describe('Util', () => {
   });
 
   describe('forceType', () => {
-    it('correctly identifies the basic types', () => {
+    test('correctly identifies the basic types', () => {
       const testUndefined = undefined;
       const testBoolean = true;
       const testNumber = 123;
@@ -104,7 +106,7 @@ describe('Util', () => {
       expect(testForceType(testObject, 'object')).not.toThrow();
     });
 
-    it('correctly detects incorrect types', () => {
+    test('correctly detects incorrect types', () => {
       const testUndefined = undefined;
       const testBoolean = true;
       const testNumber = 123;

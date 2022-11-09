@@ -1059,7 +1059,7 @@ export default class SDK {
           const now = new Date().valueOf();
           let deduped = false;
 
-          messageBuffer.forEach((b) => {
+          messageBuffer.forEach(b => {
             if (b.content === serialized) {
               if (now - b.timestamp < 5 * 1000) {
                 deduped = true;
@@ -1238,8 +1238,8 @@ export default class SDK {
     if (this.SKUs.length === 0) {
       throw new Error('getPrices() cannot be used unless SKUs are provided.');
     }
-    return new Promise((resolve) => {
-      Ext.getPrices((prices) => {
+    return new Promise(resolve => {
+      Ext.getPrices(prices => {
         resolve(prices);
       });
     });

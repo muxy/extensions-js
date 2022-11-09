@@ -1,4 +1,6 @@
-import StateClient  from '../src/state-client';
+import { beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
+
+import StateClient, { ResponseHook } from '../src/state-client';
 
 import * as mockXHR from '../libs/xhr-promise';
 import { DebugOptions } from '../src/debug';
@@ -66,7 +68,7 @@ describe('StateClient Hooks', () => {
   test('should use successful response hooks', async () => {
     const responseHook = jest.fn();
     const errResponseHook = jest.fn();
-    viewerClient.hooks.responses.add(responseHook, errResponseHook);
+    viewerClient.hooks.responses.add(responseHook as ResponseHook, errResponseHook as ResponseHook);
 
     mockXHR.__queueResponseMock('{"state":"hello"}');
 
@@ -84,7 +86,7 @@ describe('StateClient Hooks', () => {
 
     const responseHook = jest.fn();
     const errResponseHook = jest.fn();
-    client.hooks.responses.add(responseHook, errResponseHook);
+    client.hooks.responses.add(responseHook as ResponseHook, errResponseHook as ResponseHook);
 
     expect(await client.getViewerState(ClientId)).rejects;
 

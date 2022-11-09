@@ -131,21 +131,21 @@ export declare class Muxy implements MuxyInterface {
      * @ignore
      * @type {StateClient}
      */
-    client: StateClient;
+    client: StateClient | null;
     /**
      * Internal {@link Messenger}.
      *
      * @ignore
      * @type {Messenger}
      */
-    messenger: Messenger;
+    messenger: Messenger | null;
     /**
      * Internal {@link PurchaseClient}.
      *
      * @ignore
      * @type {PurchaseClient}
      */
-    purchaseClient: PurchaseClient;
+    purchaseClient: PurchaseClient | null;
     /**
      * Enables/Disables the PurchaseClient for coin/bits/etc transactions.
      *
@@ -159,14 +159,14 @@ export declare class Muxy implements MuxyInterface {
      * @ignore
      * @type {TwitchClient}.
      */
-    cachedTwitchClient: TwitchClient;
+    cachedTwitchClient: TwitchClient | null;
     /**
      * Internal {@link Analytics}.
      *
      * @ignore
      * @type {Analytics}.
      */
-    analytics: Analytics;
+    analytics: Analytics | null;
     /**
      * Internal caching for most recent context callback result.
      *
@@ -180,7 +180,7 @@ export declare class Muxy implements MuxyInterface {
      * @ignore
      * @type {User}
      */
-    user: User;
+    user: User | null;
     /**
      * Promise to resolve once the Muxy singleton is full loaded and ready
      * to be used. Use the {@see loaded} method instead of accessing directly.

@@ -13995,20 +13995,18 @@ function parseMessage(messageBuffer, id, topic, msg) {
     if (msg.length === 0) {
         return {};
     }
-    if (msg[0] == '{' || msg[0] == '[') {
+    if (msg[0] === '{' || msg[0] === '[') {
         // JSON message
         return JSON.parse(msg);
     }
-    else if (msg[0] == '<') {
+    else if (msg[0] === '<') {
         // Fragmented multipart message.
         // A fragmented multipart message has plaintext header <index, count> right
         // before the data string.
         var close_1 = msg.indexOf('>');
         var header = msg.substr(1, close_1 - 1);
-        var parts = header.split(',').map(function (x) {
-            return parseInt(x, 10);
-        });
-        if (parts.length != 2) {
+        var parts = header.split(',').map(function (x) { return parseInt(x, 10); });
+        if (parts.length !== 2) {
             return {};
         }
         var index = parts[0];
@@ -14024,7 +14022,7 @@ function parseMessage(messageBuffer, id, topic, msg) {
         fragments[index] = msg.substr(close_1 + 1);
         var allFragmentsReceived = true;
         for (var i = 0; i < count; ++i) {
-            if (fragments[i].length == 0) {
+            if (fragments[i].length === 0) {
                 allFragmentsReceived = false;
                 break;
             }
@@ -14036,17 +14034,13 @@ function parseMessage(messageBuffer, id, topic, msg) {
         delete messageBuffer[fragmentLookupKey];
         var fullMessage = fragments.join('');
         var decoded = atob(fullMessage);
-        var integers = decoded.split('').map(function (x) {
-            return x.charCodeAt(0);
-        });
+        var integers = decoded.split('').map(function (x) { return x.charCodeAt(0); });
         var bytes = new Uint8Array(integers);
         return JSON.parse(pako.inflate(bytes, { to: 'string' }));
     }
     else {
         var decoded = atob(msg);
-        var integers = decoded.split('').map(function (x) {
-            return x.charCodeAt(0);
-        });
+        var integers = decoded.split('').map(function (x) { return x.charCodeAt(0); });
         var bytes = new Uint8Array(integers);
         return JSON.parse(pako.inflate(bytes, { to: 'string' }));
     }
@@ -14094,7 +14088,7 @@ var TwitchMessenger = /** @class */ (function () {
         var cb = function (t, datatype, message) {
             try {
                 var parsed = parseMessage(messageBuffer, id, topic, message);
-                if (parsed == null) {
+                if (!parsed) {
                     return;
                 }
                 _this.debug.onPubsubReceive(id, topic, parsed);
@@ -14163,7 +14157,7 @@ var PusherMessenger = /** @class */ (function () {
         var cb = function (message) {
             try {
                 var parsed = parseMessage(messageBuffer, id, topic, message.message);
-                if (parsed == null) {
+                if (!parsed) {
                     return;
                 }
                 _this.debug.onPubsubReceive(id, topic, parsed);
@@ -14207,16 +14201,10 @@ var ServerMessenger = /** @class */ (function () {
         });
     };
     ServerMessenger.prototype.listen = function (id, topic, callback) {
-        console.error('Server-side message receiving is not implemented.');
-        return {
-            cb: function () {
-                /* Not Implemented */
-            },
-            target: ''
-        };
+        throw new Error('Server-side message receiving is not implemented.');
     };
     ServerMessenger.prototype.unlisten = function (id, handle) {
-        console.error('Server-side message receiving is not implemented.');
+        throw new Error('Server-side message receiving is not implemented.');
     };
     ServerMessenger.prototype.close = function () {
         /* Nothing to close server-side. */
@@ -14663,6 +14651,14 @@ var XHRPromise = /** @class */ (function () {
 /**
  * @module SDK
  */
+var ObserverHandler = /** @class */ (function () {
+    function ObserverHandler() {
+    }
+    ObserverHandler.prototype.notify = function (obj) {
+        throw new Error('Abstract Method!');
+    };
+    return ObserverHandler;
+}());
 var Observer = /** @class */ (function () {
     function Observer() {
         this.observers = [];
@@ -14683,19 +14679,10 @@ var Observer = /** @class */ (function () {
     };
     return Observer;
 }());
-var ObserverHandler = /** @class */ (function () {
-    function ObserverHandler() {
-    }
-    ObserverHandler.prototype.notify = function (obj) {
-        throw new Error('Abstract Method!');
-    };
-    return ObserverHandler;
-}());
 
 /**
  * @module SDK
  */
-// Twitch types
 var TwitchAuth = /** @class */ (function () {
     function TwitchAuth() {
     }
@@ -15802,18 +15789,6 @@ function DefaultPurchaseClient(identifier) {
     }
 }
 
-var UserUpdateCallbackHandle = /** @class */ (function (_super) {
-    __extends(UserUpdateCallbackHandle, _super);
-    function UserUpdateCallbackHandle(cb) {
-        var _this = _super.call(this) || this;
-        _this.cb = cb;
-        return _this;
-    }
-    UserUpdateCallbackHandle.prototype.notify = function (user) {
-        this.cb(user);
-    };
-    return UserUpdateCallbackHandle;
-}(ObserverHandler));
 /**
  * Stores fields related to the current extension user, either a viewer or the broadcaster.
  * These fields are automatically updated by the SDK.
@@ -16058,6 +16033,18 @@ var User = /** @class */ (function () {
     };
     return User;
 }());
+var UserUpdateCallbackHandle = /** @class */ (function (_super) {
+    __extends(UserUpdateCallbackHandle, _super);
+    function UserUpdateCallbackHandle(cb) {
+        var _this = _super.call(this) || this;
+        _this.cb = cb;
+        return _this;
+    }
+    UserUpdateCallbackHandle.prototype.notify = function (user) {
+        this.cb(user);
+    };
+    return UserUpdateCallbackHandle;
+}(ObserverHandler));
 
 /**
  * @module SDK
@@ -17614,7 +17601,7 @@ var TwitchClient = /** @class */ (function () {
     TwitchClient.prototype.setExtensionRequiredConfiguration = function (jwt, configurationString) {
         var environment = Util.getTwitchEnvironment();
         var token = Util.extractJWTInfo(jwt);
-        return this.signedTwitchHelixRequest("PUT", "extensions/".concat(this.extensionId, "/").concat(environment.version, "/required_configuration?channel_id=").concat(token.channel_id), '{}', jwt);
+        return this.signedTwitchHelixRequest('PUT', "extensions/".concat(this.extensionId, "/").concat(environment.version, "/required_configuration?channel_id=").concat(token.channel_id), '{}', jwt);
     };
     return TwitchClient;
 }());

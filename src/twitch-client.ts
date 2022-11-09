@@ -261,9 +261,10 @@ export default class TwitchClient {
     const token = Util.extractJWTInfo(jwt);
 
     return this.signedTwitchHelixRequest(
-      "PUT",
+      'PUT',
       `extensions/${this.extensionId}/${environment.version}/required_configuration?channel_id=${token.channel_id}`,
       '{}',
-      jwt);
+      jwt
+    );
   }
 }

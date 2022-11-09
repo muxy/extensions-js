@@ -6,12 +6,6 @@ export declare enum PurchaseClientType {
     Unknown = 4
 }
 export declare type TransactionResponse = Record<string, never>;
-export interface PurchaseClient {
-    getProducts(): Promise<Product[]>;
-    purchase(sku: string): void;
-    onUserPurchase(callback: (transaction: Transaction, sendToServerPromise: Promise<TransactionResponse>) => void): void;
-    onUserPurchaseCanceled(callback: () => void): void;
-}
 export interface Cost {
     amount: number;
     type: string;
@@ -28,4 +22,10 @@ export interface Transaction {
     displayName: string;
     initiator: any;
     transactionReceipt: string;
+}
+export interface PurchaseClient {
+    getProducts(): Promise<Product[]>;
+    purchase(sku: string): void;
+    onUserPurchase(callback: (transaction: Transaction, sendToServerPromise: Promise<TransactionResponse>) => void): void;
+    onUserPurchaseCanceled(callback: () => void): void;
 }

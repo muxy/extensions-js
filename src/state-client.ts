@@ -72,7 +72,7 @@ export interface Hook<HookCallback> {
 
 // Request hooks must return the config object, optionally after mutating it.
 export type RequestHook = (config: XHROptions) => Promise<XHROptions>;
-// Response hooks take an (optionally) typed object and return an (optinally) typed object.
+// Response hooks take an (optionally) typed object and return an (optionally) typed object.
 export type ResponseHook = <InType = unknown, OutType = unknown>(resp: InType) => Promise<OutType>;
 
 /**
@@ -84,7 +84,7 @@ export type ResponseHook = <InType = unknown, OutType = unknown>(resp: InType) =
  *
  * @ignore
  */
-export class HookManager<HookCallback> implements Iterable<Hook<HookCallback>> {
+export class HookManager<HookCallback extends RequestHook | ResponseHook> implements Iterable<Hook<HookCallback>> {
   private callbacks: Array<{
     failure: HookCallback;
     success: HookCallback;
@@ -163,7 +163,7 @@ class StateClient {
       url: `${debug.url || SERVER_URL}/v1/e/authtoken?role=${debug.role}` // pass role as a param for fixtures
     });
 
-    return xhr.send().then((resp) => {
+    return xhr.send().then(resp => {
       if (resp && resp.status < 400) {
         this.setEnvironment(null, debug);
         // Update the API Server variable to point to test

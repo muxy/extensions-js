@@ -2,6 +2,29 @@
  * @module SDK
  */
 import { ObserverHandler } from './observer';
+export interface HostingInfo {
+    hostedChannelId: string;
+    hostingChannelId: string;
+}
+export interface TwitchContext {
+    arePlayerControlsVisible: boolean;
+    bitrate: number;
+    bufferSize: number;
+    displayResolution: string;
+    game: string;
+    hlsLatencyBroadcaster: number;
+    hostingInfo?: HostingInfo;
+    isFullScreen: boolean;
+    isMuted: boolean;
+    isPaused: boolean;
+    isTheatreMode: boolean;
+    language: string;
+    mode: 'viewer' | 'dashboard' | 'config';
+    playbackMode: 'video' | 'audio' | 'remote' | 'chat-only';
+    theme: 'light' | 'dark';
+    videoResolution: string;
+    volume: number;
+}
 export declare class TwitchAuth {
     clientId: string;
     token: string;
@@ -19,15 +42,9 @@ export interface Position {
     x: number;
     y: number;
 }
-export interface TwitchBitsTransaction {
-    transactionId: string;
-    product: TwitchBitsProduct;
-    userId: string;
-    domainID: string;
-    transactionID: string;
-    displayName: string;
-    initiator: 'CURRENT_USER' | 'OTHER';
-    transactionReceipt: string;
+export interface TwitchBitsCost {
+    amount: number;
+    type: string;
 }
 export interface TwitchBitsProduct {
     sku: string;
@@ -37,9 +54,15 @@ export interface TwitchBitsProduct {
     cost: TwitchBitsCost;
     amount: string;
 }
-export interface TwitchBitsCost {
-    amount: number;
-    type: string;
+export interface TwitchBitsTransaction {
+    transactionId: string;
+    product: TwitchBitsProduct;
+    userId: string;
+    domainID: string;
+    transactionID: string;
+    displayName: string;
+    initiator: 'CURRENT_USER' | 'OTHER';
+    transactionReceipt: string;
 }
 export interface TwitchActionsSDK {
     followChannel(chan: string): void;
@@ -106,29 +129,6 @@ export declare class HighlightChangedCallbackHandle extends ObserverHandler<bool
     private cb;
     constructor(cb: (isHighlighted: boolean) => void);
     notify(isHighlighted: boolean): void;
-}
-export interface HostingInfo {
-    hostedChannelId: string;
-    hostingChannelId: string;
-}
-export interface TwitchContext {
-    arePlayerControlsVisible: boolean;
-    bitrate: number;
-    bufferSize: number;
-    displayResolution: string;
-    game: string;
-    hlsLatencyBroadcaster: number;
-    hostingInfo?: HostingInfo;
-    isFullScreen: boolean;
-    isMuted: boolean;
-    isPaused: boolean;
-    isTheatreMode: boolean;
-    language: string;
-    mode: 'viewer' | 'dashboard' | 'config';
-    playbackMode: 'video' | 'audio' | 'remote' | 'chat-only';
-    theme: 'light' | 'dark';
-    videoResolution: string;
-    volume: number;
 }
 export interface TwitchExtensionHelper {
     ext: TwitchSDK;

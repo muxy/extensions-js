@@ -3,11 +3,6 @@
  */
 import { ObserverHandler } from './observer';
 import { TwitchAuth } from './twitch';
-export declare class UserUpdateCallbackHandle extends ObserverHandler<User> {
-    private cb;
-    constructor(cb: (user: User) => void);
-    notify(user: User): void;
-}
 /**
  * Stores fields related to the current extension user, either a viewer or the broadcaster.
  * These fields are automatically updated by the SDK.
@@ -94,4 +89,9 @@ export default class User {
      * @return {Date}
      */
     getOffsetDate(): Date;
+}
+export declare class UserUpdateCallbackHandle extends ObserverHandler<User> {
+    private cb;
+    constructor(cb: (user: User) => void);
+    notify(user: User): void;
 }

@@ -1,14 +1,4 @@
 /**
- * The response from {@link getRankData}.
- *
- * @typedef {Object} RankData
- *
- * @property {RankScore[]} data - array of the rank data
- */
-export interface RankData {
-    data: RankScore[];
-}
-/**
  *
  * @typedef {Object} RankScore
  *
@@ -18,6 +8,16 @@ export interface RankData {
 export interface RankScore {
     key: string;
     score: number;
+}
+/**
+ * The response from {@link getRankData}.
+ *
+ * @typedef {Object} RankData
+ *
+ * @property {RankScore[]} data - array of the rank data
+ */
+export interface RankData {
+    data: RankScore[];
 }
 /**
  * @typedef {Object} RankResponse

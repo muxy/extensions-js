@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "eslint-config-prettier": "^8.5.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "pako": "^2.1.0",
     "pusher-js": "^7.4.0"
   },

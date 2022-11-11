@@ -27,43 +27,104 @@ describe('Util', () => {
   });
 
   describe('currentEnvironment', () => {
-    test('correctly detects a sandbox development environment', () => {
-      const sandboxWindow = {
-        location: {
-          origin: 'http://localhost:4000'
-        },
-        document: {
-          referrer: ''
-        }
-      };
-      expect(Util.currentEnvironment(sandboxWindow)).toEqual(Util.Environments.SandboxDev);
+    describe('when running on Twitch', () => {
+      test('uses production settings [Chrome]', () => {
+        const twitchWindow = {
+          location: {
+            host: '<extension id>.ext-twitch.tv',
+            ancestorOrigins: ['https://supervisor.ext-twitch.tv']
+          }
+        };
+
+        expect(Util.currentEnvironment(twitchWindow)).toEqual(Util.Environments.Production);
+      });
+
+      test('uses production settings [Firefox]', () => {
+        const twitchWindow = {
+          location: { host: '<extension id>.ext-twitch.tv' },
+          document: { referrer: 'https://supervisor.ext-twitch.tv' }
+        };
+
+        expect(Util.currentEnvironment(twitchWindow)).toEqual(Util.Environments.Production);
+      });
     });
 
-    test('correctly detects a sandbox twitch environment', () => {
-      const stagingWindow = {
-        location: {
-          origin: 'http://localhost:4000'
-        },
-        document: {
-          referrer: 'https://www.twitch.tv/test/dashboard'
-        }
-      };
-      expect(Util.currentEnvironment(stagingWindow)).toEqual(Util.Environments.SandboxTwitch);
+    describe('when running on localhost', () => {
+      test('uses sandbox dev settings', () => {
+        const localhostWindow = {
+          location: { host: 'localhost:4000' }
+        };
+
+        expect(Util.currentEnvironment(localhostWindow)).toEqual(Util.Environments.SandboxDev);
+      });
     });
 
-    test('correctly detects a production environment', () => {
-      const productionWindow = {
-        location: {
-          origin: 'http://<extension id>.ext-twitch.tv'
-        },
-        document: {
-          referrer: 'https://www.twitch.tv/test/dashboard'
-        },
-        top: {},
-        parent: {},
-        opener: null
-      };
-      expect(Util.currentEnvironment(productionWindow)).toEqual(Util.Environments.Production);
+    describe('when running in a hosted test', () => {
+      test('uses production twitch settings [Chrome]', () => {
+        const hostedTestWindow = {
+          location: {
+            host: '<extension client id>.ext-twitch.tv',
+            ancestorOrigins: ['https://supervisor.ext-twitch.tv']
+          }
+        };
+
+        expect(Util.currentEnvironment(hostedTestWindow)).toEqual(Util.Environments.Production);
+      });
+
+      test('uses production twitch settings [Firefox]', () => {
+        const hostedTestWindow = {
+          location: { host: '<extension client id>.ext-twitch.tv' },
+          document: { referrer: 'https://supervisor.ext-twitch.tv' }
+        };
+
+        expect(Util.currentEnvironment(hostedTestWindow)).toEqual(Util.Environments.Production);
+      });
+    });
+
+    describe('when running on dev portal', () => {
+      test('uses admin settings [Chrome]', () => {
+        const adminWindow = {
+          location: {
+            host: '<admin url>',
+            ancestorOrigins: ['https://dev.muxy.io']
+          }
+        };
+
+        expect(Util.currentEnvironment(adminWindow)).toEqual(Util.Environments.Admin);
+      });
+
+      test('uses admin settings [Firefox]', () => {
+        const adminWindow = {
+          location: { host: '<admin url>' },
+          document: { referrer: 'https://dev.muxy.io' }
+        };
+
+        expect(Util.currentEnvironment(adminWindow)).toEqual(Util.Environments.Admin);
+      });
+    });
+
+    describe('when running on staging dev portal', () => {
+      test('uses staging admin settings [Chrome]', () => {
+        const adminWindow = {
+          location: {
+            host: '<admin url>',
+            ancestorOrigins: ['https://dev.staging.muxy.io']
+          }
+        };
+
+        expect(Util.currentEnvironment(adminWindow)).toEqual(Util.Environments.StagingAdmin);
+      });
+
+      test('uses staging admin settings [Firefox]', () => {
+        const adminWindow = {
+          location: {
+            host: '<admin url>'
+          },
+          document: { referrer: 'https://dev.staging.muxy.io' }
+        };
+
+        expect(Util.currentEnvironment(adminWindow)).toEqual(Util.Environments.StagingAdmin);
+      });
     });
   });
 

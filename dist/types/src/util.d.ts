@@ -16,7 +16,6 @@ export declare class Environment {
 /** @ignore */ export declare const ENVIRONMENTS: {
     ADMIN: Environment;
     PRODUCTION: Environment;
-    SANDBOX_ADMIN: Environment;
     SANDBOX_DEV: Environment;
     SANDBOX_TWITCH: Environment;
     SERVER: Environment;
@@ -108,6 +107,7 @@ export default class Util {
      * @ignore
      */
     static isWindowFramed(overrideWindow?: Window): boolean;
+    static getParentUrl(window: Window): string | undefined;
     /**
      * currentEnvironment uses the hostname and available info to determine in what
      * environment the SDK is running. Possible values are available in {@link Util.Environments}.

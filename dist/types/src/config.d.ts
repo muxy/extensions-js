@@ -19,5 +19,5 @@ export default class Config {
     static GetAuthorizationFlowType(env: Environment): AuthorizationFlowType;
     static CanUseTwitchAPIs(env: Environment): boolean;
     static GetServerURLs(env: Environment): ServerURLs;
-    static OtherEnvironmentCheck(window: Window | any): Environment | undefined;
+    static OtherEnvironmentCheck(window: Window | Record<string, unknown>): Environment | undefined;
 }

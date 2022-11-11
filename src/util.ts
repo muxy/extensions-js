@@ -26,16 +26,22 @@ export class Environment {
   environment: 'sandbox'
 };
 
-/** @ignore */ const SandboxAdministrationEnvironment: Environment = {
-  environment: 'sandbox'
-};
-
 /** @ignore */ const SandboxTwitchEnvironment: Environment = {
   environment: 'sandbox'
 };
 
 /** @ignore */ const ServerEnvironment: Environment = {
   environment: 'server'
+};
+
+// Internal environments
+
+/** @ignore */ const StagingDevEnvironment: Environment = {
+  environment: 'staging'
+};
+
+/** @ignore */ const StagingAdministrationEnvironment: Environment = {
+  environment: 'staging'
 };
 
 /** @ignore */ const TestingEnvironment: Environment = {
@@ -50,7 +56,6 @@ export class Environment {
 /** @ignore */ export const ENVIRONMENTS = {
   ADMIN: AdministrationEnvironment,
   PRODUCTION: ProductionEnvironment,
-  SANDBOX_ADMIN: SandboxAdministrationEnvironment,
   SANDBOX_DEV: SandboxDevEnvironment,
   SANDBOX_TWITCH: SandboxTwitchEnvironment,
   SERVER: ServerEnvironment,
@@ -197,6 +202,24 @@ export default class Util {
     return isNotChildWindow && hasWindowAncestors;
   }
 
+  public static getParentUrl(window: Window): string | undefined {
+    if (window.location?.ancestorOrigins?.length) {
+      return window.location.ancestorOrigins[0];
+    }
+
+    if (window.document?.referrer) {
+      return window.document.referrer;
+    }
+
+    try {
+      return window.parent.location.host;
+    } catch (err) {
+      /* Trying to access parent from a CSP-restricted iframe */
+    }
+
+    return undefined;
+  }
+
   /**
    * currentEnvironment uses the hostname and available info to determine in what
    * environment the SDK is running. Possible values are available in {@link Util.Environments}.
@@ -206,6 +229,11 @@ export default class Util {
    * execution environment.
    */
   public static currentEnvironment(overrideWindow?: object): Environment {
+    // Blanket override, skip environment detection
+    if (Util.overrideEnvironment) {
+      return Util.overrideEnvironment;
+    }
+
     let vWindow: Window | any;
     if (typeof window !== 'undefined') {
       vWindow = window;
@@ -215,10 +243,7 @@ export default class Util {
       vWindow = overrideWindow;
     }
 
-    if (Util.overrideEnvironment) {
-      return Util.overrideEnvironment;
-    }
-
+    // Check custom environment detection hook
     const otherEnv = Config.OtherEnvironmentCheck(vWindow);
     if (otherEnv !== undefined) {
       return otherEnv as Environment;
@@ -228,51 +253,36 @@ export default class Util {
       // NodeJS module system, assume server.
       // istanbul ignore if
       if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
-        return ENVIRONMENTS.SERVER;
-      }
-
-      // Not in an iframe, assume sandbox dev.
-      if (!Util.isWindowFramed(vWindow)) {
-        // See if we're in the admin state.
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-          return ENVIRONMENTS.SANDBOX_ADMIN;
-        }
-
-        return ENVIRONMENTS.SANDBOX_DEV;
-      }
-
-      // See if we're in the admin pane.
-      if (vWindow.name === 'Admin') {
-        return ENVIRONMENTS.ADMIN;
-      }
-
-      // See if we're in the admin state, but in an iframed context.
-      const iFrameUrlParams = new URLSearchParams(window.location.search);
-      if (iFrameUrlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-        return ENVIRONMENTS.SANDBOX_ADMIN;
+        return Util.Environments.Server;
       }
 
       // Loaded from Twitch's CDN, assume production.
-      if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-        return ENVIRONMENTS.PRODUCTION;
+      if (/\.ext-twitch\.tv/.test(vWindow.location.host)) {
+        return Util.Environments.Production;
       }
 
-      // Not on Twitch but with their referrer, assume sandbox twitch.
-      if (vWindow.Twitch) {
-        return ENVIRONMENTS.SANDBOX_TWITCH;
+      const parentUrl = Util.getParentUrl(vWindow) || '';
+
+      // Not on Twitch but parent is a Twitch page and has the Twitch helper, assume sandbox twitch.
+      if (/\.ext-twitch\.tv/.test(parentUrl) && vWindow.Twitch) {
+        return Util.Environments.SandboxTwitch;
       }
 
-      // Explicity set testing variable, assume testing.
-      if ((vWindow as any).testing) {
-        return ENVIRONMENTS.TESTING;
+      // See if we're on production admin.
+      if (/dev\.muxy\.io/.test(parentUrl)) {
+        return Util.Environments.Admin;
+      }
+
+      // See if we're on staging admin.
+      if (/dev\.staging\.muxy\.io/.test(parentUrl)) {
+        return Util.Environments.StagingAdmin;
       }
     } catch (err) {
       Util.consolePrint(err.toString(), { type: 'error' });
     }
 
     // Default, assume we're running in sandbox dev environment.
-    return ENVIRONMENTS.SANDBOX_DEV;
+    return Util.Environments.SandboxDev;
   }
 
   /**
@@ -441,10 +451,11 @@ export default class Util {
   private static availableEnvironments: { [key: string]: Environment } = {
     Admin: AdministrationEnvironment,
     Production: ProductionEnvironment,
-    SandboxAdmin: SandboxAdministrationEnvironment,
     SandboxDev: SandboxDevEnvironment,
     SandboxTwitch: SandboxTwitchEnvironment,
     Server: ServerEnvironment,
+    StagingAdmin: StagingAdministrationEnvironment,
+    StagingDev: StagingDevEnvironment,
     Testing: TestingEnvironment
   };
 }

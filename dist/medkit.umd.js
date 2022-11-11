@@ -13632,31 +13632,21 @@
     /** @ignore */ var SandboxDevEnvironment = {
         environment: 'sandbox'
     };
-    /** @ignore */ var SandboxAdministrationEnvironment = {
-        environment: 'sandbox'
-    };
     /** @ignore */ var SandboxTwitchEnvironment = {
         environment: 'sandbox'
     };
     /** @ignore */ var ServerEnvironment = {
         environment: 'server'
     };
+    // Internal environments
+    /** @ignore */ var StagingDevEnvironment = {
+        environment: 'staging'
+    };
+    /** @ignore */ var StagingAdministrationEnvironment = {
+        environment: 'staging'
+    };
     /** @ignore */ var TestingEnvironment = {
         environment: 'testing'
-    };
-    /**
-     * Possible runtime environments for the SDK.
-     * @since 1.0.0
-     * @deprecated Use {@link Util.Environments} instead.
-     */
-    /** @ignore */ var ENVIRONMENTS = {
-        ADMIN: AdministrationEnvironment,
-        PRODUCTION: ProductionEnvironment,
-        SANDBOX_ADMIN: SandboxAdministrationEnvironment,
-        SANDBOX_DEV: SandboxDevEnvironment,
-        SANDBOX_TWITCH: SandboxTwitchEnvironment,
-        SERVER: ServerEnvironment,
-        TESTING: TestingEnvironment
     };
     /**
      * A collection of static utility functions, available at {@link Muxy.Util}.
@@ -13755,6 +13745,22 @@
             var hasWindowAncestors = !!(windowTop || windowParent);
             return isNotChildWindow && hasWindowAncestors;
         };
+        Util.getParentUrl = function (window) {
+            var _a, _b, _c;
+            if ((_b = (_a = window.location) === null || _a === void 0 ? void 0 : _a.ancestorOrigins) === null || _b === void 0 ? void 0 : _b.length) {
+                return window.location.ancestorOrigins[0];
+            }
+            if ((_c = window.document) === null || _c === void 0 ? void 0 : _c.referrer) {
+                return window.document.referrer;
+            }
+            try {
+                return window.parent.location.host;
+            }
+            catch (err) {
+                /* Trying to access parent from a CSP-restricted iframe */
+            }
+            return undefined;
+        };
         /**
          * currentEnvironment uses the hostname and available info to determine in what
          * environment the SDK is running. Possible values are available in {@link Util.Environments}.
@@ -13764,6 +13770,10 @@
          * execution environment.
          */
         Util.currentEnvironment = function (overrideWindow) {
+            // Blanket override, skip environment detection
+            if (Util.overrideEnvironment) {
+                return Util.overrideEnvironment;
+            }
             var vWindow;
             if (typeof window !== 'undefined') {
                 vWindow = window;
@@ -13771,9 +13781,7 @@
             if (overrideWindow) {
                 vWindow = overrideWindow;
             }
-            if (Util.overrideEnvironment) {
-                return Util.overrideEnvironment;
-            }
+            // Check custom environment detection hook
             var otherEnv = Config$1.OtherEnvironmentCheck(vWindow);
             if (otherEnv !== undefined) {
                 return otherEnv;
@@ -13782,44 +13790,31 @@
                 // NodeJS module system, assume server.
                 // istanbul ignore if
                 if (typeof module !== 'undefined' && module.exports && typeof vWindow === 'undefined') {
-                    return ENVIRONMENTS.SERVER;
-                }
-                // Not in an iframe, assume sandbox dev.
-                if (!Util.isWindowFramed(vWindow)) {
-                    // See if we're in the admin state.
-                    var urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-                        return ENVIRONMENTS.SANDBOX_ADMIN;
-                    }
-                    return ENVIRONMENTS.SANDBOX_DEV;
-                }
-                // See if we're in the admin pane.
-                if (vWindow.name === 'Admin') {
-                    return ENVIRONMENTS.ADMIN;
-                }
-                // See if we're in the admin state, but in an iframed context.
-                var iFrameUrlParams = new URLSearchParams(window.location.search);
-                if (iFrameUrlParams.get('muxyAdminInterface') || vWindow.name === 'SandboxAdmin') {
-                    return ENVIRONMENTS.SANDBOX_ADMIN;
+                    return Util.Environments.Server;
                 }
                 // Loaded from Twitch's CDN, assume production.
-                if (vWindow.location.origin.indexOf('.ext-twitch.tv') !== -1) {
-                    return ENVIRONMENTS.PRODUCTION;
+                if (/\.ext-twitch\.tv/.test(vWindow.location.host)) {
+                    return Util.Environments.Production;
                 }
-                // Not on Twitch but with their referrer, assume sandbox twitch.
-                if (vWindow.Twitch) {
-                    return ENVIRONMENTS.SANDBOX_TWITCH;
+                var parentUrl = Util.getParentUrl(vWindow) || '';
+                // Not on Twitch but parent is a Twitch page and has the Twitch helper, assume sandbox twitch.
+                if (/\.ext-twitch\.tv/.test(parentUrl) && vWindow.Twitch) {
+                    return Util.Environments.SandboxTwitch;
                 }
-                // Explicity set testing variable, assume testing.
-                if (vWindow.testing) {
-                    return ENVIRONMENTS.TESTING;
+                // See if we're on production admin.
+                if (/dev\.muxy\.io/.test(parentUrl)) {
+                    return Util.Environments.Admin;
+                }
+                // See if we're on staging admin.
+                if (/dev\.staging\.muxy\.io/.test(parentUrl)) {
+                    return Util.Environments.StagingAdmin;
                 }
             }
             catch (err) {
                 Util.consolePrint(err.toString(), { type: 'error' });
             }
             // Default, assume we're running in sandbox dev environment.
-            return ENVIRONMENTS.SANDBOX_DEV;
+            return Util.Environments.SandboxDev;
         };
         /**
          * consolePrint prints each line of text with optional global settings and per-line
@@ -13973,10 +13968,11 @@
         Util.availableEnvironments = {
             Admin: AdministrationEnvironment,
             Production: ProductionEnvironment,
-            SandboxAdmin: SandboxAdministrationEnvironment,
             SandboxDev: SandboxDevEnvironment,
             SandboxTwitch: SandboxTwitchEnvironment,
             Server: ServerEnvironment,
+            StagingAdmin: StagingAdministrationEnvironment,
+            StagingDev: StagingDevEnvironment,
             Testing: TestingEnvironment
         };
         return Util;
@@ -14232,22 +14228,26 @@
     }
 
     /**
-     * Muxy production API URL.
+     * Muxy production URLs.
      * @ignore
      */
-    var API_URL = 'https://api.muxy.io';
-    var PORTAL_URL = 'https://dev.muxy.io';
+    var API_URL_PRODUCTION = 'https://api.muxy.io';
+    var PORTAL_URL_PRODUCTION = 'https://dev.muxy.io';
     /**
      * Muxy sandbox API URL.
      * @ignore
      */
-    var SANDBOX_URL = 'https://sandbox.api.muxy.io';
-    var STAGING_PORTAL_URL = 'https://dev.staging.muxy.io';
+    var API_URL_SANDBOX = 'https://api.sandbox.muxy.io';
+    /**
+     * Muxy staging URLs.
+     */
+    var API_URL_STAGING = 'https://api.staging.muxy.io';
+    var PORTAL_URL_STAGING = 'https://dev.staging.muxy.io';
     /**
      * Localhost for testing purposes.
      * @ignore
      */
-    var LOCALHOST_URL = 'http://localhost:5000';
+    var API_URL_LOCALHOST = 'http://localhost:5000';
     var AuthorizationFlowType;
     (function (AuthorizationFlowType) {
         AuthorizationFlowType[AuthorizationFlowType["TwitchAuth"] = 0] = "TwitchAuth";
@@ -14261,15 +14261,17 @@
         Config.RegisterMoreEnvironments = function () { };
         Config.DefaultMessengerType = function (env) {
             switch (env) {
-                case Util.Environments.SandboxDev:
                 case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
                 case Util.Environments.SandboxAdmin:
+                case Util.Environments.StagingAdmin:
+                case Util.Environments.SandboxDev:
                     return MessengerType.Pusher;
-                case Util.Environments.SandboxTwitch:
                 case Util.Environments.Production:
+                case Util.Environments.SandboxTwitch:
                     return MessengerType.Twitch;
                 case Util.Environments.Server:
                     return MessengerType.Server;
+                case Util.Environments.Staging:
                 case Util.Environments.Testing:
             }
             return MessengerType.Unknown;
@@ -14277,9 +14279,8 @@
         Config.DefaultPurchaseClientType = function (env) {
             switch (env) {
                 case Util.Environments.SandboxDev:
+                case Util.Environments.StagingDev:
                     return PurchaseClientType.Dev;
-                case Util.Environments.Admin: // Currently unable to hook into the twitch pubsub system from admin
-                case Util.Environments.SandboxAdmin:
                 case Util.Environments.SandboxTwitch:
                 case Util.Environments.Production:
                     return PurchaseClientType.Twitch;
@@ -14293,12 +14294,13 @@
         Config.GetAuthorizationFlowType = function (env) {
             switch (env) {
                 case Util.Environments.SandboxDev:
+                case Util.Environments.StagingDev:
                     return AuthorizationFlowType.TestAuth;
                 case Util.Environments.Admin:
-                case Util.Environments.SandboxAdmin:
+                case Util.Environments.StagingAdmin:
                     return AuthorizationFlowType.AdminAuth;
-                case Util.Environments.SandboxTwitch:
                 case Util.Environments.Production:
+                case Util.Environments.SandboxTwitch:
                     return AuthorizationFlowType.TwitchAuth;
                 case Util.Environments.Server:
                 case Util.Environments.Testing:
@@ -14314,26 +14316,39 @@
             return false;
         };
         Config.GetServerURLs = function (env) {
-            if (env === Util.Environments.SandboxDev ||
-                env === Util.Environments.SandboxTwitch ||
-                env === Util.Environments.SandboxAdmin) {
-                return {
-                    FakeAuthURL: SANDBOX_URL,
-                    PortalURL: PORTAL_URL,
-                    ServerURL: SANDBOX_URL
-                };
-            }
-            if (env === Util.Environments.Testing) {
-                return {
-                    FakeAuthURL: LOCALHOST_URL,
-                    PortalURL: STAGING_PORTAL_URL,
-                    ServerURL: LOCALHOST_URL
-                };
+            switch (env) {
+                case Util.Environments.Production:
+                    return {
+                        FakeAuthURL: API_URL_PRODUCTION,
+                        PortalURL: PORTAL_URL_PRODUCTION,
+                        ServerURL: API_URL_PRODUCTION
+                    };
+                case Util.Environments.SandboxDev:
+                case Util.Environments.SandboxTwitch:
+                case Util.Environments.SandboxAdmin:
+                    return {
+                        FakeAuthURL: API_URL_SANDBOX,
+                        PortalURL: PORTAL_URL_PRODUCTION,
+                        ServerURL: API_URL_SANDBOX
+                    };
+                case Util.Environments.StagingDev:
+                case Util.Environments.StagingAdmin:
+                    return {
+                        FakeAuthURL: API_URL_STAGING,
+                        PortalURL: PORTAL_URL_STAGING,
+                        ServerURL: API_URL_STAGING
+                    };
+                case Util.Environments.Testing:
+                    return {
+                        FakeAuthURL: API_URL_LOCALHOST,
+                        PortalURL: PORTAL_URL_STAGING,
+                        ServerURL: API_URL_LOCALHOST
+                    };
             }
             return {
-                FakeAuthURL: SANDBOX_URL,
-                PortalURL: PORTAL_URL,
-                ServerURL: API_URL
+                FakeAuthURL: API_URL_SANDBOX,
+                PortalURL: PORTAL_URL_PRODUCTION,
+                ServerURL: API_URL_SANDBOX
             };
         };
         Config.OtherEnvironmentCheck = function (window) {

@@ -48,28 +48,61 @@ describe('Config', () => {
   });
 
   describe('GetServerURLs', () => {
-    test('should return localhost urls object when TESTING environment set', () => {
-      const returnObj = {
+    test('should return production urls for production environments', () => {
+      const prod = {
+        FakeAuthURL: 'https://api.muxy.io',
+        PortalURL: 'https://dev.muxy.io',
+        ServerURL: 'https://api.muxy.io'
+      };
+
+      expect(Config.GetServerURLs(Util.Environments.Production)).toEqual(prod);
+    });
+
+    test('should return sandbox urls for sandbox environments', () => {
+      const sandbox = {
+        FakeAuthURL: 'https://api.sandbox.muxy.io',
+        PortalURL: 'https://dev.muxy.io',
+        ServerURL: 'https://api.sandbox.muxy.io'
+      };
+
+      expect(Config.GetServerURLs(Util.Environments.SandboxAdmin)).toEqual(sandbox);
+      expect(Config.GetServerURLs(Util.Environments.SandboxTwitch)).toEqual(sandbox);
+      expect(Config.GetServerURLs(Util.Environments.SandboxDev)).toEqual(sandbox);
+    });
+
+    test('should return staging urls for staging environments', () => {
+      const staging = {
+        FakeAuthURL: 'https://api.staging.muxy.io',
+        PortalURL: 'https://dev.staging.muxy.io',
+        ServerURL: 'https://api.staging.muxy.io'
+      };
+
+      expect(Config.GetServerURLs(Util.Environments.StagingAdmin)).toEqual(staging);
+      expect(Config.GetServerURLs(Util.Environments.StagingDev)).toEqual(staging);
+    });
+
+    test('should return localhost urls for testing environments', () => {
+      const testing = {
         FakeAuthURL: 'http://localhost:5000',
         PortalURL: 'https://dev.staging.muxy.io',
         ServerURL: 'http://localhost:5000'
       };
 
-      expect(Config.GetServerURLs(Util.Environments.Testing)).toEqual(returnObj);
+      expect(Config.GetServerURLs(Util.Environments.Testing)).toEqual(testing);
     });
 
-    test('should return sandbox and api urls object when invalid environment set', () => {
+    test('should return sandbox urls for invalid environments', () => {
       const TestBadEnvironment: Environment = {
         environment: 'notarealenvironment'
       };
 
-      const returnObj = {
-        FakeAuthURL: 'https://sandbox.api.muxy.io',
+      const sandbox = {
+        FakeAuthURL: 'https://api.sandbox.muxy.io',
         PortalURL: 'https://dev.muxy.io',
-        ServerURL: 'https://api.muxy.io'
+        ServerURL: 'https://api.sandbox.muxy.io'
       };
 
-      expect(Config.GetServerURLs(TestBadEnvironment)).toEqual(returnObj);
+      expect(Config.GetServerURLs(TestBadEnvironment)).toEqual(sandbox);
     });
   });
 });

@@ -14242,7 +14242,7 @@
      * @ignore
      */
     var SANDBOX_URL = 'https://sandbox.api.muxy.io';
-    var STAGING_PORTAL_URL = 'https://dev.staging.muxy.io/';
+    var STAGING_PORTAL_URL = 'https://dev.staging.muxy.io';
     /**
      * Localhost for testing purposes.
      * @ignore
@@ -14450,10 +14450,12 @@
                         if (newToken.access_token) {
                             localStorage.setItem(TESTING_HELIX_TOKEN_KEY, JSON.stringify(newToken));
                             user.helixToken = newToken.access_token;
+                            /* eslint-disable-next-line no-console */
                             console.log('Using testing helix token. Call window.ClearHelixToken() to stop this behavior');
                             return [2 /*return*/, true];
                         }
                         else {
+                            /* eslint-disable-next-line no-console */
                             console.log('Failed to refresh helix token.');
                             return [2 /*return*/, false];
                         }
@@ -14484,6 +14486,7 @@
                                 }
                                 attempts++;
                                 if (attempts > 120) {
+                                    /* eslint-disable-next-line no-console */
                                     console.log('Failed to obtain authentication, try again by calling ObtainHelixToken');
                                     clearInterval(interval);
                                     return [2 /*return*/];
@@ -14502,8 +14505,10 @@
                     .fill(0)
                     .map(function () { return Math.random().toString(36)[2]; })
                     .join('');
+                /* eslint-disable no-console */
                 console.log('To obtain a helix token, visit ');
                 console.log("  ".concat(urls.PortalURL, "/login/twitch/token/").concat(clientId, "/").concat(rng));
+                /* eslint-enable no-console */
                 pollForHelixToken(rng);
                 return [2 /*return*/, ''];
             });
@@ -14529,6 +14534,7 @@
         var loadHelixToken = useHelixToken();
         loadHelixToken.then(function (result) {
             if (!result) {
+                /* eslint-disable-next-line no-console */
                 console.log(' To use the debug helix token flow, call window.ObtainHelixToken() in the console');
             }
         });
@@ -17613,7 +17619,7 @@
     }());
 
     var author = "Muxy, Inc.";
-    var version = "2.5.0-20220825.1";
+    var version = "2.5.0-20221109.1";
     var repository = "https://github.com/muxy/extensions-js";
 
     /**
@@ -17661,10 +17667,10 @@
              */
             this.TriviaQuestionState = TriviaQuestionState;
             /**
-               * Debugging callback, used to start the helix token flow.
-               * @internal
-               * @type {function}
-               */
+             * Debugging callback, used to start the helix token flow.
+             * @internal
+             * @type {function}
+             */
             this.openHelixUrl = null;
             this.Util = Util;
             this.setupCalled = false;

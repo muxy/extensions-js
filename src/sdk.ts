@@ -534,6 +534,28 @@ export default class SDK {
   }
 
   /**
+   * Applies a set of patches to channel config state.
+   * This method requires a mapping of user_id to objects. The provided config
+   * objects per user are merged server-side.
+   *
+   * This method requires an admin context.
+   * @async
+   * @param channelConfigs - a mapping of channelID to patch objects.
+   *
+   * @return {Promise} Will resolve on successful setting of config. Rejects on failure.
+   *
+   * @example
+   * sdk.patchChannelConfig(
+   * '12422': { 'foo': 'bar' }
+   * );
+   */
+  public patchChannelConfig<DataType = unknown, ResponseType = unknown>(
+    channelConfigs: DataType
+  ): Promise<ResponseType> {
+    return this.client.patchChannelConfig<DataType, ResponseType>(this.identifier, channelConfigs);
+  }
+
+  /**
    * Returns the current channel and extension config objects
    * @async
    *
